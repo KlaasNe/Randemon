@@ -1,8 +1,16 @@
-from mapClasses.Map import *
+from mapClasses.Map import Map
+from render import Render
+
+import time
 
 
 def main():
-    my_map = Map(1, 1, 50, 50)
+
+    t = time.time()
+    my_map = Map(1, 1, 50)
+    r = Render(my_map)
+    print(time.time() - t)
+    r.show()
 
 
 if __name__ == "__main__":

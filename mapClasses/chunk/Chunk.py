@@ -3,14 +3,17 @@ from mapClasses.layer import *
 
 class Chunk:
 
-    def __init__(self, size_x, size_y):
-        self.size_x = size_x
-        self.size_y = size_y
+    def __init__(self, size):
+        self.size = size
+        self.layers = dict()
         for layer in Layers:
-            self.layers = dict()[layer] = layer.value
+            self.layers[layer.name] = layer.value
+
+    def get_layer(self, layer):
+        return self.layers[layer]
 
     def has_tile_at(self, x, y):
         for layer in self.layers:
-            if layer.get_tile(self, x, y) is not None:
+            if layer.get_tile_img(self, x, y) is not None:
                 return False
         return True
