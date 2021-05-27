@@ -20,16 +20,17 @@ class Render:
     def render(self, chunk):
         sheet_writer = SpriteSheetWriter()
         for layer in chunk.layers.values():
-            prev_tile, prev_img = None, None
-            for tile_x, tile_y in layer.get_ex_pos():
-                current_tile = layer.get_tile(tile_x, tile_y)
-                if current_tile is not None:
-                    x, y = tile_x * Render.TILE_SIZE, tile_y * Render.TILE_SIZE
-                    if current_tile == prev_tile:
-                        SpriteSheetWriter.draw_img(prev_img, self.visual, x, y)
-                    else:
-                        prev_img = sheet_writer.draw_tile(current_tile, self.visual, x, y)
-                        prev_tile = current_tile
+            tile_buffer = dict()
+            for tile_y in range(chunk.size):
+                for tile_x in range(chunk.size):
+                    current_tile = layer.get_tile(tile_x, tile_y)
+                    if current_tile is not None:
+                        x, y = tile_x * Render.TILE_SIZE, tile_y * Render.TILE_SIZE
+                        if current_tile in tile_buffer:
+                            SpriteSheetWriter.draw_img(tile_buffer[current_tile], self.visual, x, y)
+                        else:
+                            img = sheet_writer.draw_tile(current_tile, self.visual, x, y)
+                            tile_buffer[current_tile] = img
 
     def render_npc(self, layer):
         sheet_writer = SpriteSheetWriter(Image.open(os.path.join("resources", "npc.png")), 20, 23)

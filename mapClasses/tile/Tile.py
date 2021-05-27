@@ -15,3 +15,6 @@ class Tile:
 
     def __str__(self):
         return "Tile: " + ', '.join("%s=%s" % item for item in vars(self).items())
+
+    def __hash__(self):
+        return hash(str(self))
