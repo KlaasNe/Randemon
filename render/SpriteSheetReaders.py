@@ -12,7 +12,7 @@ class SpriteSheetReaders(Enum):
     PATH = SpriteSheetReader(Image.open(os.path.join(TILE_SHEET_DIRECTORY, "path.png")))
     WATER = SpriteSheetReader(Image.open(os.path.join(TILE_SHEET_DIRECTORY, "water.png")))
     NATURE = SpriteSheetReader(Image.open(os.path.join(TILE_SHEET_DIRECTORY, "nature.png")))
-    HILL = SpriteSheetReader(Image.open(os.path.join(TILE_SHEET_DIRECTORY, "hills.png")))
+    HILLS = SpriteSheetReader(Image.open(os.path.join(TILE_SHEET_DIRECTORY, "hills.png")))
     ROAD = SpriteSheetReader(Image.open(os.path.join(TILE_SHEET_DIRECTORY, "road.png")))
     HOUSE = SpriteSheetReader(Image.open(os.path.join(TILE_SHEET_DIRECTORY, "houses.png")))
     FENCE = SpriteSheetReader(Image.open(os.path.join(TILE_SHEET_DIRECTORY, "fences.png")))

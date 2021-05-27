@@ -15,12 +15,7 @@ class SpriteSheetWriter(Singleton):
     @staticmethod
     def draw_img(img, render, x, y):
         dest_box = (x, y, x + SpriteSheetReader.TILE_SIZE, y + SpriteSheetReader.TILE_SIZE)
-        try:
-            # render.paste(image, dest_box, mask=image)
-            # except ValueError:
-            render.paste(img, dest_box)
-        except Exception as e:
-            print(e)
+        render.paste(img, dest_box, mask=img)
 
     def __init__(self):
         self.readers = dict()
@@ -33,7 +28,5 @@ class SpriteSheetWriter(Singleton):
     def draw_tile(self, tile, render, x, y):
         dest_box = (x, y, x + SpriteSheetReader.TILE_SIZE, y + SpriteSheetReader.TILE_SIZE)
         img = self.get_tile_img(tile)
-        # render.paste(image, dest_box, mask=image)
-        # except ValueError:
-        render.paste(img, dest_box)
+        render.paste(img, dest_box, mask=img)
         return img

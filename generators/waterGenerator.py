@@ -11,20 +11,19 @@ def create_rivers(chunk):
         prev_surrounding = None
         for x in range(chunk.size):
             if chunk.height_map[y][x] == 0:
-                surrounding = get_surrounding_tiles(chunk, x, y, prev_surrounding)
-                chunk.get_layer("GROUND0").set_tile(x, y, get_tile_from_surrounding(surrounding))
-                prev_surrounding = surrounding
+                prev_surrounding = get_surrounding_tiles(chunk, x, y, prev_surrounding)
+                chunk.get_layer("GROUND0").set_tile(x, y, get_tile_from_surrounding(prev_surrounding))
             else:
                 prev_surrounding = None
 
 
 def get_surrounding_tiles(chunk, x, y, prev):
     if prev is None:
-        return [[chunk.height_map[hy][hx] for hx in range(x - 1, x + 2)] for hy in range(y - 1, y + 2)]
+        return [[chunk.get_height(hx, hy, 0) for hx in range(x - 1, x + 2)] for hy in range(y - 1, y + 2)]
     else:
         new = [r[1:] for r in prev]
         for hy in range(3):
-            new[hy].append(chunk.height_map[y - 1 + hy][x + 1])
+            new[hy].append(chunk.get_height(x + 1, y - 1 + hy, 0))
         return new
 
 

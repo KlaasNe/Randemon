@@ -19,3 +19,9 @@ class Chunk:
             if layer.get_tile(x, y) is not None:
                 return True
         return False
+
+    def get_height(self, x, y, default=0):
+        try:
+            return self.height_map[y][x] if x >= 0 and y >= 0 else default
+        except IndexError:
+            return default
