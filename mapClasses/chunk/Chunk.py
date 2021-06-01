@@ -14,6 +14,9 @@ class Chunk:
     def get_layer(self, layer):
         return self.layers[layer]
 
+    def set_tile(self, layer, x, y, tile):
+        self.layers[layer].set_tile(x, y, tile)
+
     def has_tile_at(self, x, y):
         for layer in self.layers.values():
             if layer.get_tile(x, y) is not None:

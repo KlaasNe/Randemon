@@ -11,7 +11,7 @@ def create_edges(chunk):
                 prev_surrounding = get_surrounding_tiles(chunk, x, y, prev_surrounding)
                 tile = get_tile_from_surrounding(prev_surrounding)
                 if tile is not None:
-                    chunk.get_layer("GROUND1").set_tile(x, y, tile)
+                    chunk.set_tile("HILLS", x, y, tile)
                 else:
                     prev_surrounding = None
             else:

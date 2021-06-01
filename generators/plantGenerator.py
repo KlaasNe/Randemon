@@ -1,4 +1,3 @@
-import math
 import random
 
 from noise import snoise2
@@ -11,37 +10,33 @@ from mapClasses import Tile
 # Adds an overlay to decoration_layer if the top of the tree overlaps with another tree
 
 
-# def create_trees(pmap, layer, spawn_rate, x_offset, y_offset):
-#     def mergeable(x, y):
-#         if (x, y - 1) not in layer.get_ex_pos() and (x + 1, y - 1) not in layer.get_ex_pos():
-#             if layer.get_tile((x, y)) == ("na", 2, 2) == layer.get_tile((x + 1, y)):
-#                 if pmap.ground2.get_tile((x, y - 1)) == ("na", 2, 1) == pmap.ground2.get_tile((x + 1, y - 1)):
-#                     return True
-#         return False
-#
-#     octaves = 2
-#     freq = 40
-#     for y in range(pmap.height):
-#         for x in range(pmap.width):
-#             if pmap.tile_heights.get((x, y), -1) <= pmap.highest_path:
-#                 if (x, y) not in layer.get_ex_pos() and (x, y) not in pmap.ground2.get_ex_pos() and (
-#                 x, y - 1) not in pmap.ground2.get_ex_pos() and (x, y) not in pmap.buildings.get_ex_pos() and (
-#                 x, y) not in pmap.decoration.get_ex_pos() and (x, y - 1) not in pmap.decoration.get_ex_pos():
-#                     if abs(snoise2((x + x_offset) / freq, (y + y_offset) / freq, octaves)) * 2 > 1 - (
-#                             spawn_rate / 100) and random.random() > 0.5:
-#                         pmap.decoration.set_tile((x, y - 2), ("na", 2, 0))
-#                         pmap.ground2.set_tile((x, y - 1), ("na", 2, 1))
-#                         pmap.ground.set_tile((x, y), ("na", 2, 2))
-#
-#     for y in range(pmap.height):
-#         for x in range(pmap.width):
-#             if mergeable(x, y):
-#                 pmap.decoration.set_tile((x, y - 2), ("na", 1, 5))
-#                 pmap.decoration.set_tile((x + 1, y - 2), ("na", 2, 5))
-#                 pmap.ground2.set_tile((x, y - 1), ("na", 1, 6))
-#                 pmap.ground2.set_tile((x + 1, y - 1), ("na", 2, 6))
-#                 pmap.ground.set_tile((x, y), ("na", 1, 7))
-#                 pmap.ground.set_tile((x + 1, y), ("na", 2, 7))
+def create_trees(chunk, spawn_rate, x_offset, y_offset):
+    double = False
+    octaves = 2
+    freq = 20 * octaves
+    for y in range(chunk.size):
+        for x in range(chunk.size):
+            # if chunk.tile_heights.get((x, y), -1) <= chunk.highest_path:
+            if (x, y) not in chunk.get_layer("GROUND0").get_ex_pos() and (x, y) not in chunk.get_layer("HILLS").get_ex_pos() \
+                    and (x, y - 1) not in chunk.get_layer("GROUND1").get_ex_pos():
+                    # and (x, y) not in chunk.buildings.get_ex_pos() and (x, y) not in chunk.decoration.get_ex_pos() and (x, y - 1) not in chunk.decoration.get_ex_pos():
+                if random.random() > 0.3 and abs(snoise2((x + x_offset) / freq, (y + y_offset) / freq, octaves)) > 1 - spawn_rate:
+                    if double:
+                        chunk.set_tile("GROUND2", x - 1, y - 2, Tile("NATURE", 1, 5))
+                        chunk.set_tile("GROUND2", x, y - 2, Tile("NATURE", 2, 5))
+                        chunk.set_tile("GROUND1", x - 1, y - 1, Tile("NATURE", 1, 6))
+                        chunk.set_tile("GROUND1", x, y - 1, Tile("NATURE", 2, 6))
+                        chunk.set_tile("GROUND0", x - 1, y, Tile("NATURE", 1, 7))
+                        chunk.set_tile("GROUND0", x, y, Tile("NATURE", 2, 7))
+                        double = False
+                    else:
+                        chunk.set_tile("GROUND2", x, y - 2, Tile("NATURE", 2, 0))
+                        chunk.set_tile("GROUND1", x, y - 1, Tile("NATURE", 2, 1))
+                        chunk.set_tile("GROUND0", x, y, Tile("NATURE", 2, 2))
+                        double = True
+                else:
+                    double = False
+
 
 
 # The whole map is filled with random green tiles
@@ -70,7 +65,7 @@ def grow_grass(chunk, coverage, x_off, y_off):
     for y in range(chunk.size):
         for x in range(chunk.size):
             if (x, y) not in chunk.get_layer("GROUND0").tiles:
-                chunk.get_layer("GROUND0").set_tile(x, y, random_grass(x_off + x, y_off + y))
+                chunk.set_tile("GROUND0", x, y, random_grass(x_off + x, y_off + y))
 
 # def grow_snake_bushes(pmap, layer, spawnrate, growth):
 #     def create_snake_bush(pos):
