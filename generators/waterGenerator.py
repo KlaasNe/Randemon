@@ -12,7 +12,7 @@ def create_rivers(chunk):
         for x in range(chunk.size):
             if chunk.height_map[y][x] == 0:
                 prev_surrounding = get_surrounding_tiles(chunk, x, y, prev_surrounding)
-                chunk.get_layer("GROUND0").set_tile(x, y, get_tile_from_surrounding(prev_surrounding))
+                chunk.set_tile("GROUND0", x, y, get_tile_from_surrounding(prev_surrounding))
             else:
                 prev_surrounding = None
 
