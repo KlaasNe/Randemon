@@ -10,9 +10,13 @@ class Chunk:
         for layer in Layers:
             self.layers[layer.name] = layer.value
         self.height_map = generate_height_map(self.size, 4, off_x, off_y)
+        self.buildings = dict()
 
     def get_layer(self, layer):
         return self.layers[layer]
+
+    def get_tile(self, layer, x, y):
+        return self.layers[layer].get_tile(x, y)
 
     def set_tile(self, layer, x, y, tile):
         self.layers[layer].set_tile(x, y, tile)

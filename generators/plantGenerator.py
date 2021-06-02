@@ -17,7 +17,7 @@ def create_trees(chunk, spawn_rate, x_offset, y_offset):
     for y in range(chunk.size):
         for x in range(chunk.size):
             # if chunk.tile_heights.get((x, y), -1) <= chunk.highest_path:
-            if (x, y) not in chunk.get_layer("GROUND0").get_ex_pos() and (x, y) not in chunk.get_layer("HILLS").get_ex_pos() \
+            if (x, y) not in chunk.get_layer("GROUND0").get_ex_pos() and (x, y) not in chunk.get_layer("BUILDINGS").get_ex_pos() and (x, y) not in chunk.get_layer("HILLS").get_ex_pos() \
                     and (x, y - 1) not in chunk.get_layer("GROUND1").get_ex_pos():
                     # and (x, y) not in chunk.buildings.get_ex_pos() and (x, y) not in chunk.decoration.get_ex_pos() and (x, y - 1) not in chunk.decoration.get_ex_pos():
                 if random.random() > 0.3 and abs(snoise2((x + x_offset) / freq, (y + y_offset) / freq, octaves)) > 1 - spawn_rate:
@@ -36,7 +36,8 @@ def create_trees(chunk, spawn_rate, x_offset, y_offset):
                         double = True
                 else:
                     double = False
-
+            else:
+                double = False
 
 
 # The whole map is filled with random green tiles
@@ -47,7 +48,7 @@ def grow_grass(chunk, coverage, x_off, y_off):
         freq = 10 * octaves
         sne_prob = abs(snoise2(gx / freq, gy / freq, octaves))
         # if chunk.height_map[y][x] <= pmap.highest_path:
-        if sne_prob < 1 - coverage:  # or (x, y - 1) in pmap.buildings.get_ex_pos() or (x, y) in pmap.ground2.get_ex_pos():
+        if (x, y) in chunk.get_layer("BUILDINGS").get_ex_pos() or sne_prob < 1 - coverage:  # or (x, y) in pmap.ground2.get_ex_pos():
             grass_type = random.randint(0, 7)
             return Tile("NATURE", 0, grass_type)
         else:
@@ -64,7 +65,7 @@ def grow_grass(chunk, coverage, x_off, y_off):
 
     for y in range(chunk.size):
         for x in range(chunk.size):
-            if (x, y) not in chunk.get_layer("GROUND0").tiles:
+            if (x, y) not in chunk.get_layer("GROUND0").get_ex_pos():
                 chunk.set_tile("GROUND0", x, y, random_grass(x_off + x, y_off + y))
 
 # def grow_snake_bushes(pmap, layer, spawnrate, growth):
