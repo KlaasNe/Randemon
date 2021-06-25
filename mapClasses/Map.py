@@ -1,6 +1,6 @@
 import random
 
-from buildings.Buildings import Buildings
+from buildings.BuildingTypes import BuildingTypes
 from generators.buildingGenerator import *
 from generators.hillGenerator import *
 from generators.plantGenerator import *
@@ -22,7 +22,7 @@ class Map:
                 create_rivers(self.chunks[y][x])
                 create_edges(self.chunks[y][x], 0)
                 # spawn_functional_buildings(self.chunks[y][x], "p1")
-                for building in Buildings:
+                for building in BuildingTypes:
                     spawn_building(self.chunks[y][x], building.value, "p1")
                 create_trees(self.chunks[y][x], 0.55, off_x, off_y)
                 grow_grass(self.chunks[y][x], 0.6, off_x, off_y)

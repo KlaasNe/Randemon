@@ -1,7 +1,9 @@
 class Building:
 
-    def __init__(self, building_type, t_pos, size, door_pos):
-        self.building_type = building_type
-        self.t_pos = t_pos
-        self.size = size
-        self.door_pos = door_pos
+    def __init__(self, building_type, x, y):
+        self.type = building_type
+        self.x = x
+        self.y = y
+
+    def get_pos(self):
+        return self.x, self.y

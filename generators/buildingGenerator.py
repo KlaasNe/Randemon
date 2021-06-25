@@ -1,15 +1,15 @@
 import random
-
+from math import sqrt
 
 # Spawns a house on the map with house_front_path_type as its front porch
 # Houses are spawned by chosing a random x and y coordinate, checking whether enough space is available for the given
 # house if not, choose a new position. There's an upper limit to try find a building spot.
-from buildings.Buildings import Buildings
+from buildings.Building import Building
+from buildings.BuildingTypes import BuildingTypes
 from mapClasses import Tile
 
 
 def spawn_building(chunk, building, path_type):
-
     # checks if a chosen position has enough free space for the house + spacing, starting from the top left corner
     def is_available_spot(x1, y1, x2, y2):
         reference_height = chunk.get_height(x1, y1, 0)
@@ -25,16 +25,17 @@ def spawn_building(chunk, building, path_type):
     def search_available_spot(cluster_radius, max_attempts):
 
         def get_random_coo():
-            return random.randint(size_x // 2, chunk.size - size_x // 2), random.randint(size_x // 2, chunk.size - size_y // 2)
+            return random.randint(0, chunk.size - size_x), random.randint(0, chunk.size - size_y)
 
         attempts = 1
         try_x, try_y = get_random_coo()
         available = is_available_spot(try_x, try_y - 1, try_x + size_x, try_y + size_y + 2)
-        while attempts < max_attempts and not available or not is_inside_cluster(chunk, try_x, try_y, cluster_radius, 3):
+        while attempts < max_attempts and (
+                not available or not is_inside_cluster(chunk, try_x, try_y, cluster_radius, 2)):
             attempts += 1
             try_x, try_y = get_random_coo()
             available = is_available_spot(try_x, try_y - 1, try_x + size_x, try_y + size_y + 2)
-        return (try_x, try_y) if attempts <= max_attempts and available and is_inside_cluster(chunk, try_x, try_y, cluster_radius, 3) else False
+        return (try_x, try_y) if attempts <= max_attempts and available and is_inside_cluster(chunk, try_x, try_y, cluster_radius, 2) else False
 
     # search for the lower right corner of a house
     # def find_lower_right_of_house(x, y, size_y):
@@ -46,13 +47,14 @@ def spawn_building(chunk, building, path_type):
     size_x, size_y = building.size
     map_size_factor = (chunk.size * chunk.size // 2500) ** 2
     max_attempts = size_x * size_y * 2 * map_size_factor
-    build_spot = search_available_spot(40, max_attempts)
+    build_spot = search_available_spot(30, max_attempts)
     if build_spot:
         house_x, house_y = build_spot
         for house_build_y in range(size_y):
             for house_build_x in range(size_x):
-                chunk.set_tile("BUILDINGS", house_x + house_build_x, house_y + house_build_y, Tile("BUILDINGS", building.t_pos[0] + house_build_x, building.t_pos[1] + house_build_y))
-        # chunk.buildings.append((round(house_x + size_x / 2), house_y + size_y + 1))
+                chunk.set_tile("BUILDINGS", house_x + house_build_x, house_y + house_build_y,
+                               Tile("BUILDINGS", building.t_pos[0] + house_build_x, building.t_pos[1] + house_build_y))
+        chunk.buildings.append(Building(building, build_spot[0] + building.door_pos[0], build_spot[1] + building.door_pos[1]))
         for front_y in range(2):
             for front_x in range(size_x):
                 # if (house_x + front_x, house_y + size_y + front_y) not in chunk.get_ex_pos("GROUND0"):
@@ -62,20 +64,18 @@ def spawn_building(chunk, building, path_type):
         #         chunk.ground2.set_tile((house_x - 1, house_y + size_y - 2), ("de", 7, 2))
         #         chunk.ground2.set_tile((house_x - 1, house_y + size_y - 1), ("de", 7, 3))
 
-            # if random.randint(1, 4) == 1:
-            #     create_fence(chunk, chunk.ground2, house_x + size_x - 1, house_y + 1, 5, 1, True)
+        # if random.randint(1, 4) == 1:
+        #     create_fence(chunk, chunk.ground2, house_x + size_x - 1, house_y + 1, 5, 1, True)
 
 
 # Checks whether a coordinate is at least in radius [distance] of [connections] houses
 def is_inside_cluster(chunk, x, y, radius, connections):
-    from math import sqrt
-
     if len(chunk.buildings) == 0:
         return True
 
     found_connections = 0
-    for building in chunk.buildings.values():
-        (front_door_x, front_door_y) = building.door_pos
+    for building in chunk.buildings:
+        front_door_x, front_door_y = building.get_pos()
         if sqrt((x - front_door_x) ** 2 + (y - front_door_y) ** 2) < radius:
             found_connections += 1
         if connections > len(chunk.buildings):
@@ -88,9 +88,9 @@ def is_inside_cluster(chunk, x, y, radius, connections):
 
 
 def spawn_functional_buildings(chunk, path_type):
-    spawn_building(chunk, Buildings.POKECENTER.value, "p1")
-    spawn_building(chunk, Buildings.GYM.value, "p1")
-    spawn_building(chunk, Buildings.POKEMART.value, "p1")
+    spawn_building(chunk, BuildingTypes.POKECENTER.value, "p1")
+    spawn_building(chunk, BuildingTypes.GYM.value, "p1")
+    spawn_building(chunk, BuildingTypes.POKEMART.value, "p1")
 
 # def get_house_type(pmap, x, y):
 #     for house in house_data.keys():
