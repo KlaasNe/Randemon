@@ -1,69 +1,75 @@
+from enum import Enum
 from sys import maxsize
 
-PATH_WEIGHT = -1
+from mapClasses.tile import Tile
+
+PATH_WEIGHT = 0
 GRASS_WEIGHT = 8
 HILL_WEIGHT = 32
 WATER_WEIGHT = 32
 
 
-def get_path_type(layer, x, y):
-    try:
-        if layer.get_tile_type((x, y)) == "pa":
-            return layer.get_tile((x, y))[2] // 3
-        else:
-            return None
-    except IndexError:
-        pass
+def get_path_type(chunk, x, y):
+    tile = chunk.get_tile("GROUND0", x, y)
+    return tile.y // 3 if tile is not None and tile.get_type() == "PATH" else None
 
 
-def apply_path_sprites(pmap, layer):
-    def calculate_path_sprite(x, y, path_type):
-        tiles_around = []
-        for around in range(0, 9):
-            path_around = layer.get_tile_type((x + around % 3 - 1, y + around // 3 - 1))
-            if ("pa" == path_around and get_path_type(layer, x + around % 3 - 1, y + around // 3 - 1) == path_type) or "ro" == path_around:
-                tiles_around.append(1)
-                # if (x, y) not in pmap.buildings.keys() and is_actual_path(pmap, x, y) and get_path_type(pmap, x + around % 3 - 1, y + around // 3 - 1) == 3:
-                #     pmap.decoration_layer[(x, y)] = ("de", 6, 3)
-            else:
-                tiles_around.append(0)
+def create_path(chunk):
+    for y in range(chunk.size):
+        prev_surrounding = None
+        for x in range(chunk.size):
+            if chunk.get_tile_type("GROUND0", x, y) == "PATH":
+                prev_surrounding = get_surrounding_tiles(chunk, x, y, prev_surrounding)
+                chunk.set_tile("GROUND0", x, y, PathTiles.specific_tile(get_tile_from_surrounding(prev_surrounding), 0))
 
-        if tiles_around == [1, 1, 1, 1, 1, 1, 0, 1, 1]:
-            return "pa", 2, 2 + 3 * path_type
-        elif tiles_around == [1, 1, 1, 1, 1, 1, 1, 1, 0]:
-            return "pa", 1, 2 + 3 * path_type
-        elif tiles_around == [1, 1, 0, 1, 1, 1, 1, 1, 1]:
-            return "pa", 3, 2 + 3 * path_type
-        elif tiles_around == [0, 1, 1, 1, 1, 1, 1, 1, 1]:
-            return "pa", 4, 2 + 3 * path_type
-        elif tiles_around == [1, 1, 1, 1, 1, 1, 1, 1, 1] or all((tiles_around[1], tiles_around[3], tiles_around[5], tiles_around[7])):
-            return "pa", 0, 0 + 3 * path_type
-        elif tiles_around in ([0, 1, 1, 0, 1, 1, 0, 1, 1], [1, 1, 1, 0, 1, 1, 0, 1, 1], [0, 1, 1, 0, 1, 1, 1, 1, 1], [1, 1, 1, 0, 1, 1, 1, 1, 1]):
-            return "pa", 1, 0 + 3 * path_type
-        elif tiles_around in ([1, 1, 1, 1, 1, 1, 0, 0, 0], [1, 1, 1, 1, 1, 1, 1, 0, 0], [1, 1, 1, 1, 1, 1, 0, 0, 1], [1, 1, 1, 1, 1, 1, 1, 0, 1]):
-            return "pa", 4, 0 + 3 * path_type
-        elif tiles_around in ([1, 1, 0, 1, 1, 0, 1, 1, 0], [1, 1, 1, 1, 1, 0, 1, 1, 0], [1, 1, 0, 1, 1, 0, 1, 1, 1], [1, 1, 1, 1, 1, 0, 1, 1, 1]):
-            return "pa", 2, 0 + 3 * path_type
-        elif tiles_around in ([0, 0, 0, 1, 1, 1, 1, 1, 1], [1, 0, 0, 1, 1, 1, 1, 1, 1], [0, 0, 1, 1, 1, 1, 1, 1, 1], [1, 0, 1, 1, 1, 1, 1, 1, 1]):
-            return "pa", 3, 0 + 3 * path_type
-        elif all((tiles_around[5], tiles_around[7], tiles_around[8])):
-            return "pa", 3, 1 + 3 * path_type
-        elif all((tiles_around[1], tiles_around[2], tiles_around[5])):
-            return "pa", 1, 1 + 3 * path_type
-        elif all((tiles_around[0], tiles_around[1], tiles_around[3])):
-            return "pa", 2, 1 + 3 * path_type
-        elif all((tiles_around[3], tiles_around[6], tiles_around[7])):
-            return "pa", 4, 1 + 3 * path_type
-        return "na", 0, 0
 
-    for y in range(0, layer.sy):
-        for x in range(0, layer.sx):
-            try:
-                path_type = get_path_type(layer, x, y)
-                if "pa" == layer.get_tile_type((x, y)):
-                    layer.set_tile((x, y), calculate_path_sprite(x, y, path_type))
-            except TypeError or IndexError:
-                pass
+def get_surrounding_tiles(chunk, x, y, prev):
+    if prev is None:
+        return [[1 if chunk.get_tile_type("GROUND0", hx, hy) == "PATH" else 0 for hx in range(x - 1, x + 2)] for hy in range(y - 1, y + 2)]
+    else:
+        new = [r[1:] for r in prev]
+        for hy in range(3):
+            new[hy].append(chunk.get_height(x + 1, y - 1 + hy, 0))
+            new[hy].append(1 if chunk.get_tile_type("GROUND0", x + 1, y - 1 + hy) == "PATH" else 0)
+        return new
+
+
+def get_tile_from_surrounding(surrounding):
+    for tile in PathTiles:
+        template = [[c for c in s] for s in tile.value[0].splitlines()]
+        if equal_surrounding(template, surrounding):
+            return tile.value[1]
+
+
+def equal_surrounding(template, arr):
+    if arr is not None:
+        for y in range(3):
+            for x in range(3):
+                if template[y][x] != 'a' and template[y][x] != str(arr[y][x]):
+                    return False
+    return True
+
+
+class PathTiles(Enum):
+
+    @staticmethod
+    def specific_tile(tile, tile_type):
+        return Tile("PATH", tile.x, tile.y + tile_type * 3)
+
+    A = "111\n111\n011", Tile("PATH", 2, 2)
+    B = "111\n111\n110", Tile("PATH", 1, 2)
+    C = "110\n111\n111", Tile("PATH", 3, 2)
+    D = "011\n111\n111", Tile("PATH", 4, 2)
+    E = "a1a\n111\na1a", Tile("PATH", 0, 0)
+    F = "a1a\naa1\na1a", Tile("PATH", 1, 0)
+    G = "a1a\n1a1\naaa", Tile("PATH", 4, 0)
+    H = "a1a\n1aa\na1a", Tile("PATH", 2, 0)
+    I = "aaa\n1a0\na1a", Tile("PATH", 3, 0)
+    J = "aaa\naa1\na1a", Tile("PATH", 3, 1)
+    K = "a1a\naa1\naaa", Tile("PATH", 1, 1)
+    L = "a1a\n1aa\naaa", Tile("PATH", 2, 1)
+    M = "aaa\n1aa\na1a", Tile("PATH", 4, 1)
+    default = "aaa\naaa\naaa", Tile("WATER", 0, 0)
 
 
 def is_actual_path(layer, x, y):

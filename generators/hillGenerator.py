@@ -3,7 +3,7 @@ from enum import Enum
 from mapClasses import Tile
 
 
-def create_edges(chunk):
+def create_edges(chunk, hill_type=0):
     for y in range(chunk.size):
         prev_surrounding = None
         for x in range(chunk.size):
@@ -11,7 +11,7 @@ def create_edges(chunk):
                 prev_surrounding = get_surrounding_tiles(chunk, x, y, prev_surrounding)
                 tile = get_tile_from_surrounding(prev_surrounding)
                 if tile is not None:
-                    chunk.set_tile("HILLS", x, y, tile)
+                    chunk.set_tile("HILLS", x, y, HillTiles.specific_tile(tile, hill_type))
                 else:
                     prev_surrounding = None
             else:
@@ -45,6 +45,11 @@ def equal_surrounding(template, arr):
 
 
 class HillTiles(Enum):
+
+    @staticmethod
+    def specific_tile(tile, tile_type):
+        return Tile("HILLS", tile.x + tile_type * 5, tile.y)
+
     A = [[None, None, None], [0, 0, None], [-1, 0, None]], Tile("HILLS", 0, 1)
     B = [[None, None, None], [None, 0, 0], [None, 0, -1]], Tile("HILLS", 0, 2)
     C1 = [[-1, 0, None], [0, 0, None], [None, None, None]], Tile("HILLS", 3, 0)

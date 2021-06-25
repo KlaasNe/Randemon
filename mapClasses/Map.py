@@ -5,6 +5,7 @@ from generators.buildingGenerator import *
 from generators.hillGenerator import *
 from generators.plantGenerator import *
 from generators.waterGenerator import *
+from generators.pathGenerator import *
 from mapClasses import *
 
 
@@ -19,9 +20,10 @@ class Map:
         for y in range(chunk_nb_v):
             for x in range(chunk_nb_h):
                 create_rivers(self.chunks[y][x])
-                create_edges(self.chunks[y][x])
+                create_edges(self.chunks[y][x], 0)
                 # spawn_functional_buildings(self.chunks[y][x], "p1")
                 for building in Buildings:
                     spawn_building(self.chunks[y][x], building.value, "p1")
                 create_trees(self.chunks[y][x], 0.55, off_x, off_y)
                 grow_grass(self.chunks[y][x], 0.6, off_x, off_y)
+                create_path(self.chunks[y][x])

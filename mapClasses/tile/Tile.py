@@ -1,6 +1,6 @@
 class Tile:
 
-    def __init__(self,reader_name, x, y, mirror=False):
+    def __init__(self, reader_name, x, y, mirror=False):
         self.reader_name = reader_name
         self.x = x
         self.y = y
@@ -18,3 +18,6 @@ class Tile:
 
     def __hash__(self):
         return hash(str(self))
+
+    def get_type(self):
+        return self.reader_name

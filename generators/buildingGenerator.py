@@ -11,51 +11,52 @@ from mapClasses import Tile
 def spawn_building(chunk, building, path_type):
 
     # checks if a chosen position has enough free space for the house + spacing, starting from the top left corner
-    def unavailable_building_spot(x1, y1, x2, y2):
+    def is_available_spot(x1, y1, x2, y2):
         reference_height = chunk.get_height(x1, y1, 0)
         for y in range(y1, y2 + 1):
             for x in range(x1, x2 + 1):
-                if chunk.get_height(x, y) != reference_height or (x, y) in chunk.get_layer("GROUND0").get_ex_pos() or (x, y) in chunk.get_layer("HILLS").get_ex_pos() or (x, y) in chunk.get_layer("BUILDINGS").get_ex_pos():
-                    return True
-        return False
+                if chunk.get_height(x, y) != reference_height or (x, y) in chunk.get_ex_pos("GROUND0") or (x, y) in chunk.get_ex_pos("HILLS") or (x, y) in chunk.get_ex_pos("BUILDINGS"):
+                    return False
+        return True
 
     # Chooses a random x and y coordinate to try build a house
     # If a house already exists on the chosen coordinate, searches for the lower right corner of given house and when
     # enough space available, builds the house adjacent on the right to the house previously found
-    def search_available_building_spot(cluster_radius, max_attempts):
+    def search_available_spot(cluster_radius, max_attempts):
+
+        def get_random_coo():
+            return random.randint(size_x // 2, chunk.size - size_x // 2), random.randint(size_x // 2, chunk.size - size_y // 2)
+
         attempts = 1
-        try_x = random.randint(1, chunk.size - size_x)
-        try_y = random.randint(1, chunk.size - size_y)
-        unavailable_spot = unavailable_building_spot(try_x, try_y - 1, try_x + size_x, try_y + size_y + 2)
-        while attempts < max_attempts and unavailable_spot or not is_inside_cluster(chunk, try_x, try_y, cluster_radius, 3):
+        try_x, try_y = get_random_coo()
+        available = is_available_spot(try_x, try_y - 1, try_x + size_x, try_y + size_y + 2)
+        while attempts < max_attempts and not available or not is_inside_cluster(chunk, try_x, try_y, cluster_radius, 3):
             attempts += 1
-            try_x = random.randint(1, chunk.size - size_x)
-            try_y = random.randint(1, chunk.size - size_y)
-            unavailable_spot = unavailable_building_spot(try_x, try_y - 1, try_x + size_x, try_y + size_y + 2)
-        return (try_x, try_y) if attempts <= max_attempts and not unavailable_spot and is_inside_cluster(chunk, try_x, try_y, cluster_radius, 3) else False
+            try_x, try_y = get_random_coo()
+            available = is_available_spot(try_x, try_y - 1, try_x + size_x, try_y + size_y + 2)
+        return (try_x, try_y) if attempts <= max_attempts and available and is_inside_cluster(chunk, try_x, try_y, cluster_radius, 3) else False
 
     # search for the lower right corner of a house
     # def find_lower_right_of_house(x, y, size_y):
-    #     while layer.get_tile_type((x - 1, y)) == "ho" or layer.get_tile_type((x, y - 1)) == "ho":
-    #         if layer.get_tile_type((x - 1, y)) == "ho": y += 1
-    #         if layer.get_tile_type((x, y - 1)) == "ho": x += 1
+    #     while (x, y) in chunk.get_layer("BUILDINGS").get_ex_pos():
+    #         if chunk.get_tile("BUILDINGS", x - 1, y).get_type() == "BUILDINGS": y += 1
+    #         if chunk.get_tile("BUILDINGS", x, y - 1).get_type() == "BUILDINGS": x += 1
     #     return x, y - size_y
 
     size_x, size_y = building.size
-
     map_size_factor = (chunk.size * chunk.size // 2500) ** 2
     max_attempts = size_x * size_y * 2 * map_size_factor
-    build_spot = search_available_building_spot(40, max_attempts)
+    build_spot = search_available_spot(40, max_attempts)
     if build_spot:
         house_x, house_y = build_spot
         for house_build_y in range(size_y):
             for house_build_x in range(size_x):
                 chunk.set_tile("BUILDINGS", house_x + house_build_x, house_y + house_build_y, Tile("BUILDINGS", building.t_pos[0] + house_build_x, building.t_pos[1] + house_build_y))
-        # chunk.front_doors.append((round(house_x + size_x / 2), house_y + size_y + 1))
-        # for front_y in range(2):
-        #     for front_x in range(size_x):
-        #         if (house_x + front_x, house_y + size_y + front_y) not in chunk.get_layer("GROUND0").get_ex_pos():
-        #             chunk.set_tile("GROUND0", Tile(house_x + front_x, house_y + size_y + front_y, path_type))
+        # chunk.buildings.append((round(house_x + size_x / 2), house_y + size_y + 1))
+        for front_y in range(2):
+            for front_x in range(size_x):
+                # if (house_x + front_x, house_y + size_y + front_y) not in chunk.get_ex_pos("GROUND0"):
+                chunk.set_tile("GROUND0", house_x + front_x, house_y + size_y + front_y, Tile("PATH", 0, 0))
         # if isinstance(building, int):
         #     if random.randint(0, 1) == 1 and not (house_x - 1, house_y + size_y - 2) in chunk.get_layer("BUILDINGS").get_ex_pos():
         #         chunk.ground2.set_tile((house_x - 1, house_y + size_y - 2), ("de", 7, 2))
@@ -78,9 +79,11 @@ def is_inside_cluster(chunk, x, y, radius, connections):
         if sqrt((x - front_door_x) ** 2 + (y - front_door_y) ** 2) < radius:
             found_connections += 1
         if connections > len(chunk.buildings):
-            if found_connections == 1: return True
+            if found_connections == 1:
+                return True
         else:
-            if found_connections == connections: return True
+            if found_connections == connections:
+                return True
     return False
 
 

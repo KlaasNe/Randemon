@@ -10,16 +10,16 @@ class Chunk:
         for layer in Layers:
             self.layers[layer.name] = layer.value
         self.height_map = generate_height_map(self.size, 4, off_x, off_y)
-        self.buildings = dict()
+        self.buildings = []
 
     def get_layer(self, layer):
         return self.layers[layer]
 
     def get_tile(self, layer, x, y):
-        return self.layers[layer].get_tile(x, y)
+        return self.get_layer(layer).get_tile(x, y)
 
     def set_tile(self, layer, x, y, tile):
-        self.layers[layer].set_tile(x, y, tile)
+        self.get_layer(layer).set_tile(x, y, tile)
 
     def has_tile_at(self, x, y):
         for layer in self.layers.values():
@@ -32,3 +32,9 @@ class Chunk:
             return self.height_map[y][x] if x >= 0 and y >= 0 else default
         except IndexError:
             return default
+
+    def get_ex_pos(self, layer):
+        return self.get_layer(layer).get_ex_pos()
+
+    def get_tile_type(self, layer, x, y):
+        return self.get_layer(layer).get_tile_type(x, y)
