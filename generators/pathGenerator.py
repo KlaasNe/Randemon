@@ -21,6 +21,8 @@ def create_path(chunk):
             if chunk.get_tile_type("GROUND0", x, y) == "PATH":
                 prev_surrounding = get_surrounding_tiles(chunk, x, y, prev_surrounding)
                 chunk.set_tile("GROUND0", x, y, PathTiles.specific_tile(get_tile_from_surrounding(prev_surrounding), 0))
+            else:
+                prev_surrounding = None
 
 
 def get_surrounding_tiles(chunk, x, y, prev):
@@ -29,7 +31,6 @@ def get_surrounding_tiles(chunk, x, y, prev):
     else:
         new = [r[1:] for r in prev]
         for hy in range(3):
-            new[hy].append(chunk.get_height(x + 1, y - 1 + hy, 0))
             new[hy].append(1 if chunk.get_tile_type("GROUND0", x + 1, y - 1 + hy) == "PATH" else 0)
         return new
 
@@ -38,6 +39,8 @@ def get_tile_from_surrounding(surrounding):
     for tile in PathTiles:
         template = [[c for c in s] for s in tile.value[0].splitlines()]
         if equal_surrounding(template, surrounding):
+            if tile.value[1] == Tile("PATH", 0, 1):
+                print(surrounding)
             return tile.value[1]
 
 
@@ -61,15 +64,15 @@ class PathTiles(Enum):
     C = "110\n111\n111", Tile("PATH", 3, 2)
     D = "011\n111\n111", Tile("PATH", 4, 2)
     E = "a1a\n111\na1a", Tile("PATH", 0, 0)
-    F = "a1a\naa1\na1a", Tile("PATH", 1, 0)
-    G = "a1a\n1a1\naaa", Tile("PATH", 4, 0)
-    H = "a1a\n1aa\na1a", Tile("PATH", 2, 0)
-    I = "aaa\n1a0\na1a", Tile("PATH", 3, 0)
-    J = "aaa\naa1\na1a", Tile("PATH", 3, 1)
-    K = "a1a\naa1\naaa", Tile("PATH", 1, 1)
-    L = "a1a\n1aa\naaa", Tile("PATH", 2, 1)
-    M = "aaa\n1aa\na1a", Tile("PATH", 4, 1)
-    default = "aaa\naaa\naaa", Tile("WATER", 0, 0)
+    F = "a1a\n0a1\na1a", Tile("PATH", 1, 0)
+    G = "a1a\n1a1\na0a", Tile("PATH", 4, 0)
+    H = "a1a\n1a0\na1a", Tile("PATH", 2, 0)
+    I = "a0a\n1a1\na1a", Tile("PATH", 3, 0)
+    J = "a0a\n0a1\na1a", Tile("PATH", 3, 1)
+    K = "a1a\n0a1\na0a", Tile("PATH", 1, 1)
+    L = "a1a\n1a0\na0a", Tile("PATH", 2, 1)
+    M = "a0a\n1a0\na1a", Tile("PATH", 4, 1)
+    default = "aaa\naaa\naaa", Tile("PATH", 0, 1)
 
 
 def is_actual_path(layer, x, y):
