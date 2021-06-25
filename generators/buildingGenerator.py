@@ -57,7 +57,6 @@ def spawn_building(chunk, building, path_type):
         chunk.buildings.append(Building(building, build_spot[0] + building.door_pos[0], build_spot[1] + building.door_pos[1]))
         for front_y in range(2):
             for front_x in range(size_x):
-                # if (house_x + front_x, house_y + size_y + front_y) not in chunk.get_ex_pos("GROUND0"):
                 chunk.set_tile("GROUND0", house_x + front_x, house_y + size_y + front_y, Tile("PATH", 0, 0))
         # if isinstance(building, int):
         #     if random.randint(0, 1) == 1 and not (house_x - 1, house_y + size_y - 2) in chunk.get_layer("BUILDINGS").get_ex_pos():
@@ -91,17 +90,6 @@ def spawn_functional_buildings(chunk, path_type):
     spawn_building(chunk, BuildingTypes.POKECENTER.value, "p1")
     spawn_building(chunk, BuildingTypes.GYM.value, "p1")
     spawn_building(chunk, BuildingTypes.POKEMART.value, "p1")
-
-# def get_house_type(pmap, x, y):
-#     for house in house_data.keys():
-#         check_house = pmap.get_tile("buildings", x, y)
-#         house_type_x, house_type_y = check_house[1], check_house[2]
-#         curr_house_x, curr_house_y = house_data[house][0]
-#         curr_house_size_x, curr_house_size_y = house_data[house][1]
-#         if curr_house_x <= house_type_x < curr_house_x + curr_house_size_x:
-#             if curr_house_y <= house_type_y < curr_house_y + curr_house_size_y:
-#                 return house
-#     raise Exception("UnexistingHouse" + str(x, y))
 
 
 # def is_special_building(pmap, x, y):

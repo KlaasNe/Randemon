@@ -2,11 +2,7 @@ from enum import Enum
 from sys import maxsize
 
 from mapClasses.tile import Tile
-
-PATH_WEIGHT = 0
-GRASS_WEIGHT = 8
-HILL_WEIGHT = 32
-WATER_WEIGHT = 32
+from mapClasses.tile.TileWeights import TileWeights
 
 
 def get_path_type(chunk, x, y):
@@ -82,7 +78,36 @@ def is_actual_path(layer, x, y):
         print(e)
 
 
-def generate_dijkstra_path(pmap, layer, house_path_type):
+def draw_path2(chunk, path_type):
+    def init_weights():
+        for y in range(chunk.size):
+            for x in range(chunk.size):
+                chunk_weights[y].append()
+
+    chunk_weights = []
+
+
+def determine_weight(chunk, x, y, avoid_hill_corners=True):
+
+    def is_corner(x, y):
+        return (x, y) in chunk.get_ex_pos("HILLS") and chunk.get_tile("HILLS", x, y).y in [1, 3] or \
+               chunk.ground.get_tile("HILLS", x, y) == Tile("HILLS", 3, 0) and (x, y - 1) in chunk.get_ex_pos("HILLS")
+
+    if (x, y) in chunk.get_ex_pos("BUILDINGS") or (x - 1, y) in chunk.get_ex_pos("BUILDINGS") or (x, y - 1) in chunk.get_ex_pos("BUILDINGS"): return TileWeights.IMPASSABLE
+    if "fe" == chunk.ground2.get_tile_type((x, y)) or "fe" == chunk.ground2.get_tile_type(
+        (x - 1, y)) or "fe" == chunk.ground2.get_tile_type((x, y - 1)): return TileWeights.IMPASSABLE
+    # if chunk.ground.get_tile_type((x, y)) == "ro": return PATH_WEIGHT
+    # if chunk.ground.get_tile_type((x, y - 1)) == "ro": return 999999
+    # if chunk.ground.get_tile_type((x - 1, y)) == "ro": return 999999
+    if avoid_hill_corners and any((is_corner(x, y), is_corner(x - 1, y), is_corner(x, y - 1), is_corner(x - 1, y - 1))):
+        return TileWeights.IMPASSABLE
+    if (x, y) in chunk.get_ex_pos("HILLS") or (x - 1, y) in chunk.get_ex_pos("HILLS") or (x, y - 1) in chunk.get_ex_pos("HILLS") or (x - 1, y - 1) in chunk.get_ex_pos("HILLS"): return TileWeights.HILL
+    if chunk.get_tile_type("GROUND0", x, y) == "WATER" or chunk.get_tile_type("GROUND0", x - 1, y) == "WATER" or chunk.get_tile_type("GROUND0", x, y - 1) == "WATER" or chunk.get_tile_type("GROUND0", x - 1, y - 1) == "WATER" : return TileWeights.WATER
+    if is_actual_path(chunk.ground, x, y) and is_actual_path(chunk.ground, x - 1, y) and is_actual_path(chunk.ground, x, y - 1) and is_actual_path(chunk.ground, x - 1, y - 1): return TileWeights.PATH
+    return TileWeights.GRASS
+
+
+def draw_path(pmap, layer, house_path_type):
     def initialize_dijkstra():
         for y in range(pmap.height):
             current_weight.append(pmap.width * [maxsize])
@@ -161,7 +186,7 @@ def generate_dijkstra_path(pmap, layer, house_path_type):
             while not previous_tile[current_tile[1]][current_tile[0]] == (0, 0):
                 path.add(current_tile)
                 if "pa" != layer.get_tile_type((current_tile[0], current_tile[1])):
-                    weight_array[current_tile[1]][current_tile[0]] = PATH_WEIGHT
+                    weight_array[current_tile[1]][current_tile[0]] = TileWeights.PATH
                 current_tile = previous_tile[current_tile[1]][current_tile[0]]
             path.add(current_tile)
 
@@ -169,32 +194,6 @@ def generate_dijkstra_path(pmap, layer, house_path_type):
 
     create_stairs(pmap, layer)
     create_bridges(pmap, layer)
-
-
-def determine_weight(pmap, x, y, avoid_hill_corners=True):
-
-    def is_corner(x, y):
-        if pmap.ground.get_tile_type((x, y)) == "hi" and pmap.ground.get_tile((x, y))[2] in [1, 3]:
-            return True
-        elif pmap.ground.get_tile((x, y)) == ("hi", 3, 0) and pmap.ground.get_tile_type((x, y - 1)) == "hi":
-            return True
-        else:
-            return False
-
-    if "ho" == pmap.buildings.get_tile_type((x, y)) or "ho" == pmap.buildings.get_tile_type((x - 1, y)) or "ho" == pmap.buildings.get_tile_type((x, y - 1)) or "ho" == pmap.buildings.get_tile_type((x - 1, y - 1)):return 999999
-    if "fe" == pmap.ground2.get_tile_type((x, y)) or "fe" == pmap.ground2.get_tile_type((x - 1, y)) or "fe" == pmap.ground2.get_tile_type((x, y - 1)): return 999999
-    if pmap.ground.get_tile_type((x, y)) == "ro": return PATH_WEIGHT
-    if pmap.ground.get_tile_type((x, y - 1)) == "ro": return 999999
-    if pmap.ground.get_tile_type((x - 1, y)) == "ro": return 999999
-    if avoid_hill_corners:
-        if avoid_hill_corners and any((is_corner(x, y), is_corner(x - 1, y), is_corner(x, y - 1), is_corner(x - 1, y - 1))):
-            return 999999
-    if pmap.ground.get_tile_type((x, y)) == "hi": return HILL_WEIGHT
-    if pmap.ground.get_tile_type((x - 1, y)) == "hi" or pmap.ground.get_tile_type((x, y - 1)) == "hi" or pmap.ground.get_tile_type((x - 1, y - 1)) == "hi": return HILL_WEIGHT
-    if pmap.ground.get_tile_type((x, y)) == "wa" or pmap.ground.get_tile_type((x - 1, y)) == "wa" or pmap.ground.get_tile_type((x, y - 1)) == "wa" or pmap.ground.get_tile_type((x - 1, y - 1)) == "wa": return WATER_WEIGHT
-    if is_actual_path(pmap.ground, x, y) and is_actual_path(pmap.ground, x - 1, y) and is_actual_path(pmap.ground, x, y - 1) and is_actual_path(pmap.ground, x - 1, y - 1): return PATH_WEIGHT
-    if pmap.ground.get_tile_type((x, y)) == "" or pmap.ground.get_tile_type((x - 1, y)) == "" or pmap.ground.get_tile_type((x, y - 1)) == "" or get_path_type(pmap.ground, x, y) == 3: return GRASS_WEIGHT
-    return 999999
 
 
 def make_path_double(pmap, path, path_type):
