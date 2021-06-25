@@ -18,3 +18,9 @@ class Layer:
                 if (x, y) in self.get_ex_pos():
                     return True
         return False
+
+    def get_tile_type(self, x, y):
+        try:
+            return self.get_tile(x, y).get_type()
+        except AttributeError:
+            return None
