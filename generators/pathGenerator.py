@@ -1,8 +1,10 @@
 from enum import Enum
+from random import shuffle
 from sys import maxsize
 
 from mapClasses.tile import Tile
 from mapClasses.tile.TileWeights import TileWeights
+from mapClasses.tile.WeightTile import WeightTile
 
 
 def get_path_type(chunk, x, y):
@@ -35,8 +37,6 @@ def get_tile_from_surrounding(surrounding):
     for tile in PathTiles:
         template = [[c for c in s] for s in tile.value[0].splitlines()]
         if equal_surrounding(template, surrounding):
-            if tile.value[1] == Tile("PATH", 0, 1):
-                print(surrounding)
             return tile.value[1]
 
 
@@ -73,142 +73,210 @@ class PathTiles(Enum):
 
 def is_actual_path(layer, x, y):
     try:
-        return layer.get_tile_type((x, y)) in ["ro", "pa"] and get_path_type(layer, x, y) != 3
+        return layer.get_tile_type(x, y) in ["ro", "pa"] and get_path_type(layer, x, y) != 3
     except Exception as e:
         print(e)
 
 
 def draw_path2(chunk, path_type):
-    def init_weights():
+    def init_weight_tiles():
+        weights_array = []
         for y in range(chunk.size):
+            weights_row = []
             for x in range(chunk.size):
-                chunk_weights[y].append()
+                weights_row.append(WeightTile(x, y, determine_weight(chunk, x, y).value))
+            weights_array.append(weights_row)
+        return weights_array
 
-    chunk_weights = []
+    def find_min_tile():
+        try:
+            return min(handle_tiles)
+        except ValueError:
+            return None
+
+    def find_closest_connected_building(x, y):
+        bd = None
+        min_dist = 999999
+        buildings_list = chunk.buildings
+        for building in connected_buildings if len(connected_buildings) >=2 else buildings_list:
+            if building.get_abs_door_pos() != (x, y):
+                bx, by = building.get_abs_door_pos()
+                dist = abs(x - bx) + abs(y + by)
+                if min_dist > dist > 0:
+                    min_dist = dist
+                    bd = building
+        return bd
+
+    def handle_current_tile():
+        x, y = curr_tile.x, curr_tile.y
+        tx, ty = target_tile.x, target_tile.y
+        curr_tile.visited = True
+        for nx, ny in [(x, y + 1), (x, y - 1), (x + 1, y), (x - 1, y)]:
+            if not chunk.out_of_bounds(nx, ny):
+                ntile = chunk_wght_tiles[ny][nx]
+                if not ntile.visited:
+                    new_dist = curr_tile.dist + chunk_wght_tiles[y][x].weight + abs(x - tx + y - ty)
+                    if new_dist < ntile.dist:
+                        ntile.dist = new_dist
+                        ntile.prev = curr_tile
+                        handle_tiles.add(ntile)
+        handle_tiles.remove(curr_tile)
+
+    def make_path_double(chunk, path, path_type):
+        path_extention = set()
+        for pos in path:
+            pass
+            # path_extention.add((pos.x, pos.y))
+            # path_extention.add((pos.x, pos.y - 1))
+            # path_extention.add((pos.x - 1, pos.y))
+            # path_extention.add((pos.x - 1, pos.y - 1))
+
+        for (x, y) in path_extention:
+            # if chunk.height_map[y][x] < 1:
+            # chunk.set_tile("GROUND0", x, y, Tile("PATH", 0, 0))
+            chunk_wght_tiles[y][x].weight = TileWeights.PATH.value
+            # elif "pa" != pmap.ground.get_tile_type((x, y)):
+            #     pmap.ground.set_tile((x, y), path_type)
+
+    connected_buildings = set()
+    chunk_wght_tiles = init_weight_tiles()
+    shuffle(chunk.buildings)
+    for b in chunk.buildings:
+        connected_buildings.add(b)
+        handle_tiles = set()
+        start_x, start_y = b.get_abs_door_pos()
+        curr_tile = chunk_wght_tiles[start_y][start_x]
+        curr_tile.dist = 0
+        handle_tiles.add(curr_tile)
+        target = find_closest_connected_building(curr_tile.x, curr_tile.y)
+        connected_buildings.add(target)
+        end_x, end_y = target.get_abs_door_pos()
+        target_tile = chunk_wght_tiles[end_y][end_x]
+        while curr_tile != target_tile and curr_tile.dist < 999999:
+            curr_tile = find_min_tile()
+            if curr_tile is None: break
+            handle_current_tile()
+
+        path = set()
+        while curr_tile is not None and curr_tile.prev is not None:
+            path.add(curr_tile)
+            x, y = curr_tile.x, curr_tile.y
+            chunk.set_tile("GROUND0", x, y, Tile("pjoep", 0, 0))
+            if chunk.get_tile("GROUND0", x, y):
+                chunk_wght_tiles[y][x].weight = TileWeights.PATH.value
+            curr_tile = curr_tile.prev
+            try:
+                if curr_tile == curr_tile.prev.prev: break
+            except AttributeError:
+                pass
+
+        for y in range(chunk.size):
+            for wght_tile in chunk_wght_tiles[y]:
+                wght_tile.dist = 999999
+                wght_tile.visited = False
+        # break
+
+        make_path_double(chunk, path, 0)
+
+    # create_stairs(layer)
+    # create_bridges(layer)
 
 
 def determine_weight(chunk, x, y, avoid_hill_corners=True):
 
     def is_corner(x, y):
         return (x, y) in chunk.get_ex_pos("HILLS") and chunk.get_tile("HILLS", x, y).y in [1, 3] or \
-               chunk.ground.get_tile("HILLS", x, y) == Tile("HILLS", 3, 0) and (x, y - 1) in chunk.get_ex_pos("HILLS")
+               chunk.get_tile("HILLS", x, y) == Tile("HILLS", 3, 0) and (x, y - 1) in chunk.get_ex_pos("HILLS")
 
-    if (x, y) in chunk.get_ex_pos("BUILDINGS") or (x - 1, y) in chunk.get_ex_pos("BUILDINGS") or (x, y - 1) in chunk.get_ex_pos("BUILDINGS"): return TileWeights.IMPASSABLE
-    if "fe" == chunk.ground2.get_tile_type((x, y)) or "fe" == chunk.ground2.get_tile_type(
-        (x - 1, y)) or "fe" == chunk.ground2.get_tile_type((x, y - 1)): return TileWeights.IMPASSABLE
+    if (x, y) in chunk.get_ex_pos("BUILDINGS") or (x - 1, y) in chunk.get_ex_pos("BUILDINGS") or (x, y - 1) in chunk.get_ex_pos("BUILDINGS") or (x - 1, y - 1) in chunk.get_ex_pos("BUILDINGS"): return TileWeights.IMPASSABLE
+    # if (x, y) in chunk.get_ex_pos("FENCE") or (x - 1, y) in chunk.get_ex_pos("FENCE") or (x, y - 1) in chunk.get_ex_pos("FENCE"): return TileWeights.IMPASSABLE
     # if chunk.ground.get_tile_type((x, y)) == "ro": return PATH_WEIGHT
     # if chunk.ground.get_tile_type((x, y - 1)) == "ro": return 999999
     # if chunk.ground.get_tile_type((x - 1, y)) == "ro": return 999999
     if avoid_hill_corners and any((is_corner(x, y), is_corner(x - 1, y), is_corner(x, y - 1), is_corner(x - 1, y - 1))):
         return TileWeights.IMPASSABLE
     if (x, y) in chunk.get_ex_pos("HILLS") or (x - 1, y) in chunk.get_ex_pos("HILLS") or (x, y - 1) in chunk.get_ex_pos("HILLS") or (x - 1, y - 1) in chunk.get_ex_pos("HILLS"): return TileWeights.HILL
-    if chunk.get_tile_type("GROUND0", x, y) == "WATER" or chunk.get_tile_type("GROUND0", x - 1, y) == "WATER" or chunk.get_tile_type("GROUND0", x, y - 1) == "WATER" or chunk.get_tile_type("GROUND0", x - 1, y - 1) == "WATER" : return TileWeights.WATER
-    if is_actual_path(chunk.ground, x, y) and is_actual_path(chunk.ground, x - 1, y) and is_actual_path(chunk.ground, x, y - 1) and is_actual_path(chunk.ground, x - 1, y - 1): return TileWeights.PATH
+    if chunk.get_tile_type("GROUND0", x, y) == "WATER" or chunk.get_tile_type("GROUND0", x - 1, y) == "WATER" or chunk.get_tile_type("GROUND0", x, y - 1) == "WATER" or chunk.get_tile_type("GROUND0", x - 1, y - 1) == "WATER": return TileWeights.WATER
+    if is_actual_path(chunk.layers["GROUND0"], x, y) and is_actual_path(chunk.layers["GROUND0"], x - 1, y) and is_actual_path(chunk.layers["GROUND0"], x, y - 1) and is_actual_path(chunk.layers.GROUND0, x - 1, y - 1): return TileWeights.PATH
     return TileWeights.GRASS
 
 
-def draw_path(pmap, layer, house_path_type):
-    def initialize_dijkstra():
-        for y in range(pmap.height):
-            current_weight.append(pmap.width * [maxsize])
-            weight.append(weight_array[y])
-            visited.append(pmap.width * [False])
-            previous_tile.append(pmap.width * [(0, 0)])
-
-    def handle_current_tile():
-        curr_x = current_tile[0]
-        curr_y = current_tile[1]
-        visited[curr_y][curr_x] = True
-        for around_x, around_y in [(curr_x, curr_y - 1), (curr_x, curr_y + 1), (curr_x - 1, curr_y), (curr_x + 1, curr_y)]:
-            if not pmap.ground.out_of_bounds(around_x, around_y):
-                new_weight = current_weight[curr_y][curr_x] + weight[around_y][around_x] + abs(target_tile[0] - curr_x) + abs(target_tile[1] - curr_y)
-                if not visited[around_y][around_x] and current_weight[around_y][around_x] > new_weight:
-                    current_weight[around_y][around_x] = new_weight
-                    previous_tile[around_y][around_x] = current_tile
-                    handle_tiles[(around_x, around_y)] = new_weight
-        handle_tiles.pop(current_tile)
-
-    def find_min_tile():
-        min_weight = maxsize
-        for tile in handle_tiles:
-            if handle_tiles[tile] < min_weight:
-                min_weight = handle_tiles[tile]
-                min_tile = tile
-        try:
-            return min_tile
-        except Exception as e:
-            print(e)
-
-    def find_closest_house(x, y):
-        closest_distance = 999999
-        closest_house = (x, y)
-        for house in already_connected:
-            if house != (x, y):
-                if abs(house[0] - x) + abs(house[1] - y) < closest_distance:
-                    closest_distance = abs(house[0] - x) + abs(house[1] - y)
-                    closest_house = house
-        return closest_house
-
-    weight_array = {}
-    for y in range(pmap.height):
-        weight_array_row = []
-        for x in range(pmap.width):
-            weight_array_row.append(determine_weight(pmap, x, y))
-        weight_array[y] = weight_array_row
-
-    already_connected = set()
-    for front_door in range(len(pmap.front_doors)):
-        current_tile = pmap.front_doors[front_door]
-        if pmap.tile_heights.get(current_tile, -1) > pmap.highest_path:
-            pmap.highest_path = pmap.tile_heights[current_tile]
-        already_connected.add(current_tile)
-        if not current_tile: print("broken")
-        target_tile = find_closest_house(current_tile[0], current_tile[1])
-        already_connected.add(target_tile)
-        weight = []
-        current_weight = []
-        visited = []
-        previous_tile = []
-        handle_tiles = {}
-        initialize_dijkstra()
-
-        visited[current_tile[1]][current_tile[0]] = True
-        current_weight[current_tile[1]][current_tile[0]] = 0
-        previous_tile[current_tile[1]][current_tile[0]] = (0, 0)
-        handle_tiles[(current_tile[0], current_tile[1])] = 0
-        handle_current_tile()
-        while not current_tile == target_tile and current_weight[current_tile[1]][current_tile[0]] < 999999:
-            current_tile = find_min_tile()
-            handle_current_tile()
-
-        if current_weight[current_tile[1]][current_tile[0]] < 999999:
-            path = set()
-            while not previous_tile[current_tile[1]][current_tile[0]] == (0, 0):
-                path.add(current_tile)
-                if "pa" != layer.get_tile_type((current_tile[0], current_tile[1])):
-                    weight_array[current_tile[1]][current_tile[0]] = TileWeights.PATH
-                current_tile = previous_tile[current_tile[1]][current_tile[0]]
-            path.add(current_tile)
-
-            make_path_double(pmap, path, house_path_type)
-
-    create_stairs(pmap, layer)
-    create_bridges(pmap, layer)
-
-
-def make_path_double(pmap, path, path_type):
-    path_extention = set()
-    for (x, y) in path:
-        path_extention.add((x, y))
-        path_extention.add((x, y - 1))
-        path_extention.add((x - 1, y))
-        path_extention.add((x - 1, y - 1))
-
-    for (x, y) in path_extention:
-        if pmap.tile_heights.get((x, y), 0) < 1:
-            pmap.ground.set_tile((x, y), ("ro", 0, 0))
-        elif "pa" != pmap.ground.get_tile_type((x, y)):
-            pmap.ground.set_tile((x, y), path_type)
+# def draw_path(pmap, layer, house_path_type):
+#     def initialize_dijkstra():
+#         for y in range(pmap.height):
+#             current_weight.append(pmap.width * [maxsize])
+#             weight.append(weight_array[y])
+#             visited.append(pmap.width * [False])
+#             previous_tile.append(pmap.width * [(0, 0)])
+#
+#     def handle_current_tile():
+#         curr_x = current_tile[0]
+#         curr_y = current_tile[1]
+#         visited[curr_y][curr_x] = True
+#         for around_x, around_y in [(curr_x, curr_y - 1), (curr_x, curr_y + 1), (curr_x - 1, curr_y), (curr_x + 1, curr_y)]:
+#             if not pmap.ground.out_of_bounds(around_x, around_y):
+#                 new_weight = current_weight[curr_y][curr_x] + weight[around_y][around_x] + abs(target_tile[0] - curr_x) + abs(target_tile[1] - curr_y)
+#                 if not visited[around_y][around_x] and current_weight[around_y][around_x] > new_weight:
+#                     current_weight[around_y][around_x] = new_weight
+#                     previous_tile[around_y][around_x] = current_tile
+#                     handle_tiles[(around_x, around_y)] = new_weight
+#         handle_tiles.pop(current_tile)
+#
+#     def find_closest_house(x, y):
+#         closest_distance = 999999
+#         closest_house = (x, y)
+#         for house in already_connected:
+#             if house != (x, y):
+#                 if abs(house[0] - x) + abs(house[1] - y) < closest_distance:
+#                     closest_distance = abs(house[0] - x) + abs(house[1] - y)
+#                     closest_house = house
+#         return closest_house
+#
+#     weight_array = {}
+#     for y in range(pmap.height):
+#         weight_array_row = []
+#         for x in range(pmap.width):
+#             weight_array_row.append(determine_weight(pmap, x, y))
+#         weight_array[y] = weight_array_row
+#
+#     already_connected = set()
+#     for front_door in range(len(pmap.front_doors)):
+#         current_tile = pmap.front_doors[front_door]
+#         if pmap.tile_heights.get(current_tile, -1) > pmap.highest_path:
+#             pmap.highest_path = pmap.tile_heights[current_tile]
+#         already_connected.add(current_tile)
+#         if not current_tile: print("broken")
+#         target_tile = find_closest_house(current_tile[0], current_tile[1])
+#         already_connected.add(target_tile)
+#         weight = []
+#         current_weight = []
+#         visited = []
+#         previous_tile = []
+#         handle_tiles = {}
+#         initialize_dijkstra()
+#
+#         visited[current_tile[1]][current_tile[0]] = True
+#         current_weight[current_tile[1]][current_tile[0]] = 0
+#         previous_tile[current_tile[1]][current_tile[0]] = (0, 0)
+#         handle_tiles[(current_tile[0], current_tile[1])] = 0
+#         handle_current_tile()
+#         while not current_tile == target_tile and current_weight[current_tile[1]][current_tile[0]] < 999999:
+#             current_tile = find_min_tile()
+#             handle_current_tile()
+#
+#         if current_weight[current_tile[1]][current_tile[0]] < 999999:
+#             path = set()
+#             while not previous_tile[current_tile[1]][current_tile[0]] == (0, 0):
+#                 path.add(current_tile)
+#                 if "pa" != layer.get_tile_type((current_tile[0], current_tile[1])):
+#                     weight_array[current_tile[1]][current_tile[0]] = TileWeights.PATH
+#                 current_tile = previous_tile[current_tile[1]][current_tile[0]]
+#             path.add(current_tile)
+#
+#             make_path_double(pmap, path, house_path_type)
+#
+#     create_stairs(pmap, layer)
+#     create_bridges(pmap, layer)
 
 
 def create_bridges(pmap, layer):

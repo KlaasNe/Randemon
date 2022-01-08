@@ -15,19 +15,20 @@ def spawn_building(chunk, building, path_type):
         reference_height = chunk.get_height(x1, y1, 0)
         for y in range(y1, y2 + 1):
             for x in range(x1, x2 + 1):
-                if chunk.get_height(x, y) != reference_height or (x, y) in chunk.get_ex_pos("GROUND0") or (x, y) in chunk.get_ex_pos("HILLS") or (x, y) in chunk.get_ex_pos("BUILDINGS"):
+                if chunk.out_of_bounds(x, y) or chunk.get_height(x, y) != reference_height or (x, y) in chunk.get_ex_pos("GROUND0") or (x, y) in chunk.get_ex_pos("HILLS") or (x, y) in chunk.get_ex_pos("BUILDINGS"):
                     return False
         return True
 
     # Chooses a random x and y coordinate to try build a house
     # If a house already exists on the chosen coordinate, searches for the lower right corner of given house and when
     # enough space available, builds the house adjacent on the right to the house previously found
-    def search_available_spot(cluster_radius, max_attempts):
+    def search_available_spot(building, cluster_radius, max_attempts):
 
         def get_random_coo():
-            return random.randint(0, chunk.size - size_x), random.randint(0, chunk.size - size_y)
+            return random.randint(0, chunk.size - size_x), random.randint(0, chunk.size - size_y - 2)
 
         attempts = 1
+        size_x, size_y = building.size
         try_x, try_y = get_random_coo()
         available = is_available_spot(try_x, try_y - 1, try_x + size_x, try_y + size_y + 2)
         while attempts < max_attempts and (
@@ -47,14 +48,14 @@ def spawn_building(chunk, building, path_type):
     size_x, size_y = building.size
     map_size_factor = (chunk.size * chunk.size // 2500) ** 2
     max_attempts = size_x * size_y * 2 * map_size_factor
-    build_spot = search_available_spot(30, max_attempts)
+    build_spot = search_available_spot(building, 30, max_attempts)
     if build_spot:
         house_x, house_y = build_spot
         for house_build_y in range(size_y):
             for house_build_x in range(size_x):
                 chunk.set_tile("BUILDINGS", house_x + house_build_x, house_y + house_build_y,
                                Tile("BUILDINGS", building.t_pos[0] + house_build_x, building.t_pos[1] + house_build_y))
-        chunk.buildings.append(Building(building, build_spot[0] + building.door_pos[0], build_spot[1] + building.door_pos[1]))
+        chunk.buildings.append(Building(building, build_spot[0], build_spot[1]))
         for front_y in range(2):
             for front_x in range(size_x):
                 chunk.set_tile("GROUND0", house_x + front_x, house_y + size_y + front_y, Tile("PATH", 0, 0))

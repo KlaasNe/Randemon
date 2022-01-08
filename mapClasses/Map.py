@@ -1,4 +1,5 @@
 import random
+import sys
 
 from buildings.BuildingTypes import BuildingTypes
 from generators.buildingGenerator import *
@@ -11,7 +12,8 @@ from mapClasses import *
 
 class Map:
 
-    def __init__(self, chunk_nb_h, chunk_nb_v, chunk_size):
+    def __init__(self, chunk_nb_h, chunk_nb_v, chunk_size, seed=random.randint(0, sys.maxsize)):
+        random.seed(seed)
         self.chunk_size = chunk_size
         self.chunk_nb_h = chunk_nb_h
         self.chunk_nb_v = chunk_nb_v
@@ -24,6 +26,7 @@ class Map:
                 # spawn_functional_buildings(self.chunks[y][x], "p1")
                 for building in BuildingTypes:
                     spawn_building(self.chunks[y][x], building.value, "p1")
+                draw_path2(self.chunks[y][x], 0)
+                create_path(self.chunks[y][x])
                 create_trees(self.chunks[y][x], 0.55, off_x, off_y)
                 grow_grass(self.chunks[y][x], 0.6, off_x, off_y)
-                create_path(self.chunks[y][x])

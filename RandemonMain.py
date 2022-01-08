@@ -5,11 +5,10 @@ import time
 
 
 def main():
-
     t = time.time()
     my_map = Map(1, 1, 50)
     r = Render(my_map)
-    print(time.time() - t)
+    print("Rendertime=", time.time() - t)
     r.show()
 
 

@@ -38,3 +38,6 @@ class Chunk:
 
     def get_tile_type(self, layer, x, y):
         return self.get_layer(layer).get_tile_type(x, y)
+
+    def out_of_bounds(self, x, y):
+        return not (0 <= x < self.size and 0 <= y < self.size)

@@ -5,3 +5,6 @@ class BuildingType:
         self.t_pos = t_pos
         self.size = size
         self.door_pos = door_pos
+
+    def __str__(self):
+        return "Building: " + ', '.join("%s=%s" % item for item in vars(self).items())
