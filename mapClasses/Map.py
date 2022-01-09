@@ -14,6 +14,7 @@ class Map:
 
     def __init__(self, chunk_nb_h, chunk_nb_v, chunk_size, seed=random.randint(0, sys.maxsize)):
         random.seed(seed)
+        print("seed=" + str(seed))
         self.chunk_size = chunk_size
         self.chunk_nb_h = chunk_nb_h
         self.chunk_nb_v = chunk_nb_v
@@ -30,4 +31,3 @@ class Map:
                 create_path(self.chunks[y][x])
                 create_trees(self.chunks[y][x], 0.55, off_x, off_y)
                 grow_grass(self.chunks[y][x], 0.6, off_x, off_y)
-        print("seed=" + str(seed))
