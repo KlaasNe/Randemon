@@ -1,0 +1,35 @@
+import random
+import sys
+
+from buildings.BuildingTypes import BuildingTypes
+from generators.buildingGenerator import *
+from generators.hillGenerator import *
+from generators.plantGenerator import *
+from generators.waterGenerator import *
+from generators.pathGenerator import *
+from mapClasses import *
+
+
+class Map:
+
+    def __init__(self, chunk_nb_h, chunk_nb_v, chunk_size, seed=random.randint(0, sys.maxsize)):
+        self.chunk_size = chunk_size
+        self.chunk_nb_h = chunk_nb_h
+        self.chunk_nb_v = chunk_nb_v
+        self.seed = seed
+        random.seed(self.seed)
+        print("seed=" + str(self.seed))
+        off_x, off_y = random.randint(0, 1000000), random.randint(0, 1000000)
+        self.chunks = [[Chunk(chunk_size, off_x + x * self.chunk_size, off_y + y * self.chunk_size) for x in range(chunk_nb_h)] for y in range(chunk_nb_v)]
+        for y in range(chunk_nb_v):
+            for x in range(chunk_nb_h):
+                create_rivers(self.chunks[y][x])
+                create_edges(self.chunks[y][x], 0)
+                # spawn_functional_buildings(self.chunks[y][x], "p1")
+                if random.randint(0, 2) == 0:
+                    for building in BuildingTypes:
+                        spawn_building(self.chunks[y][x], building.value, "p1")
+                draw_path2(self.chunks[y][x], 0)
+                create_path(self.chunks[y][x])
+                create_trees(self.chunks[y][x], 0.55)
+                grow_grass(self.chunks[y][x], 0.6)
