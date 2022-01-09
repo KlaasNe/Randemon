@@ -128,11 +128,11 @@ def draw_path2(chunk, path_type):
             path_extention.add((pos.x - 1, pos.y - 1))
 
         for (x, y) in path_extention:
-            if chunk.height_map[y][x] >= 0:
+            if chunk.height_map[y][x] > 0:
                 if chunk.get_tile("GROUND0", x, y) is None:
                     chunk.set_tile("GROUND0", x, y, Tile("PATH", 0, 0))
-            # elif "pa" != pmap.ground.get_tile_type((x, y)):
-            #     pmap.ground.set_tile((x, y), path_type)
+            elif chunk.get_tile_type("GROUND0", x, y) == "WATER":
+                chunk.set_tile("GROUND0", x, y, Tile("ROAD", -1, -1))
 
     connected_buildings = set()
     chunk_wght_tiles = init_weight_tiles()
@@ -172,7 +172,7 @@ def draw_path2(chunk, path_type):
         make_path_double(path, 0)
 
     # create_stairs(layer)
-    # create_bridges(layer)
+    create_bridges(chunk, chunk.layers["GROUND0"])
 
 
 def determine_weight(chunk, x, y, avoid_hill_corners=True):
@@ -280,27 +280,27 @@ def determine_weight(chunk, x, y, avoid_hill_corners=True):
 #     create_bridges(pmap, layer)
 
 
-def create_bridges(pmap, layer):
-    for y in range(pmap.height):
-        for x in range(pmap.width):
-            if layer.get_tile((x, y)) == ("ro", 0, 0):
-                if layer.get_tile_type((x, y - 1)) == "wa":
-                    layer.set_tile((x, y), ("ro", 0, 0))
-                    layer.set_tile((x, y + 1), ("ro", 0, 1))
-                elif layer.get_tile_type((x, y + 1)) == "wa":
-                    layer.set_tile((x, y - 1), ("ro", 0, 0))
-                    layer.set_tile((x, y), ("ro", 0, 1))
-                elif layer.get_tile_type((x - 1, y)) == "wa":
-                    layer.set_tile((x, y), ("ro", 1, 0))
-                    layer.set_tile((x + 1, y), ("ro", 1, 1))
-                elif layer.get_tile_type((x + 1, y), ) == "wa":
-                    layer.set_tile((x, y), ("ro", 1, 1))
-                    layer.set_tile((x - 1, y), ("ro", 1, 0))
+def create_bridges(chunk, layer):
+    for y in range(chunk.size):
+        for x in range(chunk.size):
+            if layer.get_tile(x, y) == Tile("ROAD", -1, -1):
+                if layer.get_tile_type(x, y - 1) == "WATER":
+                    layer.set_tile(x, y, Tile("ROAD", 0, 0))
+                    layer.set_tile(x, y + 1, Tile("ROAD", 0, 1))
+                elif layer.get_tile_type(x, y + 1) == "WATER":
+                    layer.set_tile(x, y - 1, Tile("ROAD", 0, 0))
+                    layer.set_tile(x, y, Tile("ROAD", 0, 1))
+                elif layer.get_tile_type(x - 1, y) == "WATER":
+                    layer.set_tile(x, y, Tile("ROAD", 1, 0))
+                    layer.set_tile(x + 1, y, Tile("ROAD", 1, 1))
+                elif layer.get_tile_type(x + 1, y, ) == "WATER":
+                    layer.set_tile(x, y, Tile("ROAD", 1, 1))
+                    layer.set_tile(x - 1, y, Tile("ROAD", 1, 0))
                 else:
-                    layer.set_tile((x, y), ("pa", 0, 10))
+                    layer.set_tile(x, y, ("PATH", 0, 10))
 
-            if "ro" == layer.get_tile_type((x, y - 1)) and "wa" == layer.get_tile_type((x, y)):
-                pmap.decoration.set_tile((x, y), ("de", 6, 0))
+            if layer.get_tile_type(x, y - 1) == "ROAD" and layer.get_tile_type(x, y) == "WATER":
+                chunk.set_tile("GROUND1", x, y, Tile("DECORATION", 6, 0))
 
 
 def create_stairs(pmap, layer):
