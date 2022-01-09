@@ -10,6 +10,7 @@ def main():
     r = Render(my_map)
     print("Rendertime=" + str(time.time() - t))
     r.show()
+    r.save_prompt(my_map)
 
 
 if __name__ == "__main__":
