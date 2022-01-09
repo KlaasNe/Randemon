@@ -14,8 +14,12 @@ def spawn_building(chunk, building, path_type):
     def is_available_spot(x1, y1, x2, y2):
         reference_height = chunk.get_height(x1, y1, 0)
         for y in range(y1, y2 + 1):
-            for x in range(x1, x2 + 1):
-                if chunk.out_of_bounds(x, y) or chunk.get_height(x, y) != reference_height or (x, y) in chunk.get_ex_pos("GROUND0") or (x, y) in chunk.get_ex_pos("HILLS") or (x, y) in chunk.get_ex_pos("BUILDINGS"):
+            for x in range(x1 - 2, x2 + 1 + 2):
+                if chunk.out_of_bounds(x, y) or (x, y) in chunk.get_ex_pos("GROUND0"):
+                    return False
+        for y in range(y1, y2 + 1):
+            for x in range(x1, x2 + 2):
+                if (x, y) in chunk.get_ex_pos("BUILDINGS") or chunk.get_height(x, y) != reference_height or (x, y) in chunk.get_ex_pos("HILLS"):
                     return False
         return True
 

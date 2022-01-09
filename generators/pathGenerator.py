@@ -300,7 +300,7 @@ def create_bridges(chunk, layer):
                     layer.set_tile(x, y, ("PATH", 0, 10))
 
             if layer.get_tile_type(x, y - 1) == "ROAD" and layer.get_tile_type(x, y) == "WATER":
-                chunk.set_tile("GROUND1", x, y, Tile("DECORATION", 6, 0))
+                chunk.set_tile("GROUND1", x, y, Tile("DECO", 6, 0))
 
 
 def create_stairs(pmap, layer):
