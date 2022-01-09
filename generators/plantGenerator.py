@@ -10,7 +10,7 @@ from mapClasses import Tile
 # Adds an overlay to decoration_layer if the top of the tree overlaps with another tree
 
 
-def create_trees(chunk, spawn_rate, x_offset, y_offset):
+def create_trees(chunk, spawn_rate):
     double = False
     octaves = 2
     freq = 20 * octaves
@@ -20,7 +20,7 @@ def create_trees(chunk, spawn_rate, x_offset, y_offset):
             if (x, y) not in chunk.get_ex_pos("GROUND0") and (x, y) not in chunk.get_ex_pos("BUILDINGS") and (x, y) not in chunk.get_ex_pos("HILLS") \
                     and (x, y - 1) not in chunk.get_ex_pos("GROUND1"):
                     # and (x, y) not in chunk.buildings.get_ex_pos() and (x, y) not in chunk.decoration.get_ex_pos() and (x, y - 1) not in chunk.decoration.get_ex_pos():
-                if random.random() > 0.3 and abs(snoise2((x + x_offset) / freq, (y + y_offset) / freq, octaves)) > 1 - spawn_rate:
+                if random.random() > 0.3 and abs(snoise2((x + chunk.off_x) / freq, (y + chunk.off_y) / freq, octaves)) > 1 - spawn_rate:
                     if double:
                         chunk.set_tile("GROUND2", x - 1, y - 2, Tile("NATURE", 1, 5))
                         chunk.set_tile("GROUND2", x, y - 2, Tile("NATURE", 2, 5))
@@ -42,11 +42,11 @@ def create_trees(chunk, spawn_rate, x_offset, y_offset):
 
 # The whole map is filled with random green tiles
 # Tall gras and flowers are spawned with a perlin noise field
-def grow_grass(chunk, coverage, x_off, y_off):
+def grow_grass(chunk, coverage):
     def random_grass(gx, gy):
         octaves = 2
         freq = 10 * octaves
-        sne_prob = abs(snoise2(gx / freq, gy / freq, octaves))
+        sne_prob = abs(snoise2((gx + chunk.off_x) / freq, (gy + chunk.off_y) / freq, octaves))
         # if chunk.height_map[y][x] <= pmap.highest_path:
         if (x, y) in chunk.get_ex_pos("BUILDINGS") or sne_prob < 1 - coverage:  # or (x, y) in pmap.ground2.get_ex_pos():
             grass_type = random.randint(0, 7)
@@ -66,7 +66,7 @@ def grow_grass(chunk, coverage, x_off, y_off):
     for y in range(chunk.size):
         for x in range(chunk.size):
             if (x, y) not in chunk.get_ex_pos("GROUND0"):
-                chunk.set_tile("GROUND0", x, y, random_grass(x_off + x, y_off + y))
+                chunk.set_tile("GROUND0", x, y, random_grass(chunk.off_x + x, chunk.off_y + y))
 
 # def grow_snake_bushes(pmap, layer, spawnrate, growth):
 #     def create_snake_bush(pos):

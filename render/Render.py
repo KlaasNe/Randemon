@@ -13,9 +13,12 @@ class Render:
     def __init__(self, map_obj):
         self.map = map_obj
         self.size = map_obj.chunk_size
-        self.visual = Image.new("RGBA", (self.size * Render.TILE_SIZE * self.map.chunk_nb_h, self.size * Render.TILE_SIZE * self.map.chunk_nb_v), (0, 0, 0, 0))
+        self.visual = Image.new("RGBA",
+                                (self.size * Render.TILE_SIZE * self.map.chunk_nb_h,
+                                 self.size * Render.TILE_SIZE * self.map.chunk_nb_v),
+                                (0, 0, 0, 0))
         cy = 0
-        for chunk_row in map_obj.chunks:
+        for chunk_row in self.map.chunks:
             cx = 0
             for chunk in chunk_row:
                 self.render(chunk, cx, cy)

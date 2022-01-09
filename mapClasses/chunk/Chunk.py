@@ -6,10 +6,12 @@ class Chunk:
 
     def __init__(self, size, off_x, off_y):
         self.size = size
+        self.off_x = off_x
+        self.off_y = off_y
         self.layers = dict()
         for layer in Layers:
-            self.layers[layer.name] = layer.value
-        self.height_map = generate_height_map(self.size, 4, off_x, off_y)
+            self.layers[layer.name] = Layer()
+        self.height_map = generate_height_map(self.size, 4, self.off_x, self.off_y)
         self.buildings = []
 
     def get_layer(self, layer):
