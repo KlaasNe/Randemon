@@ -13,13 +13,14 @@ from mapClasses import *
 class Map:
 
     def __init__(self, chunk_nb_h, chunk_nb_v, chunk_size, seed=random.randint(0, sys.maxsize)):
-        random.seed(seed)
-        print("seed=" + str(seed))
         self.chunk_size = chunk_size
         self.chunk_nb_h = chunk_nb_h
         self.chunk_nb_v = chunk_nb_v
+        self.seed = seed
+        random.seed(self.seed)
+        print("seed=" + str(self.seed))
         off_x, off_y = random.randint(0, 1000000), random.randint(0, 1000000)
-        self.chunks = [[Chunk(chunk_size, off_x + x, off_y + y) for x in range(chunk_nb_h) for y in range(chunk_nb_v)] * chunk_nb_h] * chunk_nb_v
+        self.chunks = [[Chunk(chunk_size, off_x + x * self.chunk_size, off_y + y * self.chunk_size) for x in range(chunk_nb_h)] for y in range(chunk_nb_v)]
         for y in range(chunk_nb_v):
             for x in range(chunk_nb_h):
                 create_rivers(self.chunks[y][x])
