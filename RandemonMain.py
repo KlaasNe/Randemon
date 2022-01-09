@@ -8,7 +8,7 @@ def main():
     t = time.time()
     my_map = Map(1, 1, 50)
     r = Render(my_map)
-    print("Rendertime=", time.time() - t)
+    print("Rendertime=" + str(time.time() - t))
     r.show()
 
 

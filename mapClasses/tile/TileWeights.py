@@ -2,8 +2,8 @@ from enum import Enum
 
 
 class TileWeights(Enum):
-    PATH = 0
+    PATH = -1
     GRASS = 8
-    HILL = 64
-    WATER = 16
+    HILL = 16
+    WATER = 64
     IMPASSABLE = 999999

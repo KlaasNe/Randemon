@@ -25,7 +25,7 @@ def spawn_building(chunk, building, path_type):
     def search_available_spot(building, cluster_radius, max_attempts):
 
         def get_random_coo():
-            return random.randint(0, chunk.size - size_x), random.randint(0, chunk.size - size_y - 2)
+            return random.randint(2, chunk.size - size_x), random.randint(2, chunk.size - size_y - 2)
 
         attempts = 1
         size_x, size_y = building.size

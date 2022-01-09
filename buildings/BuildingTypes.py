@@ -5,7 +5,7 @@ from buildings.BuildingType import BuildingType
 
 class BuildingTypes(Enum):
     POKECENTER = BuildingType("pokecenter", (14, 0), (5, 5), (2, 4))
-    POKEMART = BuildingType("pokemart", (0, 0), (4, 4), (2, 3))
+    POKEMART = BuildingType("pokemart", (0, 0), (4, 4), (1, 3))
     GYM = BuildingType("gym", (19, 23), (6, 5), (3, 4))
     POWERPLANT = BuildingType("powerplant", (16, 34), (11, 7), (6, 6))
     H0 = BuildingType("h0", (4, 0), (5, 4), (1, 3))
@@ -18,7 +18,7 @@ class BuildingTypes(Enum):
     H7 = BuildingType("h7", (9, 9), (5, 4), (1, 3))
     H8 = BuildingType("h8", (0, 13), (4, 5), (1, 4))
     H9 = BuildingType("h9", (4, 13), (5, 4), (1, 3))
-    H10 = BuildingType("h10", (9, 13), (5, 3), (1, 3))
+    H10 = BuildingType("h10", (9, 13), (5, 3), (1, 2))
     H11 = BuildingType("h11", (0, 18), (4, 5), (1, 4))
     H12 = BuildingType("h12", (4, 17), (5, 4), (1, 3))
     H13 = BuildingType("h13", (9, 16), (5, 5), (1, 4))

@@ -30,3 +30,4 @@ class Map:
                 create_path(self.chunks[y][x])
                 create_trees(self.chunks[y][x], 0.55, off_x, off_y)
                 grow_grass(self.chunks[y][x], 0.6, off_x, off_y)
+        print("seed=" + str(seed))
