@@ -26,9 +26,10 @@ class Map:
                 create_rivers(self.chunks[y][x])
                 create_edges(self.chunks[y][x], 0)
                 # spawn_functional_buildings(self.chunks[y][x], "p1")
-                for building in BuildingTypes:
-                    spawn_building(self.chunks[y][x], building.value, "p1")
+                if random.randint(0, 2) == 0:
+                    for building in BuildingTypes:
+                        spawn_building(self.chunks[y][x], building.value, "p1")
                 draw_path2(self.chunks[y][x], 0)
                 create_path(self.chunks[y][x])
-                create_trees(self.chunks[y][x], 0.55, off_x, off_y)
-                grow_grass(self.chunks[y][x], 0.6, off_x, off_y)
+                create_trees(self.chunks[y][x], 0.55)
+                grow_grass(self.chunks[y][x], 0.6)
