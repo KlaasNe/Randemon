@@ -1,4 +1,4 @@
-from render.SpriteSheetReader import SpriteSheetReader
+from render.SpriteSheetReader import SpriteSheetReader, TILE_SIZE
 from render.SpriteSheetReaders import SpriteSheetReaders
 
 
@@ -12,11 +12,6 @@ class Singleton(object):
 
 class SpriteSheetWriter(Singleton):
 
-    @staticmethod
-    def draw_img(img, render, x, y):
-        dest_box = (x, y, x + SpriteSheetReader.TILE_SIZE, y + SpriteSheetReader.TILE_SIZE)
-        render.paste(img, dest_box, mask=img)
-
     def __init__(self):
         self.readers = dict()
         for reader in SpriteSheetReaders:
@@ -28,8 +23,12 @@ class SpriteSheetWriter(Singleton):
         except KeyError:
             return self.readers["TNF"].get_tile(0, 0, False)
 
-    def draw_tile(self, tile, render, x, y):
-        dest_box = (x, y, x + SpriteSheetReader.TILE_SIZE, y + SpriteSheetReader.TILE_SIZE)
-        img = self.get_tile_img(tile)
+    @staticmethod
+    def draw_img(img, render, x, y):
+        dest_box = (x, y, x + TILE_SIZE, y + TILE_SIZE)
         render.paste(img, dest_box, mask=img)
+
+    def draw_tile(self, tile, render, x, y):
+        img = self.get_tile_img(tile)
+        self.draw_img(img, render, x, y)
         return img
