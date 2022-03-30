@@ -7,8 +7,10 @@ import time
 def main():
     t = time.time()
     my_map = Map(2, 2, 50)
+    rt = time.time()
     r = Render(my_map)
-    print("Rendertime=" + str(time.time() - t))
+    print("Rendertime=" + str(time.time() - rt))
+    print("Generationtime=" + str(time.time() - t))
     r.show()
     r.save_prompt(my_map)
 

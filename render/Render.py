@@ -13,10 +13,11 @@ class Render:
     def __init__(self, map_obj):
         self.map = map_obj
         self.size = map_obj.chunk_size
-        self.visual = Image.new("RGBA",
+        self.visual = Image.new("RGB",
                                 (self.size * Render.TILE_SIZE * self.map.chunk_nb_h,
                                  self.size * Render.TILE_SIZE * self.map.chunk_nb_v),
                                 (0, 0, 0, 0))
+        self.tile_buffer = dict()
         cy = 0
         for chunk_row in self.map.chunks:
             cx = 0
@@ -27,19 +28,18 @@ class Render:
 
     def render(self, chunk, cx, cy):
         sheet_writer = SpriteSheetWriter()
-        tile_buffer = dict()
         for layer in chunk.layers.values():
             for tile_x, tile_y in layer.get_ex_pos():
                 current_tile = layer.get_tile(tile_x, tile_y)
-                x, y = tile_x * Render.TILE_SIZE, tile_y * Render.TILE_SIZE
-                c_offset_x, c_offset_y = cx * Render.TILE_SIZE * chunk.size, cy * Render.TILE_SIZE * chunk.size
+                x, y = tile_x * TILE_SIZE, tile_y * TILE_SIZE
+                c_offset_x, c_offset_y = cx * TILE_SIZE * chunk.size, cy * TILE_SIZE * chunk.size
                 x += c_offset_x
                 y += c_offset_y
-                if current_tile in tile_buffer:
-                    SpriteSheetWriter.draw_img(tile_buffer[current_tile], self.visual, x, y)
-                else:
-                    img = sheet_writer.draw_tile(current_tile, self.visual, x, y)
-                    tile_buffer[current_tile] = img
+                try:
+                    img = self.tile_buffer[current_tile]
+                    sheet_writer.draw_img(img, self.visual, x, y)
+                except KeyError:
+                    self.tile_buffer[current_tile] = sheet_writer.draw_tile(current_tile, self.visual, x, y)
 
     # def render_npc(self, layer):
     #     sheet_writer = SpriteSheetWriter(Image.open(os.path.join("resources", "npc.png")), 20, 23)

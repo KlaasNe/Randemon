@@ -1,8 +1,9 @@
 from PIL import ImageOps
 
+TILE_SIZE = 16
+
 
 class SpriteSheetReader:
-    TILE_SIZE = 16
 
     def __init__(self, image, margin=0):
         self.sprite_sheet = image
