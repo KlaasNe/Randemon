@@ -89,10 +89,10 @@ def is_inside_cluster(chunk, x, y, radius, connections):
     return False
 
 
-def spawn_functional_buildings(chunk, path_type):
-    spawn_building(chunk, BuildingTypes.POKECENTER.value, "p1")
-    spawn_building(chunk, BuildingTypes.GYM.value, "p1")
-    spawn_building(chunk, BuildingTypes.POKEMART.value, "p1")
+def spawn_functional_buildings(chunk):
+    spawn_building(chunk, BuildingTypes.POKECENTER.value)
+    spawn_building(chunk, BuildingTypes.GYM.value)
+    spawn_building(chunk, BuildingTypes.POKEMART.value)
 
 
 # def is_special_building(pmap, x, y):
