@@ -9,7 +9,7 @@ from buildings.BuildingTypes import BuildingTypes
 from mapClasses import Tile
 
 
-def spawn_building(chunk, building, fence=True):
+def spawn_building(chunk, building, fence_opt=True, mail_box_opt=True):
     # checks if a chosen position has enough free space for the house + spacing, starting from the top left corner
     def is_available_spot(x1, y1, x2, y2):
         for y in range(y1, y2 + 1):
@@ -61,12 +61,12 @@ def spawn_building(chunk, building, fence=True):
         for front_y in range(2):
             for front_x in range(size_x):
                 chunk.set_tile("GROUND0", house_x + front_x, house_y + size_y + front_y, Tile("PATH", 0, 0))
-        # if isinstance(building, int):
-        #     if random.randint(0, 1) == 1 and not (house_x - 1, house_y + size_y - 2) in chunk.get_layer("BUILDINGS").get_ex_pos():
-        #         chunk.ground2.set_tile((house_x - 1, house_y + size_y - 2), ("de", 7, 2))
-        #         chunk.ground2.set_tile((house_x - 1, house_y + size_y - 1), ("de", 7, 3))
+        if mail_box_opt:
+            if random.randint(0, 1) == 1 and not (house_x - 1, house_y + size_y - 2) in chunk.get_ex_pos("BUILDINGS"):
+                chunk.set_tile("GROUND2", house_x - 1, house_y + size_y - 2, Tile("DECO", 7, 2))
+                chunk.set_tile("GROUND2", house_x - 1, house_y + size_y - 1, Tile("DECO", 7, 3))
 
-        if fence and random.randint(1, 4) == 1:
+        if fence_opt and random.randint(1, 4) == 1:
             create_fence(chunk, house_x + size_x - 1, house_y + 1, 5, random.randint(0, 2), True)
 
 
@@ -90,9 +90,9 @@ def is_inside_cluster(chunk, x, y, radius, connections):
 
 
 def spawn_functional_buildings(chunk):
-    spawn_building(chunk, BuildingTypes.POKECENTER.value, fence=False)
-    spawn_building(chunk, BuildingTypes.GYM.value, fence=False)
-    spawn_building(chunk, BuildingTypes.POKEMART.value, fence=False)
+    spawn_building(chunk, BuildingTypes.POKECENTER.value, fence_opt=False, mail_box_opt=False)
+    spawn_building(chunk, BuildingTypes.GYM.value, fence_opt=False, mail_box_opt=False)
+    spawn_building(chunk, BuildingTypes.POKEMART.value, fence_opt=False, mail_box_opt=False)
 
 
 # def is_special_building(pmap, x, y):
