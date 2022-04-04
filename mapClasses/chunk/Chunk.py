@@ -31,8 +31,14 @@ class Chunk:
                 return True
         return False
 
+    def has_tile_at_layer(self, layer, x, y):
+        return self.get_tile(layer, x, y) is not None
+
     def get_height(self, x, y):
         return get_height(4, self.off_x + x, self.off_y + y)
+
+    def flat_area(self, x1, y1, x2, y2):
+        return flat_area(4, self.off_x, self.off_y, x1, y1, x2, y2)
 
     def get_ex_pos(self, layer):
         return self.get_layer(layer).get_ex_pos()

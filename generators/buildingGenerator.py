@@ -12,15 +12,13 @@ from mapClasses import Tile
 def spawn_building(chunk, building, path_type):
     # checks if a chosen position has enough free space for the house + spacing, starting from the top left corner
     def is_available_spot(x1, y1, x2, y2):
-        reference_height = chunk.get_height(x1, y1)
         for y in range(y1, y2 + 1):
             for x in range(x1 - 2, x2 + 1 + 2):
-                if chunk.out_of_bounds(x, y) or (x, y) in chunk.get_ex_pos("GROUND0"):
+                if chunk.out_of_bounds(x, y) or chunk.has_tile_at_layer("GROUND0", x, y):
                     return False
-        for y in range(y1, y2 + 1):
-            for x in range(x1, x2 + 2):
-                if (x, y) in chunk.get_ex_pos("BUILDINGS") or chunk.get_height(x, y) != reference_height or (x, y) in chunk.get_ex_pos("HILLS"):
-                    return False
+                if x1 <= x < x2 + 2 and y1 <= y < y2 + 1:
+                    if chunk.has_tile_at_layer("BUILDINGS", x, y) or chunk.has_tile_at_layer("HILLS", x, y):
+                        return False
         return True
 
     # Chooses a random x and y coordinate to try build a house
