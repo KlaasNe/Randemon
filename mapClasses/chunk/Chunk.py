@@ -15,6 +15,7 @@ class Chunk:
         for layer in Layers:
             self.layers[layer.name] = Layer()
         self.buildings = []
+        self.has_town = False
 
     def get_layer(self, layer):
         return self.layers[layer]
@@ -36,9 +37,6 @@ class Chunk:
 
     def get_height(self, x, y):
         return get_height(4, self.off_x + x, self.off_y + y)
-
-    def flat_area(self, x1, y1, x2, y2):
-        return flat_area(4, self.off_x, self.off_y, x1, y1, x2, y2)
 
     def get_ex_pos(self, layer):
         return self.get_layer(layer).get_ex_pos()

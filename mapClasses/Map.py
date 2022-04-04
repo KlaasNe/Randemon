@@ -26,11 +26,13 @@ class Map:
                 current_chunk = self.chunks[y][x]
                 create_rivers(current_chunk)
                 create_edges(current_chunk, 0)
-                if random.randint(0, 0) == 0:
+                if random.randint(0, 2) >= 1:
+                    current_chunk.has_town = True
+                    path_type = random.randint(0, 8)
                     for building in BuildingTypes:
-                        spawn_building(current_chunk, building.value, "p1")
-                draw_path2(current_chunk, 0)
-                create_path(current_chunk)
+                        spawn_building(current_chunk, building.value)
+                    draw_path2(current_chunk)
+                    create_path(current_chunk, path_type)
                 create_trees(current_chunk, 0.55)
                 grow_grass(current_chunk, 0.6)
 

@@ -9,7 +9,7 @@ from buildings.BuildingTypes import BuildingTypes
 from mapClasses import Tile
 
 
-def spawn_building(chunk, building, path_type):
+def spawn_building(chunk, building):
     # checks if a chosen position has enough free space for the house + spacing, starting from the top left corner
     def is_available_spot(x1, y1, x2, y2):
         for y in range(y1, y2 + 1):
