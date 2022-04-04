@@ -9,12 +9,12 @@ from buildings.BuildingTypes import BuildingTypes
 from mapClasses import Tile
 
 
-def spawn_building(chunk, building):
+def spawn_building(chunk, building, fence_opt=True, mail_box_opt=True):
     # checks if a chosen position has enough free space for the house + spacing, starting from the top left corner
     def is_available_spot(x1, y1, x2, y2):
         for y in range(y1, y2 + 1):
             for x in range(x1 - 2, x2 + 1 + 2):
-                if chunk.out_of_bounds(x, y) or chunk.has_tile_at_layer("GROUND0", x, y):
+                if chunk.out_of_bounds(x, y) or chunk.has_tile_at_layer("GROUND0", x, y) or chunk.has_tile_at_layer("FENCE", x, y):
                     return False
                 if x1 <= x < x2 + 2 and y1 <= y < y2 + 1:
                     if chunk.has_tile_at_layer("BUILDINGS", x, y) or chunk.has_tile_at_layer("HILLS", x, y):
@@ -61,13 +61,13 @@ def spawn_building(chunk, building):
         for front_y in range(2):
             for front_x in range(size_x):
                 chunk.set_tile("GROUND0", house_x + front_x, house_y + size_y + front_y, Tile("PATH", 0, 0))
-        # if isinstance(building, int):
-        #     if random.randint(0, 1) == 1 and not (house_x - 1, house_y + size_y - 2) in chunk.get_layer("BUILDINGS").get_ex_pos():
-        #         chunk.ground2.set_tile((house_x - 1, house_y + size_y - 2), ("de", 7, 2))
-        #         chunk.ground2.set_tile((house_x - 1, house_y + size_y - 1), ("de", 7, 3))
+        if mail_box_opt:
+            if random.randint(0, 1) == 1 and not (house_x - 1, house_y + size_y - 2) in chunk.get_ex_pos("BUILDINGS"):
+                chunk.set_tile("GROUND2", house_x - 1, house_y + size_y - 2, Tile("DECO", 7, 2))
+                chunk.set_tile("GROUND2", house_x - 1, house_y + size_y - 1, Tile("DECO", 7, 3))
 
-        # if random.randint(1, 4) == 1:
-        #     create_fence(chunk, chunk.ground2, house_x + size_x - 1, house_y + 1, 5, 1, True)
+        if fence_opt and random.randint(1, 4) == 1:
+            create_fence(chunk, house_x + size_x - 1, house_y + 1, 5, random.randint(0, 2), True)
 
 
 # Checks whether a coordinate is at least in radius [distance] of [connections] houses
@@ -90,9 +90,9 @@ def is_inside_cluster(chunk, x, y, radius, connections):
 
 
 def spawn_functional_buildings(chunk):
-    spawn_building(chunk, BuildingTypes.POKECENTER.value)
-    spawn_building(chunk, BuildingTypes.GYM.value)
-    spawn_building(chunk, BuildingTypes.POKEMART.value)
+    spawn_building(chunk, BuildingTypes.POKECENTER.value, fence_opt=False, mail_box_opt=False)
+    spawn_building(chunk, BuildingTypes.GYM.value, fence_opt=False, mail_box_opt=False)
+    spawn_building(chunk, BuildingTypes.POKEMART.value, fence_opt=False, mail_box_opt=False)
 
 
 # def is_special_building(pmap, x, y):
@@ -100,48 +100,48 @@ def spawn_functional_buildings(chunk):
 
 
 # gives people a backyard surrounded by a fence
-# def create_fence(pmap, layer, x, y, max_y, rel_fence_type, tree=False):
-#     def can_have_fence():
-#         curr_size = min(size_x // 2 + 1, max_y)
-#         new_max_y = curr_size
-#         for test_y in range(y - curr_size - 1, y):
-#             for test_x in range(x - size_x, x):
-#                 if pmap.ground.get_tile((test_x, test_y)) == ("hi", 3, 0):
-#                     new_max_y = y - test_y
-#                 elif pmap.ground.get_tile_type((test_x, test_y)) == "pa":
-#                     new_max_y = y - test_y - 2
-#                 if new_max_y <= 1: return False
-#
-#                 if "fe" == layer.get_tile_type((test_x, test_y)) or "wa" == pmap.ground.get_tile_type((test_x, test_y)):
-#                     return False
-#         return new_max_y
-#
-#     def check_house_width():
-#         test_x = x
-#         while "ho" in layer.get_tile_type((test_x, y)):  # and not is_special_building(pmap, test_x, y):
-#             test_x -= 1
-#         return x - test_x - 1
-#
-#     def try_build_fence(fx, fy, height, fence):
-#         if pmap.tile_heights.get((fx, fy), -1) == height and (pmap.ground.get_tile_type((fx, fy)) != "hi" or pmap.ground.get_tile((fx, fy))[1] == 3):
-#             pmap.secondary_ground[(fx, fy)] = fence
-#
-#     size_x = check_house_width()
-#     upd_max_y = can_have_fence()
-#     fence_type = 3 * rel_fence_type
-#     if upd_max_y:
-#         fence_height = pmap.tile_heights.get((x, y), -1)
-#         size_y = min(size_x // 2 + 1, max_y, upd_max_y)
-#         try_build_fence(x, y - size_y, fence_height, ("fe", 2, 0 + fence_type))
-#         try_build_fence(x - size_x, y - size_y, fence_height, ("fe", 0, 0 + fence_type))
-#         for fence_y in range(y, y - size_y, -1):
-#             try_build_fence(x - size_x, fence_y, fence_height, ("fe", 0, 1 + fence_type))
-#             try_build_fence(x, fence_y, fence_height, ("fe", 2, 1 + fence_type))
-#         for fence_x in range(x - size_x + 1, x):
-#             if tree and random.randint(1, 100) == 1:
-#                 pmap.ground_layer[(fence_x, y - size_y)] = ("na", 1, 2)
-#             else:
-#                 try_build_fence(fence_x, y - size_y, fence_height, ("fe", 1, 0 + fence_type))
+def create_fence(chunk, x, y, max_y, rel_fence_type, tree=False):
+    def can_have_fence():
+        curr_size = min(size_x // 2 + 1, max_y)
+        new_max_y = curr_size
+        for test_y in range(y - curr_size - 1, y):
+            for test_x in range(x - size_x, x):
+                if chunk.get_tile("GROUND0", test_x, test_y) == Tile("HILLS", 3, 0):
+                    new_max_y = y - test_y
+                elif chunk.get_tile_type("GROUND0", test_x, test_y) == "PATH":
+                    new_max_y = y - test_y - 2
+                if new_max_y <= 1: return False
+
+                if "FENCE" == chunk.get_tile_type("FENCE", test_x, test_y) or "WATER" == chunk.get_tile_type("GROUND0", test_x, test_y):
+                    return False
+        return new_max_y
+
+    def check_house_width():
+        test_x = x
+        while chunk.has_tile_at_layer("BUILDINGS", test_x, y):  # and not is_special_building(pmap, test_x, y):
+            test_x -= 1
+        return x - test_x - 1
+
+    def try_build_fence(fx, fy, height, fence):
+        if chunk.get_height(fx, fy) == height and chunk.get_tile_type("GROUND0", fx, fy) != "HILLS":  # or chunk.get_tile("GROUND0", fx, fy)[1] == 3):
+            chunk.set_tile("FENCE", fx, fy, fence)
+
+    size_x = check_house_width()
+    upd_max_y = can_have_fence()
+    fence_type = 3 * rel_fence_type
+    if upd_max_y:
+        fence_height = chunk.get_height(x, y)
+        size_y = min(size_x // 2 + 1, max_y, upd_max_y)
+        try_build_fence(x, y - size_y, fence_height, Tile("FENCE", 2, 0 + fence_type))
+        try_build_fence(x - size_x, y - size_y, fence_height, Tile("FENCE", 0, 0 + fence_type))
+        for fence_y in range(y, y - size_y, -1):
+            try_build_fence(x - size_x, fence_y, fence_height, Tile("FENCE", 0, 1 + fence_type))
+            try_build_fence(x, fence_y, fence_height, Tile("FENCE", 2, 1 + fence_type))
+        for fence_x in range(x - size_x + 1, x):
+            if tree and random.randint(1, 100) == 1:
+                chunk.set_tile("GROUND0", fence_x, y - size_y, Tile("NATURE", 1, 2))
+            else:
+                try_build_fence(fence_x, y - size_y, fence_height, Tile("FENCE", 1, 0 + fence_type))
 
 
 # Adds random points to the sides of the map to have path running to the edge of the screen

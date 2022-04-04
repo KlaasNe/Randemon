@@ -22,8 +22,9 @@ def create_trees(chunk, spawn_rate):
         for x in range(chunk.size):
             # if chunk.tile_heights.get((x, y), -1) <= chunk.highest_path:
             if (x, y) not in chunk.get_ex_pos("GROUND0") and (x, y) not in chunk.get_ex_pos("BUILDINGS") and (x, y) not in chunk.get_ex_pos("HILLS") \
-                    and (x, y - 1) not in chunk.get_ex_pos("GROUND1"):
-                    # and (x, y) not in chunk.buildings.get_ex_pos() and (x, y) not in chunk.decoration.get_ex_pos() and (x, y - 1) not in chunk.decoration.get_ex_pos():
+                    and (x, y - 1) not in chunk.get_ex_pos("GROUND1") \
+                    and not chunk.has_tile_at_layer("GROUND2", x, y) and not chunk.has_tile_at_layer("GROUND2", x, y - 1) and not chunk.has_tile_at_layer("GROUND2", x, y - 2)\
+                    and not chunk.has_tile_at_layer("FENCE", x, y):
                 if random.random() > 0.3 and tree_formula(chunk, x, y) > 1 - spawn_rate:
                     if double:
                         chunk.set_tile("GROUND2", x - 1, y - 2, Tile("NATURE", 1, 5))
@@ -81,6 +82,7 @@ def random_tall_grass():
     if sne_type == 0 and random.random() < 0.005:
         return Tile("NATURE", 1, 4)
     return Tile("NATURE", 1, sne_type)
+
 
 # def grow_snake_bushes(pmap, layer, spawnrate, growth):
 #     def create_snake_bush(pos):
