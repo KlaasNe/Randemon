@@ -25,7 +25,7 @@ def create_path(chunk):
 
 def get_surrounding_tiles(chunk, x, y, prev):
     if prev is None:
-        return [[1 if chunk.get_tile_type("GROUND0", hx, hy) == "PATH" else 0 for hx in range(x - 1, x + 2)] for hy in range(y - 1, y + 2)]
+        return [[1 if chunk.get_tile_type("GROUND0", hx, hy) == "PATH" or chunk.get_tile_type("GROUND0", hx, hy) == "ROAD" else 0 for hx in range(x - 1, x + 2)] for hy in range(y - 1, y + 2)]
     else:
         new = [r[1:] for r in prev]
         for hy in range(3):
@@ -128,7 +128,7 @@ def draw_path2(chunk, path_type):
             path_extention.add((pos.x - 1, pos.y - 1))
 
         for (x, y) in path_extention:
-            if chunk.height_map[y][x] > 0:
+            if chunk.get_height(x, y) > 0:
                 if chunk.get_tile("GROUND0", x, y) is None:
                     chunk.set_tile("GROUND0", x, y, Tile("PATH", 0, 0))
             elif chunk.get_tile_type("GROUND0", x, y) == "WATER":
@@ -244,22 +244,22 @@ def create_stairs(chunk, pl, bl):
 
     for py in range(chunk.size):
         for px in range(chunk.size):
-            if chunk.height_map[py][px] > 1 and pl.get_tile_type(px, py) == "PATH" and bl.get_tile_type(px, py) is None:
+            if chunk.get_height(px, py) > 1 and pl.get_tile_type(px, py) == "PATH" and bl.get_tile_type(px, py) is None:
                 if path_above(px, py) and path_under(px, py) and (path_left(px, py) or path_right(px, py)):
-                    if chunk.height_map[py][px] > chunk.height_map[py - 1][px]:
+                    if chunk.get_height(px, py) > chunk.get_height(px, py - 1):
                         bl.set_tile(px, py, Tile("ROAD", 3, 0))
                         bl.set_tile(px + 1, py, Tile("ROAD", 3, 1))
 
-                    elif chunk.height_map[py][px] > chunk.height_map[py + 1][px]:
+                    elif chunk.get_height(px, py) > chunk.get_height(px, py + 1):
                         bl.set_tile(px, py, Tile("ROAD", 2, 0))
                         bl.set_tile(px + 1, py, Tile("ROAD", 2, 1))
 
                 elif path_left(px, py) and path_right(px, py) and path_under(px, py):
-                    if chunk.height_map[py][px] > chunk.height_map[py][px - 1]:
+                    if chunk.get_height(px, py) > chunk.get_height(px - 1, py):
                         bl.set_tile(px, py, Tile("ROAD", 4, 0))
                         bl.set_tile(px, py + 1, Tile("ROAD", 4, 1))
 
-                    elif chunk.height_map[py][px] > chunk.height_map[py][px + 1]:
+                    elif chunk.get_height(px, py) > chunk.get_height(px + 1, py):
                         bl.set_tile(px, py, Tile("ROAD", 5, 0))
                         bl.set_tile(px, py + 1, Tile("ROAD", 5, 1))
 

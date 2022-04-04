@@ -20,13 +20,12 @@ class Map:
         random.seed(self.seed)
         print("seed=" + str(self.seed))
         off_x, off_y = random.randint(0, 1000000), random.randint(0, 1000000)
-        self.chunks = [[Chunk(chunk_size, off_x + x * self.chunk_size, off_y + y * self.chunk_size) for x in range(chunk_nb_h)] for y in range(chunk_nb_v)]
+        self.chunks = [[Chunk(self, chunk_size, x, y, off_x + x * self.chunk_size, off_y + y * self.chunk_size) for x in range(chunk_nb_h)] for y in range(chunk_nb_v)]
         for y in range(chunk_nb_v):
             for x in range(chunk_nb_h):
                 current_chunk = self.chunks[y][x]
                 create_rivers(current_chunk)
                 create_edges(current_chunk, 0)
-                # spawn_functional_buildings(self.chunks[y][x], "p1")
                 if random.randint(0, 0) == 0:
                     for building in BuildingTypes:
                         spawn_building(current_chunk, building.value, "p1")
@@ -34,3 +33,9 @@ class Map:
                 create_path(current_chunk)
                 create_trees(current_chunk, 0.55)
                 grow_grass(current_chunk, 0.6)
+
+    def get_chunk(self, x, y):
+        try:
+            return self.chunks[y][x]
+        except IndexError:
+            return None

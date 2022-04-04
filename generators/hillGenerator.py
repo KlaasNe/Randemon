@@ -7,7 +7,7 @@ def create_edges(chunk, hill_type=0):
     for y in range(chunk.size):
         prev_surrounding = None
         for x in range(chunk.size):
-            if chunk.height_map[y][x] > 1:
+            if chunk.get_height(x, y) > 1:
                 prev_surrounding = get_surrounding_tiles(chunk, x, y, prev_surrounding)
                 tile = get_tile_from_surrounding(prev_surrounding)
                 if tile is not None:
@@ -19,13 +19,13 @@ def create_edges(chunk, hill_type=0):
 
 
 def get_surrounding_tiles(chunk, x, y, prev):
-    curr_h = chunk.height_map[y][x]
+    curr_h = chunk.get_height(x, y)
     if prev is None:
-        return [[chunk.get_height(hx, hy, curr_h) - curr_h for hx in range(x - 1, x + 2)] for hy in range(y - 1, y + 2)]
+        return [[chunk.get_height(hx, hy) - curr_h for hx in range(x - 1, x + 2)] for hy in range(y - 1, y + 2)]
     else:
         new = [r[1:] for r in prev]
         for hy in range(3):
-            new[hy].append(chunk.get_height(x + 1, y - 1 + hy, curr_h) - curr_h)
+            new[hy].append(chunk.get_height(x + 1, y - 1 + hy) - curr_h)
         return new
 
 
