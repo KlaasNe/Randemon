@@ -29,7 +29,7 @@ def get_surrounding_tiles(chunk, x, y, prev):
     else:
         new = [r[1:] for r in prev]
         for hy in range(3):
-            new[hy].append(1 if chunk.get_tile_type("GROUND0", x + 1, y - 1 + hy) == "PATH" else 0)
+            new[hy].append(1 if chunk.get_tile_type("GROUND0", x + 1, y - 1 + hy) == "PATH" or chunk.get_tile_type("GROUND0", x + 1, y - 1 + hy) == "ROAD" else 0)
         return new
 
 
