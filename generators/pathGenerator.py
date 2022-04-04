@@ -12,13 +12,13 @@ def get_path_type(layer, x, y):
     return tile.y // 3 if type(tile) == Tile and tile.get_type() == "PATH" else None
 
 
-def create_path(chunk):
+def create_path(chunk, path_type):
     for y in range(chunk.size):
         prev_surrounding = None
         for x in range(chunk.size):
             if chunk.get_tile_type("GROUND0", x, y) == "PATH":
                 prev_surrounding = get_surrounding_tiles(chunk, x, y, prev_surrounding)
-                chunk.set_tile("GROUND0", x, y, PathTiles.specific_tile(get_tile_from_surrounding(prev_surrounding), 0))
+                chunk.set_tile("GROUND0", x, y, PathTiles.specific_tile(get_tile_from_surrounding(prev_surrounding), path_type))
             else:
                 prev_surrounding = None
 
@@ -75,7 +75,7 @@ def is_actual_path(layer, x, y):
     return get_path_type(layer, x, y) not in [None, 3]
 
 
-def draw_path2(chunk, path_type):
+def draw_path2(chunk):
     def init_weight_tiles():
         weights_array = []
         for wy in range(chunk.size):

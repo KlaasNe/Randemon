@@ -9,7 +9,7 @@ from buildings.BuildingTypes import BuildingTypes
 from mapClasses import Tile
 
 
-def spawn_building(chunk, building, path_type):
+def spawn_building(chunk, building):
     # checks if a chosen position has enough free space for the house + spacing, starting from the top left corner
     def is_available_spot(x1, y1, x2, y2):
         for y in range(y1, y2 + 1):
@@ -89,10 +89,10 @@ def is_inside_cluster(chunk, x, y, radius, connections):
     return False
 
 
-def spawn_functional_buildings(chunk, path_type):
-    spawn_building(chunk, BuildingTypes.POKECENTER.value, "p1")
-    spawn_building(chunk, BuildingTypes.GYM.value, "p1")
-    spawn_building(chunk, BuildingTypes.POKEMART.value, "p1")
+def spawn_functional_buildings(chunk):
+    spawn_building(chunk, BuildingTypes.POKECENTER.value)
+    spawn_building(chunk, BuildingTypes.GYM.value)
+    spawn_building(chunk, BuildingTypes.POKEMART.value)
 
 
 # def is_special_building(pmap, x, y):
