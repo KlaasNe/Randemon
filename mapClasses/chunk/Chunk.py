@@ -1,6 +1,8 @@
 from generators.heightMapGenerator import get_height
 from mapClasses.layer import *
 
+MAX_HEIGHT = 5
+
 
 class Chunk:
 
@@ -36,7 +38,7 @@ class Chunk:
         return self.get_tile(layer, x, y) is not None
 
     def get_height(self, x, y):
-        return get_height(4, self.off_x + x, self.off_y + y)
+        return get_height(MAX_HEIGHT, self.off_x + x, self.off_y + y)
 
     def get_ex_pos(self, layer):
         return self.get_layer(layer).get_ex_pos()
