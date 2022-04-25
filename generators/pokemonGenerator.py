@@ -121,7 +121,7 @@ def spawn_pokemons(chunk):
         return togetic
 
     lapras = spawn_lapras(0.0005)
-    gyarados = spawn_gyarados(0.001)
+    gyarados = spawn_gyarados(0.00025)
     diglett = spawn_diglett(0.0005)
     snorlax = spawn_snorlax(0.050)
     # exceguttor = spawn_exceguttor(0.0025)
