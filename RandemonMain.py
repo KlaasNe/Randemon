@@ -6,7 +6,7 @@ import time
 
 def main():
     t = time.time()
-    my_map = Map(3, 3, 50)
+    my_map = Map(2, 2, 50)
     rt = time.time()
     r = Render(my_map)
     print("Rendertime=" + str(time.time() - rt))

@@ -13,7 +13,7 @@ class Render:
     def __init__(self, map_obj):
         self.map = map_obj
         self.size = map_obj.chunk_size
-        self.visual = Image.new("RGB",
+        self.visual = Image.new("RGBA",
                                 (self.size * Render.TILE_SIZE * self.map.chunk_nb_h,
                                  self.size * Render.TILE_SIZE * self.map.chunk_nb_v),
                                 (0, 0, 0, 0))
