@@ -26,7 +26,7 @@ class Map:
         off_x, off_y = random.randint(0, 1000000), random.randint(0, 1000000)
         self.height_map = generate_height_map(self.chunk_size * self.chunk_nb_h, self.chunk_size * self.chunk_nb_v, 5, off_x, off_y)
         if island:
-            add_island_mask(self, -4, 3)
+            add_island_mask(self, -4, 4)
             smooth_height(self)
         self.chunks = [[Chunk(self, chunk_size, x, y, off_x + x * self.chunk_size, off_y + y * self.chunk_size) for x in range(chunk_nb_h)] for y in range(chunk_nb_v)]
         for y in range(chunk_nb_v):

@@ -8,9 +8,11 @@ from mapClasses.tile.Tile import Tile
 octaves = 2
 freq = 25 * octaves
 
+mask_octaves = 2
+mask_freq = 200
+
 
 def generate_height_map(size_h, size_v, max_height, off_x, off_y):
-    # return [[0 for x in range(size_h)] for y in range(size_v)]
     return [[get_height(max_height, off_x + x, off_y + y) for x in range(size_h)] for y in range(size_v)]
 
 
@@ -30,17 +32,17 @@ def add_island_mask(rmap, min_mask, max_mask):
             dist = max(round(abs(x - size_h // 2) / (size_h / (max_mask - min_mask)) * 2),
                        round(abs(y - size_v // 2) / (size_v / (max_mask - min_mask)) * 2))
             mask = mask_range[dist]
-            row[x] = max(0, row[x] + mask)
+            row[x] = max(0, round(row[x] + mask))
         y += 1
 
 
-def smooth_height(rmap, down=False):
+def smooth_height(rmap, down=False, radius=4):
     smooth = False
     while not smooth:
         smooth = True
         for y in range(rmap.size_v):
             for x in range(rmap.size_h):
-                smooth_tile = smooth_down(rmap, x, y) if down else smooth_up(rmap, x, y)
+                smooth_tile = smooth_down(rmap, x, y, radius=radius) if down else smooth_up(rmap, x, y, radius=radius)
                 if not smooth_tile:
                     smooth = False
 
