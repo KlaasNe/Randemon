@@ -9,3 +9,4 @@ class Layers(Enum):
     BUILDINGS = Layer()
     GROUND1 = Layer()
     GROUND2 = Layer()
+    HEIGHTMAP = Layer()
