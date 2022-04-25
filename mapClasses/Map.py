@@ -5,6 +5,7 @@ from buildings.BuildingTypes import BuildingTypes
 from generators.buildingGenerator import *
 from generators.hillGenerator import *
 from generators.plantGenerator import *
+from generators.pokemonGenerator import spawn_pokemons
 from generators.waterGenerator import *
 from generators.pathGenerator import *
 from mapClasses import *
@@ -26,7 +27,7 @@ class Map:
                 current_chunk = self.chunks[y][x]
                 create_rivers(current_chunk)
                 create_edges(current_chunk, 0)
-                if random.randint(0, 2) >= 1:
+                if random.randint(0, 2) <= 1:
                     current_chunk.has_town = True
                     path_type = random.randint(0, 7)
                     spawn_functional_buildings(current_chunk)
@@ -34,6 +35,8 @@ class Map:
                         spawn_building(current_chunk, BuildingTypes["H" + str(random.randint(0, 21))].value)
                     draw_path2(current_chunk)
                     create_path(current_chunk, path_type)
+
+                spawn_pokemons(current_chunk)
                 create_trees(current_chunk, 0.55)
                 grow_grass(current_chunk, 0.6)
 

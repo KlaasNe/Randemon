@@ -48,7 +48,7 @@ def spawn_building(chunk, building, fence_opt=True, mail_box_opt=True):
     #     return x, y - size_y
 
     size_x, size_y = building.size
-    map_size_factor = (chunk.size * chunk.size // 2500) ** 2
+    map_size_factor = max(chunk.size * chunk.size // 2500, 1) ** 2
     max_attempts = size_x * size_y * 2 * map_size_factor
     build_spot = search_available_spot(building, 30, max_attempts)
     if build_spot:
