@@ -50,17 +50,17 @@ def spawn_pokemons(chunk):
 
     def spawn_gyarados(odds):
         gyarados = False
-        for y in range(0, chunk.height):
-            for x in range(0, chunk.width):
+        for y in range(0, chunk.size):
+            for x in range(0, chunk.size):
                 if good_odds(odds) and is_enough_water_space(x - 1, y - 1, x + 2, y + 2):
                     shiny = 2 if random() < SHINY_PROBABILITY else 0
                     mirror = coinflip()
                     if mirror:
                         for gyarados_tile in range(4):
-                            chunk.ground.set_tile((x + gyarados_tile % 2, y + gyarados_tile // 2), ("po", 2 + 1 - gyarados_tile % 2, gyarados_tile // 2 + shiny, mirror))
+                            chunk.set_tile("GROUND0", x + gyarados_tile % 2, y + gyarados_tile // 2, Tile("POKEMON", 2 + 1 - gyarados_tile % 2, gyarados_tile // 2 + shiny, mirror))
                     else:
                         for gyarados_tile in range(4):
-                            chunk.ground.set_tile((x + gyarados_tile % 2, y + gyarados_tile // 2), ("po", 2 + gyarados_tile % 2, gyarados_tile // 2 + shiny))
+                            chunk.set_tile("GROUND0", x + gyarados_tile % 2, y + gyarados_tile // 2, Tile("POKEMON", 2 + gyarados_tile % 2, gyarados_tile // 2 + shiny))
                     gyarados = True
         return gyarados
 
@@ -121,7 +121,7 @@ def spawn_pokemons(chunk):
         return togetic
 
     lapras = spawn_lapras(0.0005)
-    # gyarados = spawn_gyarados(0.001)
+    gyarados = spawn_gyarados(0.001)
     diglett = spawn_diglett(0.0005)
     snorlax = spawn_snorlax(0.050)
     # exceguttor = spawn_exceguttor(0.0025)

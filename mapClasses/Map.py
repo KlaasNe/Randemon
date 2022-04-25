@@ -27,7 +27,7 @@ class Map:
                 current_chunk = self.chunks[y][x]
                 create_rivers(current_chunk)
                 create_edges(current_chunk, 0)
-                if random.randint(0, 2) >= 1:
+                if random.randint(0, 2) <= 1:
                     current_chunk.has_town = True
                     path_type = random.randint(0, 7)
                     spawn_functional_buildings(current_chunk)
