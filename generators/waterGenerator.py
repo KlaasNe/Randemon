@@ -1,8 +1,7 @@
 from enum import Enum
 
-from noise import snoise2
-
 from mapClasses import Tile
+from generators.heightMapGenerator import get_height
 
 
 # Creates rivers for a chunk
@@ -10,7 +9,7 @@ def create_rivers(chunk):
     for y in range(chunk.size):
         prev_surrounding = None
         for x in range(chunk.size):
-            if chunk.height_map[y][x] == 0:
+            if chunk.get_height(x, y) == 0:
                 prev_surrounding = get_surrounding_tiles(chunk, x, y, prev_surrounding)
                 chunk.set_tile("GROUND0", x, y, get_tile_from_surrounding(prev_surrounding))
             else:
@@ -19,11 +18,11 @@ def create_rivers(chunk):
 
 def get_surrounding_tiles(chunk, x, y, prev):
     if prev is None:
-        return [[chunk.get_height(hx, hy, 0) for hx in range(x - 1, x + 2)] for hy in range(y - 1, y + 2)]
+        return [[chunk.get_height(hx, hy) for hx in range(x - 1, x + 2)] for hy in range(y - 1, y + 2)]
     else:
         new = [r[1:] for r in prev]
         for hy in range(3):
-            new[hy].append(chunk.get_height(x + 1, y - 1 + hy, 0))
+            new[hy].append(chunk.get_height(x + 1, y - 1 + hy))
         return new
 
 

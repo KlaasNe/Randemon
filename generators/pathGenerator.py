@@ -12,24 +12,24 @@ def get_path_type(layer, x, y):
     return tile.y // 3 if type(tile) == Tile and tile.get_type() == "PATH" else None
 
 
-def create_path(chunk):
+def create_path(chunk, path_type):
     for y in range(chunk.size):
         prev_surrounding = None
         for x in range(chunk.size):
             if chunk.get_tile_type("GROUND0", x, y) == "PATH":
                 prev_surrounding = get_surrounding_tiles(chunk, x, y, prev_surrounding)
-                chunk.set_tile("GROUND0", x, y, PathTiles.specific_tile(get_tile_from_surrounding(prev_surrounding), 0))
+                chunk.set_tile("GROUND0", x, y, PathTiles.specific_tile(get_tile_from_surrounding(prev_surrounding), path_type))
             else:
                 prev_surrounding = None
 
 
 def get_surrounding_tiles(chunk, x, y, prev):
     if prev is None:
-        return [[1 if chunk.get_tile_type("GROUND0", hx, hy) == "PATH" else 0 for hx in range(x - 1, x + 2)] for hy in range(y - 1, y + 2)]
+        return [[1 if chunk.get_tile_type("GROUND0", hx, hy) == "PATH" or chunk.get_tile_type("GROUND0", hx, hy) == "ROAD" else 0 for hx in range(x - 1, x + 2)] for hy in range(y - 1, y + 2)]
     else:
         new = [r[1:] for r in prev]
         for hy in range(3):
-            new[hy].append(1 if chunk.get_tile_type("GROUND0", x + 1, y - 1 + hy) == "PATH" else 0)
+            new[hy].append(1 if chunk.get_tile_type("GROUND0", x + 1, y - 1 + hy) == "PATH" or chunk.get_tile_type("GROUND0", x + 1, y - 1 + hy) == "ROAD" else 0)
         return new
 
 
@@ -75,7 +75,7 @@ def is_actual_path(layer, x, y):
     return get_path_type(layer, x, y) not in [None, 3]
 
 
-def draw_path2(chunk, path_type):
+def draw_path2(chunk):
     def init_weight_tiles():
         weights_array = []
         for wy in range(chunk.size):
@@ -119,16 +119,15 @@ def draw_path2(chunk, path_type):
         curr_tile.visited = True
         handle_tiles.pop((cx, cy))
 
-    def make_path_double(p, path_type):
+    def make_path_double(p):
         path_extention = set()
         for pos in p:
-            path_extention.add((pos.x, pos.y))
-            path_extention.add((pos.x, pos.y - 1))
-            path_extention.add((pos.x - 1, pos.y))
-            path_extention.add((pos.x - 1, pos.y - 1))
+            for y in range(pos.y - 1, pos.y + 1):
+                for x in range(pos.x - 1, pos.x + 1):
+                    path_extention.add((x, y))
 
         for (x, y) in path_extention:
-            if chunk.height_map[y][x] > 0:
+            if chunk.get_height(x, y) > 0:
                 if chunk.get_tile("GROUND0", x, y) is None:
                     chunk.set_tile("GROUND0", x, y, Tile("PATH", 0, 0))
             elif chunk.get_tile_type("GROUND0", x, y) == "WATER":
@@ -170,10 +169,11 @@ def draw_path2(chunk, path_type):
                 wght_tile.dist = 999999
                 wght_tile.visited = False
 
-        make_path_double(path, 0)
+        make_path_double(path)
 
     create_stairs(chunk, chunk.layers["GROUND0"], chunk.layers["GROUND1"])
     create_bridges(chunk, chunk.layers["GROUND0"])
+    create_lanterns(chunk)
 
 
 def determine_weight(chunk, x, y, avoid_hill_corners=True):
@@ -188,7 +188,7 @@ def determine_weight(chunk, x, y, avoid_hill_corners=True):
                chunk.get_tile("HILLS", x, y) == Tile("HILLS", 3, 0) and (x, y - 1) in chunk.get_ex_pos("HILLS")
 
     if is_2x2_tile_type("BUILDINGS", x, y, "BUILDINGS"): return TileWeights.IMPASSABLE.value
-    # if (x, y) in chunk.get_ex_pos("FENCE") or (x - 1, y) in chunk.get_ex_pos("FENCE") or (x, y - 1) in chunk.get_ex_pos("FENCE"): return TileWeights.IMPASSABLE
+    if is_2x2_tile_type("FENCE", x, y, "FENCE"): return TileWeights.IMPASSABLE.value
     # if chunk.ground.get_tile_type((x, y)) == "ro": return PATH_WEIGHT
     # if chunk.ground.get_tile_type((x, y - 1)) == "ro": return 999999
     # if chunk.ground.get_tile_type((x - 1, y)) == "ro": return 999999
@@ -244,47 +244,48 @@ def create_stairs(chunk, pl, bl):
 
     for py in range(chunk.size):
         for px in range(chunk.size):
-            if chunk.height_map[py][px] > 1 and pl.get_tile_type(px, py) == "PATH" and bl.get_tile_type(px, py) is None:
+            if chunk.get_height(px, py) > 1 and pl.get_tile_type(px, py) == "PATH" and bl.get_tile_type(px, py) is None:
                 if path_above(px, py) and path_under(px, py) and (path_left(px, py) or path_right(px, py)):
-                    if chunk.height_map[py][px] > chunk.height_map[py - 1][px]:
+                    if chunk.get_height(px, py) > chunk.get_height(px, py - 1):
                         bl.set_tile(px, py, Tile("ROAD", 3, 0))
                         bl.set_tile(px + 1, py, Tile("ROAD", 3, 1))
 
-                    elif chunk.height_map[py][px] > chunk.height_map[py + 1][px]:
+                    elif chunk.get_height(px, py) > chunk.get_height(px, py + 1):
                         bl.set_tile(px, py, Tile("ROAD", 2, 0))
                         bl.set_tile(px + 1, py, Tile("ROAD", 2, 1))
 
                 elif path_left(px, py) and path_right(px, py) and path_under(px, py):
-                    if chunk.height_map[py][px] > chunk.height_map[py][px - 1]:
+                    if chunk.get_height(px, py) > chunk.get_height(px - 1, py):
                         bl.set_tile(px, py, Tile("ROAD", 4, 0))
                         bl.set_tile(px, py + 1, Tile("ROAD", 4, 1))
 
-                    elif chunk.height_map[py][px] > chunk.height_map[py][px + 1]:
+                    elif chunk.get_height(px, py) > chunk.get_height(px + 1, py):
                         bl.set_tile(px, py, Tile("ROAD", 5, 0))
                         bl.set_tile(px, py + 1, Tile("ROAD", 5, 1))
 
 
-def create_lanterns(pmap):
+def create_lanterns(chunk):
     from random import random
 
     def check_availability_zone(x1, y1, x2, y2):
         for y in range(y1, y2 + 1):
             for x in range(x1, x2 + 1):
-                if (x, y) in pmap.ground.get_ex_pos() or (x, y) in pmap.buildings.get_ex_pos() or (x, y) in pmap.decoration.get_ex_pos():
+                if chunk.has_tile_at_layer("GROUND0", x, y) or chunk.has_tile_at_layer("HILLS", x, y) \
+                        or chunk.has_tile_at_layer("BUILDINGS", x, y) or chunk.has_tile_at_layer("GROUND2", x, y):
                     return False
         return True
 
-    for y in range(0, pmap.height):
-        for x in range(0, pmap.width):
-            if pmap.ground2.get_tile_type((x, y)) != "fe":
-                if is_actual_path(pmap.ground, x - 1, y) and (x - 1, y) not in pmap.buildings.get_ex_pos() and (x - 1, y) not in pmap.ground2.get_ex_pos():
+    for y in range(chunk.size):
+        for x in range(chunk.size):
+            if chunk.get_tile_type("GROUND1", x, y) != "FENCES":
+                if is_actual_path(chunk.get_layer("GROUND0"), x - 1, y) and (x - 1, y) not in chunk.get_ex_pos("BUILDINGS") and (x - 1, y) not in chunk.get_ex_pos("GROUND2"):
                     if random() < 0.08 and check_availability_zone(x, y - 2, x + 2, y + 1):
-                        pmap.ground2.set_tile((x, y), ("de", 4, 2))
-                        pmap.decoration.set_tile((x, y - 1), ("de", 4, 1))
-                        pmap.decoration.set_tile((x, y - 2), ("de", 4, 0))
-                        pmap.ground2.set_tile((x + 1, y), ("de", 5, 2))
-                if is_actual_path(pmap.ground, x + 1, y) and (x + 1, y) not in pmap.buildings.get_ex_pos() and (x + 1, y) not in pmap.ground2.get_ex_pos():
+                        chunk.set_tile("GROUND2", x, y, Tile("DECO", 4, 2))
+                        chunk.set_tile("GROUND2", x, y - 1, Tile("DECO", 4, 1))
+                        chunk.set_tile("GROUND2", x, y - 2, Tile("DECO", 4, 0))
+                        chunk.set_tile("GROUND2", x + 1, y, Tile("DECO", 5, 2))
+                if is_actual_path(chunk.get_layer("GROUND0"), x + 1, y) and (x + 1, y) not in chunk.get_ex_pos("BUILDINGS") and (x + 1, y) not in chunk.get_ex_pos("GROUND2"):
                     if random() < 0.08 and check_availability_zone(x, y - 2, x, y + 1):
-                        pmap.ground2.set_tile((x, y), ("de", 3, 2))
-                        pmap.decoration.set_tile((x, y - 1), ("de", 3, 1))
-                        pmap.decoration.set_tile((x, y - 2), ("de", 3, 0))
+                        chunk.set_tile("GROUND2", x, y, Tile("DECO", 3, 2))
+                        chunk.set_tile("GROUND2", x, y - 1, Tile("DECO", 3, 1))
+                        chunk.set_tile("GROUND2", x, y - 2, Tile("DECO", 3, 0))
