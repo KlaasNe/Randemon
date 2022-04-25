@@ -19,4 +19,5 @@ class SpriteSheetReaders(Enum):
     POKEMON = SpriteSheetReader(Image.open(os.path.join(TILE_SHEET_DIRECTORY, "pokemon.png")))
     DECO = SpriteSheetReader(Image.open(os.path.join(TILE_SHEET_DIRECTORY, "decoration.png")))
     RAIN = SpriteSheetReader(Image.open(os.path.join(TILE_SHEET_DIRECTORY, "rain.png")))
+    HEIGHTS = SpriteSheetReader(Image.open(os.path.join(TILE_SHEET_DIRECTORY, "heights.png")))
     TNF = SpriteSheetReader(Image.open(os.path.join(TILE_SHEET_DIRECTORY, "tnf.png")))
