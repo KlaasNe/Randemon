@@ -40,6 +40,9 @@ class Chunk:
     def get_height(self, x, y):
         return self.map.get_height(self, x, y)
 
+    def change_height(self, x, y, val):
+        self.map.change_height(self, x, y, val)
+
     def get_ex_pos(self, layer):
         return self.get_layer(layer).get_ex_pos()
 

@@ -31,14 +31,14 @@ class Map:
             add_island_mask(self, -4, 3)
             smooth_height(self)
         self.chunks = [[Chunk(self, chunk_size, x, y, off_x + x * self.chunk_size, off_y + y * self.chunk_size) for x in range(chunk_nb_h)] for y in range(chunk_nb_v)]
-        with alive_bar(self.chunk_nb_v * self.chunk_nb_h) as chunk_bar:
+        with alive_bar(self.chunk_nb_v * self.chunk_nb_h, title="Generating chunks", ) as chunk_bar:
             for y in range(chunk_nb_v):
                 for x in range(chunk_nb_h):
                     chunk_bar()
                     current_chunk = self.chunks[y][x]
                     if not height_map:
-                        create_rivers(current_chunk)
                         create_edges(current_chunk, 0)
+                        create_rivers(current_chunk)
                         if max_buildings > 0 and random.randint(0, 3) <= 1:
                             current_chunk.has_town = True
                             path_type = random.randint(0, 7)
@@ -66,3 +66,9 @@ class Map:
             return self.height_map[cy * self.chunk_size + y - 1][cx * self.chunk_size + x - 1]
         except Exception as e:
             print(e, cy * self.chunk_size + y, cx * self.chunk_size + x)
+
+    def change_height(self, chunk, x, y, val):
+        cx, cy = chunk.chunk_x, chunk.chunk_y
+        self.height_map[cy * self.chunk_size + y - 1][cx * self.chunk_size + x - 1] += val
+
+

@@ -62,7 +62,7 @@ def spawn_building(chunk, building, fence_opt=True, mail_box_opt=True):
             for front_x in range(size_x):
                 chunk.set_tile("GROUND0", house_x + front_x, house_y + size_y + front_y, Tile("PATH", 0, 0))
         if mail_box_opt:
-            if random.randint(0, 1) == 1 and not (house_x - 1, house_y + size_y - 2) in chunk.get_ex_pos("BUILDINGS"):
+            if random.randint(0, 1) == 1 and not (house_x - 1, house_y + size_y - 2) in chunk.get_ex_pos("BUILDINGS") and not (house_x - 1, house_y + size_y - 2) in chunk.get_ex_pos("HILLS"):
                 chunk.set_tile("GROUND2", house_x - 1, house_y + size_y - 2, Tile("DECO", 7, 2))
                 chunk.set_tile("GROUND2", house_x - 1, house_y + size_y - 1, Tile("DECO", 7, 3))
 
