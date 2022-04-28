@@ -79,10 +79,10 @@ class HillTiles(Enum):
     F = [[None, 0, None], [0, 0, 0], [None, -1, None]], Tile("HILLS", 4, 0)
     G = [[None, 0, None], [0, 0, -1], [None, 0, None]], Tile("HILLS", 2, 0)
     H = [[None, -1, None], [0, 0, 0], [None, 0, None]], Tile("HILLS", 3, 0)
-    I = [[-1, -1, None], [-1, 0, 0], [None, 0, None]], Tile("HILLS", 1, 1)
-    J = [[None, 0, None], [-1, 0, 0], [-1, -1, None]], Tile("HILLS", 3, 1)
-    K = [[None, 0, None], [0, 0, -1], [None, -1, -1]], Tile("HILLS", 4, 1)
-    L = [[None, -1, -1], [0, 0, -1], [None, 0, None]], Tile("HILLS", 2, 1)
+    I = [[None, -1, None], [-1, 0, 0], [None, 0, None]], Tile("HILLS", 1, 1)
+    J = [[None, 0, None], [-1, 0, 0], [None, -1, None]], Tile("HILLS", 3, 1)
+    K = [[None, 0, None], [0, 0, -1], [None, -1, None]], Tile("HILLS", 4, 1)
+    L = [[None, -1, None], [0, 0, -1], [None, 0, None]], Tile("HILLS", 2, 1)
 
 
 class FaultyHillTiles(Enum):

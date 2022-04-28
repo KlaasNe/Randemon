@@ -22,11 +22,17 @@ class Chunk:
     def get_layer(self, layer):
         return self.layers[layer]
 
+    def clear_layer(self, layer):
+        self.layers[layer].clear()
+
     def get_tile(self, layer, x, y):
         return self.get_layer(layer).get_tile(x, y)
 
     def set_tile(self, layer, x, y, tile):
         self.get_layer(layer).set_tile(x, y, tile)
+
+    def remove_tile(self, layer, x, y):
+        self.get_layer(layer).remove_tile(x, y)
 
     def has_tile_at(self, x, y):
         for layer in self.layers.values():
