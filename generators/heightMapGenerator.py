@@ -8,9 +8,6 @@ from mapClasses.tile.Tile import Tile
 octaves = 2
 freq = 25 * octaves
 
-mask_octaves = 2
-mask_freq = 200
-
 
 def generate_height_map(size_h, size_v, max_height, off_x, off_y):
     return [[get_height(max_height, off_x + x, off_y + y) for x in range(size_h)] for y in range(size_v)]
@@ -21,22 +18,25 @@ def get_height(max_height, off_x, off_y):
     return int(abs(floor(noise * max_height + 1)))
 
 
-def add_island_mask(rmap, min_mask, max_mask):
+def add_island_mask(rmap, mask_range=(-4, 4), custom_range=None):
     size_h, size_v = rmap.size_h, rmap.size_v
-    mask_range = list(range(min_mask, max_mask + 1))
-    mask_range.reverse()
-    off_x, off_y = random.randint(0, 1000000), random.randint(0, 1000000)
+    if custom_range is None:
+        min_mask, max_mask = mask_range[0], mask_range[1]
+        mask = list(range(min_mask, max_mask + 1))
+    else:
+        mask = custom_range
+    mask.reverse()
     y = 0
     for row in rmap.height_map:
         for x in range(len(row)):
-            dist = max(round(abs(x - size_h // 2) / (size_h / (max_mask - min_mask)) * 2),
-                       round(abs(y - size_v // 2) / (size_v / (max_mask - min_mask)) * 2))
-            mask = mask_range[dist]
-            row[x] = max(0, round(row[x] + mask))
+            dist = max(round(abs(x - size_h // 2) / (size_h / (len(mask) - 1)) * 2),
+                       round(abs(y - size_v // 2) / (size_v / (len(mask) - 1)) * 2))
+            mask_val = mask[dist]
+            row[x] = max(0, round(row[x] + mask_val))
         y += 1
 
 
-def smooth_height(rmap, down=False, radius=4):
+def smooth_height(rmap, down=False, radius=3):
     smooth = False
     while not smooth:
         smooth = True

@@ -9,6 +9,9 @@ class Layer:
     def set_tile(self, x, y, tile):
         self.tiles[(x, y)] = tile
 
+    def remove_tile(self, x, y):
+        self.tiles.pop((x, y))
+
     def get_ex_pos(self):
         return self.tiles.keys()
 
@@ -24,3 +27,6 @@ class Layer:
             return self.get_tile(x, y).get_type()
         except AttributeError:
             return None
+
+    def clear(self):
+        self.tiles.clear()

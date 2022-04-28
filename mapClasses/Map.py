@@ -11,6 +11,8 @@ from generators.pathGenerator import *
 from generators.heightMapGenerator import *
 from mapClasses import *
 
+from alive_progress import alive_bar
+
 
 class Map:
 
@@ -26,29 +28,37 @@ class Map:
         off_x, off_y = random.randint(0, 1000000), random.randint(0, 1000000)
         self.height_map = generate_height_map(self.chunk_size * self.chunk_nb_h, self.chunk_size * self.chunk_nb_v, 5, off_x, off_y)
         if island:
-            add_island_mask(self, -4, 4)
+            custom_height_map_mask = [-4, -3, -2, -1, 0, 1, 0, -1, -2]  # left to right -> outside to center
+            add_island_mask(self)
             smooth_height(self)
         self.chunks = [[Chunk(self, chunk_size, x, y, off_x + x * self.chunk_size, off_y + y * self.chunk_size) for x in range(chunk_nb_h)] for y in range(chunk_nb_v)]
-        for y in range(chunk_nb_v):
-            for x in range(chunk_nb_h):
-                current_chunk = self.chunks[y][x]
-                if not height_map:
-                    create_rivers(current_chunk)
-                    create_edges(current_chunk, 0)
-                    if max_buildings > 0 and random.randint(0, 3) <= 1:
-                        current_chunk.has_town = True
-                        path_type = random.randint(0, 7)
-                        spawn_functional_buildings(current_chunk)
-                        for b in range(max_buildings):
-                            spawn_building(current_chunk, BuildingTypes["H" + str(random.randint(0, 21))].value)
-                        draw_path2(current_chunk)
-                        create_path(current_chunk, path_type)
+        with alive_bar(self.chunk_nb_v * self.chunk_nb_h, title="Generating chunks", ) as chunk_bar:
+            for y in range(chunk_nb_v):
+                for x in range(chunk_nb_h):
+                    chunk_bar()
+                    current_chunk = self.chunks[y][x]
+                    if not height_map:
+                        create_edges(current_chunk, 0)
+                        create_rivers(current_chunk)
+                        if max_buildings > 0 and random.randint(0, 2) <= 1:
+                            current_chunk.has_town = True
+                            path_type = random.randint(0, 7)
+                            valid_town = spawn_functional_buildings(current_chunk)
+                            if valid_town:
+                                for b in range(max_buildings):
+                                    spawn_building(current_chunk, BuildingTypes["H" + str(random.randint(0, 21))].value)
+                                draw_path2(current_chunk)
+                                create_path(current_chunk, path_type)
+                            else:
+                                current_chunk.has_town = False
+                                current_chunk.clear_layer("BUILDINGS")
+                                remove_path(current_chunk)
 
-                    spawn_pokemons(current_chunk)
-                    create_trees(current_chunk, 0.55)
-                    grow_grass(current_chunk, 0.6)
-                else:
-                    draw_height_map(self, current_chunk)
+                        spawn_pokemons(current_chunk)
+                        create_trees(current_chunk, 0.55)
+                        grow_grass(current_chunk, 0.6)
+                    else:
+                        draw_height_map(self, current_chunk)
 
     def get_chunk(self, x, y):
         try:
@@ -62,3 +72,9 @@ class Map:
             return self.height_map[cy * self.chunk_size + y - 1][cx * self.chunk_size + x - 1]
         except Exception as e:
             print(e, cy * self.chunk_size + y, cx * self.chunk_size + x)
+
+    def change_height(self, chunk, x, y, val):
+        cx, cy = chunk.chunk_x, chunk.chunk_y
+        self.height_map[cy * self.chunk_size + y - 1][cx * self.chunk_size + x - 1] += val
+
+

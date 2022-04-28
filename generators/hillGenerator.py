@@ -4,15 +4,36 @@ from mapClasses import Tile
 
 
 def create_edges(chunk, hill_type=0):
+    remove_faulty_heights(chunk)
+    create_hill_edges(chunk, hill_type)
+
+
+def remove_faulty_heights(chunk):
+    for y in range(chunk.size):
+        prev_surrounding = None
+        for x in range(chunk.size):
+            prev_surrounding = get_surrounding_tiles(chunk, x, y, prev_surrounding)
+            height_change = get_tile_from_surrounding(prev_surrounding, FaultyHillTiles)
+            if height_change is not None:
+                chunk.change_height(x, y, height_change)
+            else:
+                prev_surrounding = None
+
+
+def create_hill_edges(chunk, hill_type):
     for y in range(chunk.size):
         prev_surrounding = None
         for x in range(chunk.size):
             if chunk.get_height(x, y) > 1:
                 prev_surrounding = get_surrounding_tiles(chunk, x, y, prev_surrounding)
-                tile = get_tile_from_surrounding(prev_surrounding)
-                if tile is not None:
-                    chunk.set_tile("HILLS", x, y, HillTiles.specific_tile(tile, hill_type))
+                height_change = get_tile_from_surrounding(prev_surrounding, HillTiles)
+                if isinstance(height_change, Tile):
+                    chunk.set_tile("HILLS", x, y, HillTiles.specific_tile(height_change, hill_type))
                 else:
+                    if height_change == "lower":
+                        chunk.change_height(x, y, -1)
+                    elif height_change == "higher":
+                        chunk.change_height(x, y, 1)
                     prev_surrounding = None
             else:
                 prev_surrounding = None
@@ -29,8 +50,8 @@ def get_surrounding_tiles(chunk, x, y, prev):
         return new
 
 
-def get_tile_from_surrounding(surrounding):
-    for tile in HillTiles:
+def get_tile_from_surrounding(surrounding, tile_enum):
+    for tile in tile_enum:
         if equal_surrounding(tile.value[0], surrounding):
             return tile.value[1]
 
@@ -58,7 +79,15 @@ class HillTiles(Enum):
     F = [[None, 0, None], [0, 0, 0], [None, -1, None]], Tile("HILLS", 4, 0)
     G = [[None, 0, None], [0, 0, -1], [None, 0, None]], Tile("HILLS", 2, 0)
     H = [[None, -1, None], [0, 0, 0], [None, 0, None]], Tile("HILLS", 3, 0)
-    I = [[-1, -1, None], [-1, 0, 0], [None, 0, None]], Tile("HILLS", 1, 1)
-    J = [[None, 0, None], [-1, 0, 0], [-1, -1, None]], Tile("HILLS", 3, 1)
-    K = [[None, 0, None], [0, 0, -1], [None, -1, -1]], Tile("HILLS", 4, 1)
-    L = [[None, -1, -1], [0, 0, -1], [None, 0, None]], Tile("HILLS", 2, 1)
+    I = [[None, -1, None], [-1, 0, 0], [None, 0, None]], Tile("HILLS", 1, 1)
+    J = [[None, 0, None], [-1, 0, 0], [None, -1, None]], Tile("HILLS", 3, 1)
+    K = [[None, 0, None], [0, 0, -1], [None, -1, None]], Tile("HILLS", 4, 1)
+    L = [[None, -1, None], [0, 0, -1], [None, 0, None]], Tile("HILLS", 2, 1)
+
+
+class FaultyHillTiles(Enum):
+
+    X1 = [[None, -1, None], [None, 0, None], [None, -1, None]], -1
+    X2 = [[None, 1, None], [None, 0, None], [None, 1, None]], 1
+    X3 = [[None, None, None], [-1, 0, -1], [None, None, None]], -1
+    X4 = [[None, None, None], [1, 0, 1], [None, None, None]], 1
