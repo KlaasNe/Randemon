@@ -8,9 +8,6 @@ from mapClasses.tile.Tile import Tile
 octaves = 2
 freq = 25 * octaves
 
-mask_octaves = 2
-mask_freq = 200
-
 
 def generate_height_map(size_h, size_v, max_height, off_x, off_y):
     return [[get_height(max_height, off_x + x, off_y + y) for x in range(size_h)] for y in range(size_v)]
@@ -25,7 +22,6 @@ def add_island_mask(rmap, min_mask, max_mask):
     size_h, size_v = rmap.size_h, rmap.size_v
     mask_range = list(range(min_mask, max_mask + 1))
     mask_range.reverse()
-    off_x, off_y = random.randint(0, 1000000), random.randint(0, 1000000)
     y = 0
     for row in rmap.height_map:
         for x in range(len(row)):
