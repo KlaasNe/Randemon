@@ -43,10 +43,8 @@ class Map:
                             current_chunk.has_town = True
                             path_type = random.randint(0, 7)
                             spawn_functional_buildings(current_chunk)
-                            with alive_bar(max_buildings) as building_bar:
-                                for b in range(max_buildings):
-                                    spawn_building(current_chunk, BuildingTypes["H" + str(random.randint(0, 21))].value)
-                                    building_bar()
+                            for b in range(max_buildings):
+                                spawn_building(current_chunk, BuildingTypes["H" + str(random.randint(0, 21))].value)
                             draw_path2(current_chunk)
                             create_path(current_chunk, path_type)
 
