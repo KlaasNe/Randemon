@@ -1,5 +1,7 @@
 import random
 import sys
+from colorama import Fore
+from colorama import Style
 
 from buildings.BuildingTypes import BuildingTypes
 from generators.buildingGenerator import *
@@ -17,6 +19,7 @@ from alive_progress import alive_bar
 class Map:
 
     def __init__(self, chunk_nb_h, chunk_nb_v, chunk_size, max_buildings=16, island=True, seed=random.randint(0, sys.maxsize), height_map=False):
+        print("Starting generation process...")
         self.chunk_size = chunk_size
         self.chunk_nb_h = chunk_nb_h
         self.chunk_nb_v = chunk_nb_v
@@ -24,15 +27,15 @@ class Map:
         self.size_v = self.chunk_size * self.chunk_nb_v
         self.seed = seed
         random.seed(self.seed)
-        print("seed=" + str(self.seed))
+        print(Fore.LIGHTBLUE_EX + "seed = " + Fore.LIGHTYELLOW_EX + str(self.seed) + Style.RESET_ALL)
         off_x, off_y = random.randint(0, 1000000), random.randint(0, 1000000)
         self.height_map = generate_height_map(self.chunk_size * self.chunk_nb_h, self.chunk_size * self.chunk_nb_v, 5, off_x, off_y)
         if island:
             custom_height_map_mask = [-4, -3, -2, -1, 0, 1, 0, -1, -2]  # left to right -> outside to center
             add_island_mask(self)
-            smooth_height(self)
+            smooth_height(self, 2)
         self.chunks = [[Chunk(self, chunk_size, x, y, off_x + x * self.chunk_size, off_y + y * self.chunk_size) for x in range(chunk_nb_h)] for y in range(chunk_nb_v)]
-        with alive_bar(self.chunk_nb_v * self.chunk_nb_h, title="Generating chunks", ) as chunk_bar:
+        with alive_bar(self.chunk_nb_v * self.chunk_nb_h, title="Generating chunks", theme="classic") as chunk_bar:
             for y in range(chunk_nb_v):
                 for x in range(chunk_nb_h):
                     chunk_bar()

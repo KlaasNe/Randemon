@@ -1,11 +1,14 @@
 import ctypes
 import os
+import colorama
+from colorama import Fore
+from colorama import Style
 from datetime import datetime
 
 from PIL import Image
 
 from .SpriteSheetWriter import *
-
+from alive_progress import alive_bar;
 
 class Render:
     TILE_SIZE = 16
@@ -18,13 +21,15 @@ class Render:
                                  self.size * Render.TILE_SIZE * self.map.chunk_nb_v),
                                 (0, 0, 0, 0))
         self.tile_buffer = dict()
-        cy = 0
-        for chunk_row in self.map.chunks:
-            cx = 0
-            for chunk in chunk_row:
-                self.render(chunk, cx, cy)
-                cx += 1
-            cy += 1
+        with alive_bar(self.map.chunk_nb_h * self.map.chunk_nb_v, title="rendering chunks", theme="classic") as render_bar:
+            cy = 0
+            for chunk_row in self.map.chunks:
+                cx = 0
+                for chunk in chunk_row:
+                    self.render(chunk, cx, cy)
+                    render_bar()
+                    cx += 1
+                cy += 1
 
     def render(self, chunk, cx, cy):
         sheet_writer = SpriteSheetWriter()
@@ -57,7 +62,7 @@ class Render:
         self.visual.save(os.path.join("saved images", name + ".png"), "png")
 
     def save_prompt(self, map_obj):
-        save = input("Save this image? (y/n/w): ")
+        save = input('\n' + Fore.LIGHTBLUE_EX + "Save this image? (y/n/w): " + Style.RESET_ALL)
         if save == "y" or save == "w":
             file_n = "{} {}".format(datetime.now().strftime("%G-%m-%d %H-%M-%S"), map_obj.seed)
             if not os.path.isdir("saved images"):

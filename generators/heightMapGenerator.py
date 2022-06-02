@@ -1,6 +1,7 @@
 from math import floor
 import random
 
+from alive_progress import alive_bar
 from noise import snoise2
 
 from mapClasses.tile.Tile import Tile
@@ -36,15 +37,22 @@ def add_island_mask(rmap, mask_range=(-4, 4), custom_range=None):
         y += 1
 
 
-def smooth_height(rmap, down=False, radius=3):
+def smooth_height(rmap, down=False, radius=1):
     smooth = False
-    while not smooth:
-        smooth = True
-        for y in range(rmap.size_v):
-            for x in range(rmap.size_h):
-                smooth_tile = smooth_down(rmap, x, y, radius=radius) if down else smooth_up(rmap, x, y, radius=radius)
-                if not smooth_tile:
-                    smooth = False
+    max_progress = 0
+    with alive_bar(rmap.size_v * rmap.size_h, title="smoothening terrain", theme="classic") as smooth_bar:
+        while not smooth:
+            smooth = True
+            progress = 0
+            for y in range(rmap.size_v):
+                for x in range(rmap.size_h):
+                    smooth_tile = smooth_down(rmap, x, y, radius=radius) if down else smooth_up(rmap, x, y, radius=radius)
+                    if not smooth_tile:
+                        smooth = False
+                    progress += 1
+                    if progress > max_progress and smooth:
+                        smooth_bar()
+                        max_progress = progress
 
 
 def smooth_down(rmap, x, y, radius=1):
