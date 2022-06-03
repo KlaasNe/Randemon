@@ -1,6 +1,5 @@
 import ctypes
 import os
-import colorama
 from colorama import Fore
 from colorama import Style
 from datetime import datetime
