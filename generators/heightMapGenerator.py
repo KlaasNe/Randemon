@@ -40,51 +40,45 @@ def add_island_mask(rmap, max_height, off_x, off_y, mask_range=None, custom_rang
         y += 1
 
 
-def smooth_height(rmap, down=True, radius=1):
+def smooth_height(rmap, radius=1):
     smooth = False
     max_progress = 0
-    with alive_bar(rmap.size_v * rmap.size_h, title="smoothening terrain", theme="classic") as smooth_bar:
+    with alive_bar(rmap.size_v * rmap.size_h // radius ** 2, title="smoothening terrain", theme="classic") as smooth_bar:
         while not smooth:
             smooth = True
             progress = 0
-            for y in range(rmap.size_v):
-                for x in range(rmap.size_h):
-                    if down and rmap.height_map[y][x] > 0 or not down:
-                        smooth_tile = smooth_down(rmap, x, y, radius=radius) if down else smooth_up(rmap, x, y, radius=radius)
+            for y in range(0, rmap.size_v, radius):
+                for x in range(0, rmap.size_h, radius):
+                    if rmap.height_map[y][x] > 0:
+                        smooth_tile = smooth_down(rmap, x, y, radius=radius)
                         if not smooth_tile:
                             smooth = False
                     progress += 1
-                    if progress > max_progress and smooth:
+                    if smooth and progress > max_progress:
                         smooth_bar()
                         max_progress = progress
 
 
 def smooth_down(rmap, x, y, radius=1):
+    smooth = True
     center_height = rmap.height_map[y][x]
+    min_height = center_height
+    for test_y in range(y - radius, y + radius + 1):
+        for test_x in range(x - radius, x + radius + 1):
+            try:
+                min_height = min(min_height, rmap.height_map[test_y][test_x])
+            except IndexError:
+                pass
     for test_y in range(y - radius, y + radius + 1):
         for test_x in range(x - radius, x + radius + 1):
             try:
                 test_height = rmap.height_map[test_y][test_x]
-                if center_height - test_height > 1:
-                    rmap.height_map[y][x] = test_height + 1
-                    return False
+                if test_height - min_height > 1:
+                    rmap.height_map[test_y][test_x] = min_height + 1
+                    smooth = False
             except IndexError:
                 pass
-    return True
-
-
-def smooth_up(rmap, x, y, radius=1):
-    center_height = rmap.height_map[y][x]
-    for test_y in range(y - radius, y + radius + 1):
-        for test_x in range(x - radius, x + radius + 1):
-            try:
-                test_height = rmap.height_map[test_y][test_x]
-                if center_height - test_height > 1:
-                    rmap.height_map[test_y][test_x] = center_height - 1
-                    return False
-            except IndexError:
-                pass
-    return True
+    return smooth
 
 
 def draw_height_map(rmap, chunk):
