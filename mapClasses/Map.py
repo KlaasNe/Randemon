@@ -33,7 +33,7 @@ class Map:
         if island:
             custom_height_map_mask = [-4, -3, -2, -1, 0, 1, 0, -1, -2]  # left to right -> outside to center
             add_island_mask(self, 4, off_x, off_y, strict=strict)
-            smooth_height(self, radius=8)
+            smooth_height(self, radius=5)
         self.chunks = [[Chunk(self, chunk_size, x, y, off_x + x * self.chunk_size, off_y + y * self.chunk_size) for x in range(chunk_nb_h)] for y in range(chunk_nb_v)]
         with alive_bar(self.chunk_nb_v * self.chunk_nb_h, title="Generating chunks", theme="classic") as chunk_bar:
             for y in range(chunk_nb_v):
