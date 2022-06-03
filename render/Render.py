@@ -8,7 +8,8 @@ from datetime import datetime
 from PIL import Image
 
 from .SpriteSheetWriter import *
-from alive_progress import alive_bar;
+from alive_progress import alive_bar
+
 
 class Render:
     TILE_SIZE = 16
@@ -59,7 +60,10 @@ class Render:
         self.visual.show()
 
     def save(self, name):
-        self.visual.save(os.path.join("saved images", name + ".png"), "png")
+        img_name = name + ".png"
+        self.visual.save(os.path.join("saved images", img_name), "png")
+        print("Image saved successfully")
+        print(os.path.join(Fore.LIGHTBLUE_EX + os.path.abspath("saved images"), Fore.LIGHTYELLOW_EX + img_name + Style.RESET_ALL))
 
     def save_prompt(self, map_obj):
         save = input('\n' + Fore.LIGHTBLUE_EX + "Save this image? (y/n/w): " + Style.RESET_ALL)
