@@ -1,12 +1,10 @@
 from math import floor
 import random
 
+from alive_progress import alive_bar
 from noise import snoise2
 
 from mapClasses.tile.Tile import Tile
-
-octaves = 2
-freq = 25 * octaves
 
 
 def generate_height_map(size_h, size_v, max_height, off_x, off_y):
@@ -14,11 +12,14 @@ def generate_height_map(size_h, size_v, max_height, off_x, off_y):
 
 
 def get_height(max_height, off_x, off_y):
+    octaves = 2
+    freq = 25 * octaves
     noise = snoise2((off_x // 4) / freq, (off_y // 4) / freq, octaves)
-    return int(abs(floor(noise * max_height + 1)))
+    return int(abs(floor(noise * max_height) + 1))
 
 
-def add_island_mask(rmap, mask_range=(-4, 4), custom_range=None):
+def add_island_mask(rmap, max_height, off_x, off_y, mask_range=None, custom_range=None, strict=True):
+    if mask_range is None: mask_range = (-max_height * 2, max_height) if strict else (-max_height, max_height)
     size_h, size_v = rmap.size_h, rmap.size_v
     if custom_range is None:
         min_mask, max_mask = mask_range[0], mask_range[1]
@@ -27,24 +28,35 @@ def add_island_mask(rmap, mask_range=(-4, 4), custom_range=None):
         mask = custom_range
     mask.reverse()
     y = 0
+    octaves = 2
+    freq = 50
     for row in rmap.height_map:
         for x in range(len(row)):
             dist = max(round(abs(x - size_h // 2) / (size_h / (len(mask) - 1)) * 2),
                        round(abs(y - size_v // 2) / (size_v / (len(mask) - 1)) * 2))
-            mask_val = mask[dist]
+            noise = snoise2(((off_x + x) // 4) / freq, ((off_y + y) // 4) / freq, octaves)
+            mask_val = mask[dist] + round(noise * max_height) * 2
             row[x] = max(0, round(row[x] + mask_val))
         y += 1
 
 
-def smooth_height(rmap, down=False, radius=3):
+def smooth_height(rmap, down=True, radius=1):
     smooth = False
-    while not smooth:
-        smooth = True
-        for y in range(rmap.size_v):
-            for x in range(rmap.size_h):
-                smooth_tile = smooth_down(rmap, x, y, radius=radius) if down else smooth_up(rmap, x, y, radius=radius)
-                if not smooth_tile:
-                    smooth = False
+    max_progress = 0
+    with alive_bar(rmap.size_v * rmap.size_h, title="smoothening terrain", theme="classic") as smooth_bar:
+        while not smooth:
+            smooth = True
+            progress = 0
+            for y in range(rmap.size_v):
+                for x in range(rmap.size_h):
+                    if down and rmap.height_map[y][x] > 0 or not down:
+                        smooth_tile = smooth_down(rmap, x, y, radius=radius) if down else smooth_up(rmap, x, y, radius=radius)
+                        if not smooth_tile:
+                            smooth = False
+                    progress += 1
+                    if progress > max_progress and smooth:
+                        smooth_bar()
+                        max_progress = progress
 
 
 def smooth_down(rmap, x, y, radius=1):
