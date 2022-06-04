@@ -69,8 +69,7 @@ def grow_grass(chunk, coverage):
 
 
 def random_grass():
-    grass_type = random.randint(0, 7)
-    return Tile("NATURE", 0, grass_type)
+    return Tile("NATURE", 0, random.randint(0, 7)) if random.random() < 0.99 else Tile("NATURE", 2, 3)
 
 
 def random_tall_grass():
@@ -79,7 +78,7 @@ def random_tall_grass():
     if sne_type == 1 and random.random() < 0.85:
         return Tile("NATURE", 1, 0)
     # Turn 0.5 percent of the tall grass into tall grass with a hidden item
-    if sne_type == 0 and random.random() < 0.005:
+    elif sne_type == 0 and random.random() < 0.005:
         return Tile("NATURE", 1, 4)
     return Tile("NATURE", 1, sne_type)
 

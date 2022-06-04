@@ -1,3 +1,4 @@
+import random
 from enum import Enum
 
 from mapClasses import Tile
@@ -23,7 +24,11 @@ def create_hill_edges(chunk, hill_type):
                 curr_surrounding = get_surrounding_tiles(chunk, x, y)
                 tile = get_tile_from_surrounding(curr_surrounding, HillTiles)
                 if tile is not None:
-                    chunk.set_tile("HILLS", x, y, HillTiles.specific_tile(tile, hill_type))
+                    specific_tile = HillTiles.specific_tile(tile, hill_type)
+                    if specific_tile == Tile("HILLS", 4, 0):
+                        if random.random() < 0.01:
+                            specific_tile = Tile("HILLS", 0, 4)
+                    chunk.set_tile("HILLS", x, y, specific_tile)
 
 
 def get_surrounding_tiles(chunk, x, y):
