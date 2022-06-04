@@ -36,7 +36,7 @@ class Render:
         for layer in chunk.layers.values():
             for tile_x, tile_y in layer.get_ex_pos():
                 current_tile = layer.get_tile(tile_x, tile_y)
-                x, y = tile_x * TILE_SIZE, tile_y * TILE_SIZE
+                x, y = (tile_x - 1) * TILE_SIZE, (tile_y - 1) * TILE_SIZE
                 c_offset_x, c_offset_y = cx * TILE_SIZE * chunk.size, cy * TILE_SIZE * chunk.size
                 x += c_offset_x
                 y += c_offset_y

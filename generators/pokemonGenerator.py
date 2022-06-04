@@ -43,8 +43,8 @@ def spawn_pokemons(chunk):
                 if good_odds(odds) and is_enough_water_space(x - 1, y - 1, x + 1, y + 2):
                     shiny = 2 if random() < SHINY_PROBABILITY else 0
                     mirror = coinflip()
-                    chunk.set_tile("GROUND0", x, y, Tile("POKEMON", 1, shiny, mirror))
-                    chunk.set_tile("GROUND0", x, y + 1, Tile("POKEMON", 1, 1 + shiny, mirror))
+                    chunk.set_tile("GROUND2", x, y, Tile("POKEMON", 1, shiny, mirror))
+                    chunk.set_tile("GROUND2", x, y + 1, Tile("POKEMON", 1, 1 + shiny, mirror))
                 lapras = True
         return lapras
 
@@ -57,10 +57,10 @@ def spawn_pokemons(chunk):
                     mirror = coinflip()
                     if mirror:
                         for gyarados_tile in range(4):
-                            chunk.set_tile("GROUND0", x + gyarados_tile % 2, y + gyarados_tile // 2, Tile("POKEMON", 2 + 1 - gyarados_tile % 2, gyarados_tile // 2 + shiny, mirror))
+                            chunk.set_tile("GROUND2", x + gyarados_tile % 2, y + gyarados_tile // 2, Tile("POKEMON", 2 + 1 - gyarados_tile % 2, gyarados_tile // 2 + shiny, mirror))
                     else:
                         for gyarados_tile in range(4):
-                            chunk.set_tile("GROUND0", x + gyarados_tile % 2, y + gyarados_tile // 2, Tile("POKEMON", 2 + gyarados_tile % 2, gyarados_tile // 2 + shiny))
+                            chunk.set_tile("GROUND2", x + gyarados_tile % 2, y + gyarados_tile // 2, Tile("POKEMON", 2 + gyarados_tile % 2, gyarados_tile // 2 + shiny))
                     gyarados = True
         return gyarados
 
