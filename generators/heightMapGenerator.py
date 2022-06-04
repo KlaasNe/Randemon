@@ -1,5 +1,4 @@
-from math import floor
-import random
+from math import floor, sqrt
 
 from alive_progress import alive_bar
 from noise import snoise2
@@ -12,10 +11,10 @@ def generate_height_map(size_h, size_v, max_height, off_x, off_y):
 
 
 def get_height(max_height, off_x, off_y):
-    octaves = 2
-    freq = 25 * octaves
+    octaves = 1
+    freq = 100
     noise = snoise2((off_x // 4) / freq, (off_y // 4) / freq, octaves)
-    return int(abs(floor(noise * max_height) + 1))
+    return abs(floor(noise * max_height)) - 1
 
 
 def add_island_mask(rmap, max_height, off_x, off_y, mask_range=None, custom_range=None, strict=True):
@@ -28,15 +27,15 @@ def add_island_mask(rmap, max_height, off_x, off_y, mask_range=None, custom_rang
         mask = custom_range
     mask.reverse()
     y = 0
-    octaves = 2
+    octaves = 1
     freq = 50
     for row in rmap.height_map:
         for x in range(len(row)):
             dist = max(round(abs(x - size_h // 2) / (size_h / (len(mask) - 1)) * 2),
                        round(abs(y - size_v // 2) / (size_v / (len(mask) - 1)) * 2))
-            noise = snoise2(((off_x + x) // 4) / freq, ((off_y + y) // 4) / freq, octaves)
-            mask_val = mask[dist] + round(noise * max_height) * 2
-            row[x] = max(0, round(row[x] + mask_val))
+            noise = round(snoise2(((off_x + x) // 4) / freq, ((off_y + y) // 4) / freq, octaves) * max_height) * 2
+            mask_val = mask[dist] + noise
+            row[x] = max(-1, round(row[x] + mask_val))
         y += 1
 
 
@@ -66,7 +65,7 @@ def smooth_down(rmap, x, y, radius=1):
     for test_y in range(y - radius, y + radius + 1):
         for test_x in range(x - radius, x + radius + 1):
             try:
-                min_height = min(min_height, rmap.height_map[test_y][test_x])
+                min_height = max(0, min(min_height, rmap.height_map[test_y][test_x]))
             except IndexError:
                 pass
     for test_y in range(y - radius, y + radius + 1):

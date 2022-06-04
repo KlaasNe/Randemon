@@ -44,8 +44,8 @@ class Map:
                         if island:
                             remove_faulty_heights(current_chunk)
                         create_edges(current_chunk, 0)
-                        create_rivers(current_chunk)
-                        if max_buildings > 0 and random.randint(0, 2) <= 1:
+                        create_rivers(current_chunk, 1)
+                        if max_buildings > 0 and random.randint(0, 3) <= 1:
                             current_chunk.has_town = True
                             path_type = random.randint(0, 7)
                             valid_town = spawn_functional_buildings(current_chunk)
