@@ -8,8 +8,8 @@ def create_edges(chunk, hill_type=0):
 
 
 def remove_faulty_heights(chunk):
-    for y in range(chunk.size):
-        for x in range(chunk.size):
+    for y in range(1, chunk.size - 1):
+        for x in range(1, chunk.size - 1):
             prev_surrounding = get_surrounding_tiles(chunk, x, y)
             height_change = get_tile_from_surrounding(prev_surrounding, FaultyHillTiles)
             if height_change is not None:

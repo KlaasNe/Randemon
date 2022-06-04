@@ -72,21 +72,15 @@ def smooth_down(rmap, x, y, radius=1):
     smooth = True
     center_height = rmap.height_map[y][x]
     min_height = center_height
-    for test_y in range(y - radius, y + radius + 1):
-        for test_x in range(x - radius, x + radius + 1):
-            try:
-                min_height = max(0, min(min_height, rmap.height_map[test_y][test_x]))
-            except IndexError:
-                pass
-    for test_y in range(y - radius, y + radius + 1):
-        for test_x in range(x - radius, x + radius + 1):
-            try:
-                test_height = rmap.height_map[test_y][test_x]
-                if test_height - min_height > 1:
-                    rmap.height_map[test_y][test_x] = min_height + 1
-                    smooth = False
-            except IndexError:
-                pass
+    for test_y in range(max(0, y - radius), min(y + radius + 1, rmap.size_v)):
+        for test_x in range(max(0, x - radius), min(x + radius + 1, rmap.size_h)):
+            min_height = max(0, min(min_height, rmap.height_map[test_y][test_x]))
+    for test_y in range(max(0, y - radius), min(y + radius + 1, rmap.size_v)):
+        for test_x in range(max(0, x - radius), min(x + radius + 1, rmap.size_h)):
+            test_height = max(0, rmap.height_map[test_y][test_x])
+            if test_height - min_height > 1:
+                rmap.height_map[test_y][test_x] = min_height + 1
+                smooth = False
     return smooth
 
 
