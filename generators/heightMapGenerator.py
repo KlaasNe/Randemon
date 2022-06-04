@@ -17,8 +17,8 @@ def get_height(max_height, off_x, off_y):
     return abs(floor(noise * max_height)) - 1
 
 
-def add_island_mask(rmap, max_height, off_x, off_y, mask_range=None, custom_range=None, strict=True):
-    if mask_range is None: mask_range = (-max_height * 2, max_height) if strict else (-max_height, max_height)
+def add_island_mask(rmap, max_height, off_x, off_y, mask_type="circle", mask_range=None, custom_range=None, strict=True):
+    if mask_range is None: mask_range = (-max_height * 2 - 1, max_height) if strict else (-max_height, max_height)
     size_h, size_v = rmap.size_h, rmap.size_v
     if custom_range is None:
         min_mask, max_mask = mask_range[0], mask_range[1]
@@ -29,14 +29,24 @@ def add_island_mask(rmap, max_height, off_x, off_y, mask_range=None, custom_rang
     y = 0
     octaves = 1
     freq = 50
-    for row in rmap.height_map:
-        for x in range(len(row)):
-            dist = max(round(abs(x - size_h // 2) / (size_h / (len(mask) - 1)) * 2),
-                       round(abs(y - size_v // 2) / (size_v / (len(mask) - 1)) * 2))
-            noise = round(snoise2(((off_x + x) // 4) / freq, ((off_y + y) // 4) / freq, octaves) * max_height) * 2
-            mask_val = mask[dist] + noise
-            row[x] = max(-1, round(row[x] + mask_val))
-        y += 1
+    if mask_type == "circle":
+        for row in rmap.height_map:
+            for x in range(len(row)):
+                dist = max(round(sqrt(((x - size_h // 2)//4*4)**2 + ((y - size_v // 2)//4*4)**2) // 1.5 / (size_h / (len(mask) - 1)) * 2),
+                           round(sqrt(((x - size_h // 2)//4*4)**2 + ((y - size_v // 2)//4*4)**2) // 1.5 / (size_v / (len(mask) - 1)) * 2))
+                noise = round(snoise2(((off_x + x) // 4) / freq, ((off_y + y) // 4) / freq, octaves) * max_height) * 2
+                mask_val = mask[dist] + noise
+                row[x] = max(-1, round(row[x] + mask_val))
+            y += 1
+    elif mask_type == "square":
+        for row in rmap.height_map:
+            for x in range(len(row)):
+                dist = max(round(abs(x - size_h // 2) / (size_h / (len(mask) - 1)) * 2),
+                           round(abs(y - size_v // 2) / (size_v / (len(mask) - 1)) * 2))
+                noise = round(snoise2(((off_x + x) // 4) / freq, ((off_y + y) // 4) / freq, octaves) * max_height) * 2
+                mask_val = mask[dist] + noise
+                row[x] = max(-1, round(row[x] + mask_val))
+            y += 1
 
 
 def smooth_height(rmap, radius=1):
