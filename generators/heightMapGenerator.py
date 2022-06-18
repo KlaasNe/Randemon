@@ -8,24 +8,29 @@ from noise import snoise2
 from mapClasses.tile.Tile import Tile
 
 
-def generate_height_map(size_h, size_v, height_amplifyer, off_x, off_y, additional_noise_maps=0):
+def generate_height_map(size_h, size_v, max_height, off_x, off_y, additional_noise_maps=0, island=False):
     static_offset_array = [(off_x, off_y)]
     for i in range(additional_noise_maps):
         static_offset_array.append((random.randint(0, 1000000), random.randint(0, 1000000)))
-    return [[(get_height(height_amplifyer, x, y, static_offset_array)) for x in range(size_h)] for y in range(size_v)]
+    return [[(get_height(max_height, x, y, static_offset_array, size_h, size_v, island=island)) for x in range(size_h)] for y in range(size_v)]
 
 
-def get_height(height_amplifyer, x, y, static_offset_array, octaves=1, freq=50, cubic_factor=4):
+def get_height(max_height, x, y, static_offset_array, size_h, size_v, octaves=1, freq=50, cubic_factor=4, island=False):
     noise = 0
     total_noise_maps = len(static_offset_array)
     tuple_count = 1
     for offset_tuple in static_offset_array:
         off_x, off_y = offset_tuple
-        noise += height_amplifyer / tuple_count * snoise2(tuple_count * ((off_x + x // cubic_factor) / freq), tuple_count * ((off_y + y // cubic_factor) / freq), octaves)
+        noise += 1 / tuple_count * snoise2(tuple_count * ((off_x + x // cubic_factor) / freq), tuple_count * ((off_y + y // cubic_factor) / freq), octaves)
         tuple_count += 1
-    noise /= sum(1 / i for i in range(1, total_noise_maps))
-    noise = pow(noise, total_noise_maps)
-    return round(noise)
+    if total_noise_maps > 1:
+        noise /= sum(1 / i for i in range(1, total_noise_maps))
+    if island:
+        nx = 2 * x / size_h - 1
+        ny = 2 * y / size_v - 1
+        d = 1 - (1 - nx ** 2) * (1 - ny ** 2)
+        noise = (noise + (1 - d)) * 0.5
+    return round(pow(noise, 3) * max_height * 2)
 
 
 def generate_height_map_from_image(img_path):
@@ -40,37 +45,6 @@ def generate_height_map_from_image(img_path):
         height_map.append(height_map_row)
 
     return height_map
-
-
-def add_island_mask(rmap, max_height, off_x, off_y, mask_type="circle", mask_range=None, custom_range=None, strict=True):
-    if mask_range is None: mask_range = (-max_height * 2 - 1, max_height) if strict else (-max_height, max_height)
-    size_h, size_v = rmap.size_h, rmap.size_v
-    if custom_range is None:
-        min_mask, max_mask = mask_range[0], mask_range[1]
-        mask = list(range(min_mask, max_mask + 1))
-    else:
-        mask = custom_range
-    mask.reverse()
-    y = 0
-    octaves = 1
-    freq = 50
-    if mask_type == "circle":
-        for row in rmap.height_map:
-            for x in range(len(row)):
-                dist = max(round(sqrt(((x - size_h // 2)//4*4)**2 + ((y - size_v // 2)//4*4)**2) // 1.5 / (size_h / (len(mask) - 1)) * 2),
-                           round(sqrt(((x - size_h // 2)//4*4)**2 + ((y - size_v // 2)//4*4)**2) // 1.5 / (size_v / (len(mask) - 1)) * 2))
-                mask_val = mask[dist]
-                row[x] = max(-1, round(row[x] + mask_val))
-            y += 1
-    elif mask_type == "square":
-        for row in rmap.height_map:
-            for x in range(len(row)):
-                dist = max(round(abs(x - size_h // 2) / (size_h / (len(mask) - 1)) * 2),
-                           round(abs(y - size_v // 2) / (size_v / (len(mask) - 1)) * 2))
-                noise = round(snoise2(((off_x + x) // 4) / freq, ((off_y + y) // 4) / freq, octaves) * max_height) * 2
-                mask_val = mask[dist] + noise
-                row[x] = max(-1, round(row[x] + mask_val))
-            y += 1
 
 
 def smooth_height(rmap, radius=1):
