@@ -1,7 +1,5 @@
 from math import floor, sqrt
-import numpy as np
 from PIL import Image
-from scipy import misc
 
 from alive_progress import alive_bar
 from noise import snoise2
@@ -28,7 +26,7 @@ def generate_height_map_from_image(img_path):
     for y in range(height):
         height_map_row = []
         for x in range(width):
-            height_map_row.append(image_array[y * width + x][0] // 10)
+            height_map_row.append(image_array[y * width + x][0] // 10 - 1)
         height_map.append(height_map_row)
 
     return height_map

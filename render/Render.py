@@ -36,7 +36,7 @@ class Render:
         for layer in chunk.layers.values():
             for tile_x, tile_y in layer.get_ex_pos():
                 current_tile = layer.get_tile(tile_x, tile_y)
-                x, y = (tile_x - 1) * TILE_SIZE, (tile_y - 1) * TILE_SIZE
+                x, y = tile_x * TILE_SIZE, tile_y * TILE_SIZE
                 c_offset_x, c_offset_y = cx * TILE_SIZE * chunk.size, cy * TILE_SIZE * chunk.size
                 x += c_offset_x
                 y += c_offset_y
@@ -65,13 +65,13 @@ class Render:
         print(os.path.join(Fore.LIGHTBLUE_EX + os.path.abspath("saved images"), Fore.LIGHTYELLOW_EX + img_name + Style.RESET_ALL))
 
     def save_prompt(self, map_obj):
-        save = input('\n' + Fore.LIGHTBLUE_EX + "Save this image? (y/n/w): " + Style.RESET_ALL)
-        if save == "y" or save == "w":
-            file_n = "{} {}".format(datetime.now().strftime("%G-%m-%d %H-%M-%S"), map_obj.seed)
-            if not os.path.isdir("saved images"):
-                os.mkdir("saved images")
-            self.save(file_n)
-            if save == "w":
-                cwd = os.getcwd()
-                file_path = os.path.join(cwd, "saved images", file_n + ".png")
-                ctypes.windll.user32.SystemParametersInfoW(20, 0, file_path, 0)
+        # save = input('\n' + Fore.LIGHTBLUE_EX + "Save this image? (y/n/w): " + Style.RESET_ALL)
+        # if save == "y" or save == "w":
+        file_n = "{} {}".format(datetime.now().strftime("%G-%m-%d %H-%M-%S"), map_obj.seed)
+        if not os.path.isdir("saved images"):
+            os.mkdir("saved images")
+        self.save(file_n)
+        # if save == "w":
+        #     cwd = os.getcwd()
+        #     file_path = os.path.join(cwd, "saved images", file_n + ".png")
+        #     ctypes.windll.user32.SystemParametersInfoW(20, 0, file_path, 0)

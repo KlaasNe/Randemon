@@ -86,7 +86,7 @@ def spawn_pokemons(chunk, shiny_detector=True):
                     else:
                         shiny = 0
                     mirror = coinflip()
-                    chunk.set_tile("GROUND0", x, y, Tile("POKEMON", 0, shiny, mirror))
+                    chunk.set_tile("GROUND2", x, y, Tile("POKEMON", 0, shiny, mirror))
                     diglett = True
         return diglett
 
