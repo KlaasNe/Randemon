@@ -1,4 +1,5 @@
 from math import floor, sqrt
+from PIL import Image
 
 from alive_progress import alive_bar
 from noise import snoise2
@@ -15,6 +16,20 @@ def get_height(max_height, off_x, off_y):
     freq = 100
     noise = snoise2((off_x // 4) / freq, (off_y // 4) / freq, octaves)
     return abs(floor(noise * max_height)) - 1
+
+
+def generate_height_map_from_image(img_path):
+    im = Image.open(img_path)
+    width, height = im.size
+    image_array = list(im.getdata())
+    height_map = []
+    for y in range(height):
+        height_map_row = []
+        for x in range(width):
+            height_map_row.append(image_array[y * width + x][0] // 10 - 1)
+        height_map.append(height_map_row)
+
+    return height_map
 
 
 def add_island_mask(rmap, max_height, off_x, off_y, mask_type="circle", mask_range=None, custom_range=None, strict=True):

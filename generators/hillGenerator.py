@@ -59,10 +59,10 @@ class HillTiles(Enum):
 
     A = [[None, None, None], [0, 0, None], [-1, 0, None]], Tile("HILLS", 0, 1)
     B = [[None, None, None], [None, 0, 0], [None, 0, -1]], Tile("HILLS", 0, 2)
+    F = [[None, None, None], [0, 0, 0], [None, -1, None]], Tile("HILLS", 4, 0)
     C1 = [[-1, 0, None], [0, 0, None], [None, None, None]], Tile("HILLS", 3, 0)
     C2 = [[None, 0, -1], [None, 0, 0], [None, None, None]], Tile("HILLS", 3, 0)
     E = [[None, 0, None], [-1, 0, None], [None, 0, None]], Tile("HILLS", 1, 0)
-    F = [[None, None, None], [0, 0, 0], [None, -1, None]], Tile("HILLS", 4, 0)
     G = [[None, 0, None], [None, 0, -1], [None, 0, None]], Tile("HILLS", 2, 0)
     H = [[None, -1, None], [0, 0, 0], [None, None, None]], Tile("HILLS", 3, 0)
     I = [[None, -1, None], [-1, 0, 0], [None, 0, None]], Tile("HILLS", 1, 1)
