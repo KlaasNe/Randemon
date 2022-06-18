@@ -4,11 +4,46 @@ from mapClasses import Tile
 from generators.heightMapGenerator import get_height
 
 
+def create_lakes_and_sea(rmap, sea_threshold=0.20):
+    def validate(x, y):
+        return rmap.in_bounds(x, y) and rmap.get_raw_height(x, y) <= 0 and (x, y) not in current_water
+    seen = set()
+    water_queue = set()
+    current_water = set()
+    new_water_found = False
+    for y in range(rmap.size_v):
+        for x in range(rmap.size_h):
+            if rmap.height_map[y][x] <= 0 and (x, y) not in seen:
+                new_water_found = True
+                water_queue.add((x, y))
+                while len(water_queue) > 0:
+                    (x, y) = water_queue.pop()
+                    current_water.add((x, y))
+                    seen.add((x, y))
+                    
+                    if validate(x + 1, y):
+                        water_queue.add((x + 1, y))
+                    if validate(x - 1, y):
+                        water_queue.add((x - 1, y))
+                    if validate(x, y + 1):
+                        water_queue.add((x, y + 1))
+                    if validate(x, y - 1):
+                        water_queue.add((x, y - 1))
+                if new_water_found:
+                    if len(current_water) / (rmap.size_v * rmap.size_h) >= sea_threshold:
+                        rmap.sea_tiles = rmap.sea_tiles.union(current_water)
+                    else:
+                        rmap.lake_tiles = rmap.lake_tiles.union(current_water)
+                    current_water = set()
+
+
 # Creates rivers for a chunk
-def create_rivers(chunk, water_type=0):
+def create_rivers(chunk):
     for y in range(chunk.size):
         for x in range(chunk.size):
             if chunk.get_height(x, y) <= 0:
+                raw_pos = chunk.size * chunk.chunk_x + x, chunk.size * chunk.chunk_y + y
+                water_type = 0 if raw_pos in chunk.map.lake_tiles else 1
                 curr_surrounding = get_surrounding_tiles(chunk, x, y)
                 tile = get_tile_from_surrounding(curr_surrounding)
                 chunk.set_tile("GROUND0", x, y, WaterTiles.specific_tile(tile, water_type))
