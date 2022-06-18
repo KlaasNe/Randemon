@@ -36,7 +36,7 @@ class Render:
         for layer in chunk.layers.values():
             for tile_x, tile_y in layer.get_ex_pos():
                 current_tile = layer.get_tile(tile_x, tile_y)
-                x, y = (tile_x - 1) * TILE_SIZE, (tile_y - 1) * TILE_SIZE
+                x, y = tile_x * TILE_SIZE, tile_y * TILE_SIZE
                 c_offset_x, c_offset_y = cx * TILE_SIZE * chunk.size, cy * TILE_SIZE * chunk.size
                 x += c_offset_x
                 y += c_offset_y
@@ -66,8 +66,8 @@ class Render:
 
     def save_prompt(self, map_obj):
         save = input('\n' + Fore.LIGHTBLUE_EX + "Save this image? (y/n/w): " + Style.RESET_ALL)
+        file_n = "{} {}".format(datetime.now().strftime("%G-%m-%d %H-%M-%S"), map_obj.seed)
         if save == "y" or save == "w":
-            file_n = "{} {}".format(datetime.now().strftime("%G-%m-%d %H-%M-%S"), map_obj.seed)
             if not os.path.isdir("saved images"):
                 os.mkdir("saved images")
             self.save(file_n)

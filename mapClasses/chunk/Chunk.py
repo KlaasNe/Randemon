@@ -29,8 +29,7 @@ class Chunk:
         return self.get_layer(layer).get_tile(x, y)
 
     def set_tile(self, layer, x, y, tile):
-        if not self.out_of_bounds(x, y):
-            self.get_layer(layer).set_tile(x, y, tile)
+        self.get_layer(layer).set_tile(x, y, tile)
 
     def remove_tile(self, layer, x, y):
         self.get_layer(layer).remove_tile(x, y)
