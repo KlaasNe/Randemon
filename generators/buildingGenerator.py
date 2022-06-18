@@ -52,22 +52,31 @@ def spawn_building(chunk, building, fence_opt=True, mail_box_opt=True):
     max_attempts = size_x * size_y * 2 * map_size_factor
     build_spot = search_available_spot(building, 30, max_attempts)
     if build_spot:
-        house_x, house_y = build_spot
-        for house_build_y in range(size_y):
-            for house_build_x in range(size_x):
-                chunk.set_tile("BUILDINGS", house_x + house_build_x, house_y + house_build_y,
-                               Tile("BUILDINGS", building.t_pos[0] + house_build_x, building.t_pos[1] + house_build_y))
-        chunk.buildings.append(Building(building, build_spot[0], build_spot[1]))
-        for front_y in range(2):
-            for front_x in range(size_x):
-                chunk.set_tile("GROUND0", house_x + front_x, house_y + size_y + front_y, Tile("PATH", 0, 0))
-        if mail_box_opt:
-            if random.randint(0, 1) == 1 and not (house_x - 1, house_y + size_y - 2) in chunk.get_ex_pos("BUILDINGS"):
-                chunk.set_tile("GROUND2", house_x - 1, house_y + size_y - 2, Tile("DECO", 7, 2))
-                chunk.set_tile("GROUND2", house_x - 1, house_y + size_y - 1, Tile("DECO", 7, 3))
+        build_building(chunk, building, build_spot, fence_opt, mail_box_opt)
+        return True
+    else:
+        return False
 
-        if fence_opt and random.randint(1, 4) == 1:
-            create_fence(chunk, house_x + size_x - 1, house_y + 1, 5, random.randint(0, 2), True)
+
+def build_building(chunk, building, build_spot, fence_opt=True, mail_box_opt=True):
+    size_x, size_y = building.size
+    house_x, house_y = build_spot
+    for house_build_y in range(size_y):
+        for house_build_x in range(size_x):
+            chunk.set_tile("BUILDINGS", house_x + house_build_x, house_y + house_build_y,
+                           Tile("BUILDINGS", building.t_pos[0] + house_build_x, building.t_pos[1] + house_build_y))
+    chunk.buildings.append(Building(building, build_spot[0], build_spot[1]))
+    for front_y in range(2):
+        for front_x in range(size_x):
+            chunk.set_tile("GROUND0", house_x + front_x, house_y + size_y + front_y, Tile("PATH", 0, 0))
+    if mail_box_opt:
+        if random.randint(0, 1) == 1 and not (house_x - 1, house_y + size_y - 2) in chunk.get_ex_pos(
+                "BUILDINGS") and not (house_x - 1, house_y + size_y - 2) in chunk.get_ex_pos("HILLS"):
+            chunk.set_tile("GROUND2", house_x - 1, house_y + size_y - 2, Tile("DECO", 7, 2))
+            chunk.set_tile("GROUND2", house_x - 1, house_y + size_y - 1, Tile("DECO", 7, 3))
+
+    if fence_opt and random.randint(1, 4) == 1:
+        create_fence(chunk, house_x + size_x - 1, house_y + 1, 5, random.randint(0, 2), True)
 
 
 # Checks whether a coordinate is at least in radius [distance] of [connections] houses
@@ -90,9 +99,10 @@ def is_inside_cluster(chunk, x, y, radius, connections):
 
 
 def spawn_functional_buildings(chunk):
-    spawn_building(chunk, BuildingTypes.POKECENTER.value, fence_opt=False, mail_box_opt=False)
-    spawn_building(chunk, BuildingTypes.GYM.value, fence_opt=False, mail_box_opt=False)
-    spawn_building(chunk, BuildingTypes.POKEMART.value, fence_opt=False, mail_box_opt=False)
+    pc = spawn_building(chunk, BuildingTypes.POKECENTER.value, fence_opt=False, mail_box_opt=False)
+    g = spawn_building(chunk, BuildingTypes.GYM.value, fence_opt=False, mail_box_opt=False)
+    pm = spawn_building(chunk, BuildingTypes.POKEMART.value, fence_opt=False, mail_box_opt=False)
+    return pc and g and pm
 
 
 # def is_special_building(pmap, x, y):

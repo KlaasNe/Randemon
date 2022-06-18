@@ -5,25 +5,17 @@ from generators.heightMapGenerator import get_height
 
 
 # Creates rivers for a chunk
-def create_rivers(chunk):
+def create_rivers(chunk, water_type=0):
     for y in range(chunk.size):
-        prev_surrounding = None
         for x in range(chunk.size):
-            if chunk.get_height(x, y) == 0:
-                prev_surrounding = get_surrounding_tiles(chunk, x, y, prev_surrounding)
-                chunk.set_tile("GROUND0", x, y, get_tile_from_surrounding(prev_surrounding))
-            else:
-                prev_surrounding = None
+            if chunk.get_height(x, y) <= 0:
+                curr_surrounding = get_surrounding_tiles(chunk, x, y)
+                tile = get_tile_from_surrounding(curr_surrounding)
+                chunk.set_tile("GROUND0", x, y, WaterTiles.specific_tile(tile, water_type))
 
 
-def get_surrounding_tiles(chunk, x, y, prev):
-    if prev is None:
-        return [[chunk.get_height(hx, hy) for hx in range(x - 1, x + 2)] for hy in range(y - 1, y + 2)]
-    else:
-        new = [r[1:] for r in prev]
-        for hy in range(3):
-            new[hy].append(chunk.get_height(x + 1, y - 1 + hy))
-        return new
+def get_surrounding_tiles(chunk, x, y):
+    return [[max(0, chunk.get_height(hx, hy)) for hx in range(x - 1, x + 2)] for hy in range(y - 1, y + 2)]
 
 
 def get_tile_from_surrounding(surrounding):
@@ -43,8 +35,16 @@ def equal_surrounding(template, arr):
 
 
 class WaterTiles(Enum):
+
+    @staticmethod
+    def specific_tile(tile, tile_type):
+        return Tile(tile.reader_name, tile.x, tile.y + tile_type * 3)
+
+    O = "000\n000\n000", Tile("WATER", 0, 0)
     A = "100\n000\n000", Tile("WATER", 2, 2)
     B = "001\n000\n000", Tile("WATER", 1, 2)
+    X1 = "000\n000\n001", Tile("WATER", 3, 2)
+    X2 = "000\n000\n100", Tile("WATER", 4, 2)
     C = "a0a\n000\na0a", Tile("WATER", 0, 0)
     D = "a0a\naa0\na0a", Tile("WATER", 1, 0)
     E = "a0a\n0a0\naaa", Tile("WATER", 4, 0)

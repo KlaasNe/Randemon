@@ -185,13 +185,11 @@ def determine_weight(chunk, x, y, avoid_hill_corners=True):
 
     def is_corner(x, y):
         return (x, y) in chunk.get_ex_pos("HILLS") and chunk.get_tile("HILLS", x, y).y in [1, 3] or \
-               chunk.get_tile("HILLS", x, y) == Tile("HILLS", 3, 0) and (x, y - 1) in chunk.get_ex_pos("HILLS")
+                chunk.get_tile("HILLS", x, y) == Tile("HILLS", 0, 2) or \
+                chunk.get_tile("HILLS", x, y) == Tile("HILLS", 3, 0) and (x, y - 1) in chunk.get_ex_pos("HILLS")
 
     if is_2x2_tile_type("BUILDINGS", x, y, "BUILDINGS"): return TileWeights.IMPASSABLE.value
     if is_2x2_tile_type("FENCE", x, y, "FENCE"): return TileWeights.IMPASSABLE.value
-    # if chunk.ground.get_tile_type((x, y)) == "ro": return PATH_WEIGHT
-    # if chunk.ground.get_tile_type((x, y - 1)) == "ro": return 999999
-    # if chunk.ground.get_tile_type((x - 1, y)) == "ro": return 999999
     if avoid_hill_corners and any((is_corner(x, y), is_corner(x - 1, y), is_corner(x, y - 1), is_corner(x - 1, y - 1))): return TileWeights.IMPASSABLE.value
     if is_2x2_tile_type("HILLS", x, y, "HILLS"): return TileWeights.HILL.value
     if is_2x2_tile_type("GROUND0", x, y, "WATER"): return TileWeights.WATER.value
@@ -226,8 +224,6 @@ def create_bridges(chunk, layer):
                 chunk.set_tile("GROUND1", x, y, Tile("DECO", 6, 0))
 
 
-# pl = path layer
-# bl = build layer
 def create_stairs(chunk, pl, bl):
 
     def path_above(x, y):
@@ -289,3 +285,16 @@ def create_lanterns(chunk):
                         chunk.set_tile("GROUND2", x, y, Tile("DECO", 3, 2))
                         chunk.set_tile("GROUND2", x, y - 1, Tile("DECO", 3, 1))
                         chunk.set_tile("GROUND2", x, y - 2, Tile("DECO", 3, 0))
+
+
+def remove_path(chunk):
+    delete_pos = set()
+
+    for pos in chunk.get_ex_pos("GROUND0"):
+        x, y = pos[0], pos[1]
+        if chunk.get_tile_type("GROUND0", x, y) == "PATH":
+            delete_pos.add((x, y))
+
+    for pos in delete_pos:
+        x, y = pos[0], pos[1]
+        chunk.remove_tile("GROUND0", x, y)

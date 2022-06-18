@@ -24,7 +24,8 @@ def create_trees(chunk, spawn_rate):
             if (x, y) not in chunk.get_ex_pos("GROUND0") and (x, y) not in chunk.get_ex_pos("BUILDINGS") and (x, y) not in chunk.get_ex_pos("HILLS") \
                     and (x, y - 1) not in chunk.get_ex_pos("GROUND1") \
                     and not chunk.has_tile_at_layer("GROUND2", x, y) and not chunk.has_tile_at_layer("GROUND2", x, y - 1) and not chunk.has_tile_at_layer("GROUND2", x, y - 2)\
-                    and not chunk.has_tile_at_layer("FENCE", x, y):
+                    and not chunk.has_tile_at_layer("FENCE", x, y)\
+                    and not chunk.out_of_bounds(x, y) and not chunk.out_of_bounds(x, y - 1 and not chunk.out_of_bounds(x, y - 2)):
                 if random.random() > 0.3 and tree_formula(chunk, x, y) > 1 - spawn_rate:
                     if double:
                         chunk.set_tile("GROUND2", x - 1, y - 2, Tile("NATURE", 1, 5))
@@ -69,8 +70,7 @@ def grow_grass(chunk, coverage):
 
 
 def random_grass():
-    grass_type = random.randint(0, 7)
-    return Tile("NATURE", 0, grass_type)
+    return Tile("NATURE", 0, random.randint(0, 7)) if random.random() < 0.99 else Tile("NATURE", 2, 3)
 
 
 def random_tall_grass():
@@ -79,7 +79,7 @@ def random_tall_grass():
     if sne_type == 1 and random.random() < 0.85:
         return Tile("NATURE", 1, 0)
     # Turn 0.5 percent of the tall grass into tall grass with a hidden item
-    if sne_type == 0 and random.random() < 0.005:
+    elif sne_type == 0 and random.random() < 0.005:
         return Tile("NATURE", 1, 4)
     return Tile("NATURE", 1, sne_type)
 
