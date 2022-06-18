@@ -1,4 +1,5 @@
-from math import floor, sqrt
+import random
+from math import sqrt, pow
 from PIL import Image
 
 from alive_progress import alive_bar
@@ -7,17 +8,24 @@ from noise import snoise2
 from mapClasses.tile.Tile import Tile
 
 
-def generate_height_map(size_h, size_v, max_height, off_x, off_y):
-    return [[get_height(max_height, off_x + x, off_y + y) for x in range(size_h)] for y in range(size_v)]
+def generate_height_map(size_h, size_v, height_amplifyer, off_x, off_y, additional_noise_maps=0):
+    static_offset_array = [(off_x, off_y)]
+    for i in range(additional_noise_maps):
+        static_offset_array.append((random.randint(0, 1000000), random.randint(0, 1000000)))
+    return [[(get_height(height_amplifyer, x, y, static_offset_array)) for x in range(size_h)] for y in range(size_v)]
 
 
-def get_height(max_height, off_x, off_y, cool=True):
-    octaves = 1
-    freq = 100
-    noise = max_height * snoise2((off_x // 4) / freq, (off_y // 4) / freq, octaves)
-    noise2 = max_height / 2 * snoise2((off_x // 4) * 2 / freq, (off_y // 4) * 2 / freq, octaves)
-    noise3 = max_height / 4 * snoise2((off_x // 4) * 4 / freq, (off_y // 4) * 4 / freq, octaves)
-    return abs(floor(noise + noise2 + noise3)) - 1
+def get_height(height_amplifyer, x, y, static_offset_array, octaves=1, freq=50, cubic_factor=4):
+    noise = 0
+    total_noise_maps = len(static_offset_array)
+    tuple_count = 1
+    for offset_tuple in static_offset_array:
+        off_x, off_y = offset_tuple
+        noise += height_amplifyer / tuple_count * snoise2(tuple_count * ((off_x + x // cubic_factor) / freq), tuple_count * ((off_y + y // cubic_factor) / freq), octaves)
+        tuple_count += 1
+    noise /= sum(1 / i for i in range(1, total_noise_maps))
+    noise = pow(noise, total_noise_maps)
+    return round(noise)
 
 
 def generate_height_map_from_image(img_path):
