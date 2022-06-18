@@ -11,11 +11,13 @@ def generate_height_map(size_h, size_v, max_height, off_x, off_y):
     return [[get_height(max_height, off_x + x, off_y + y) for x in range(size_h)] for y in range(size_v)]
 
 
-def get_height(max_height, off_x, off_y):
+def get_height(max_height, off_x, off_y, cool=True):
     octaves = 1
     freq = 100
-    noise = snoise2((off_x // 4) / freq, (off_y // 4) / freq, octaves)
-    return abs(floor(noise * max_height)) - 1
+    noise = max_height * snoise2((off_x // 4) / freq, (off_y // 4) / freq, octaves)
+    noise2 = max_height / 2 * snoise2((off_x // 4) * 2 / freq, (off_y // 4) * 2 / freq, octaves)
+    noise3 = max_height / 4 * snoise2((off_x // 4) * 4 / freq, (off_y // 4) * 4 / freq, octaves)
+    return abs(floor(noise + noise2 + noise3)) - 1
 
 
 def generate_height_map_from_image(img_path):
@@ -49,8 +51,7 @@ def add_island_mask(rmap, max_height, off_x, off_y, mask_type="circle", mask_ran
             for x in range(len(row)):
                 dist = max(round(sqrt(((x - size_h // 2)//4*4)**2 + ((y - size_v // 2)//4*4)**2) // 1.5 / (size_h / (len(mask) - 1)) * 2),
                            round(sqrt(((x - size_h // 2)//4*4)**2 + ((y - size_v // 2)//4*4)**2) // 1.5 / (size_v / (len(mask) - 1)) * 2))
-                noise = round(snoise2(((off_x + x) // 4) / freq, ((off_y + y) // 4) / freq, octaves) * max_height) * 2
-                mask_val = mask[dist] + noise
+                mask_val = mask[dist]
                 row[x] = max(-1, round(row[x] + mask_val))
             y += 1
     elif mask_type == "square":

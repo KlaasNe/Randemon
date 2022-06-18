@@ -42,8 +42,7 @@ class Map:
                     chunk_bar()
                     current_chunk = self.chunks[y][x]
                     if not height_map:
-                        if island:
-                            remove_faulty_heights(current_chunk)
+                        remove_faulty_heights(current_chunk)
                         create_edges(current_chunk, 0)
                         create_rivers(current_chunk, 1)
                         if max_buildings > 0 and random.randint(0, 3) <= 1:
@@ -76,8 +75,9 @@ class Map:
         cx, cy = chunk.chunk_x, chunk.chunk_y
         try:
             return self.height_map[cy * self.chunk_size + y][cx * self.chunk_size + x]
-        except Exception as e:
-            print(e, cy * self.chunk_size + y, cx * self.chunk_size + x)
+        except IndexError as e:
+            # print(e, cy * self.chunk_size + y, cx * self.chunk_size + x)
+            return 0
 
     def change_height(self, chunk, x, y, val):
         cx, cy = chunk.chunk_x, chunk.chunk_y

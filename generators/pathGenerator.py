@@ -185,7 +185,8 @@ def determine_weight(chunk, x, y, avoid_hill_corners=True):
 
     def is_corner(x, y):
         return (x, y) in chunk.get_ex_pos("HILLS") and chunk.get_tile("HILLS", x, y).y in [1, 3] or \
-               chunk.get_tile("HILLS", x, y) == Tile("HILLS", 3, 0) and (x, y - 1) in chunk.get_ex_pos("HILLS")
+                chunk.get_tile("HILLS", x, y) == Tile("HILLS", 0, 2) or \
+                chunk.get_tile("HILLS", x, y) == Tile("HILLS", 3, 0) and (x, y - 1) in chunk.get_ex_pos("HILLS")
 
     if is_2x2_tile_type("BUILDINGS", x, y, "BUILDINGS"): return TileWeights.IMPASSABLE.value
     if is_2x2_tile_type("FENCE", x, y, "FENCE"): return TileWeights.IMPASSABLE.value
