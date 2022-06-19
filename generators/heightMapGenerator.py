@@ -56,8 +56,10 @@ def generate_height_map_from_image(img_path):
 def smooth_height(rmap, radius=1):
     smooth = False
     max_progress = 0
+    tries = 0
     with alive_bar(rmap.size_v * rmap.size_h // radius ** 2, title="smoothening terrain", theme="classic") as smooth_bar:
-        while not smooth:
+        while not smooth and tries < 10:
+            tries += 1
             smooth = True
             progress = 0
             for y in range(0, rmap.size_v, radius):
@@ -75,15 +77,23 @@ def smooth_height(rmap, radius=1):
 def smooth_down(rmap, x, y, radius=1):
     smooth = True
     center_height = rmap.height_map[y][x]
-    min_height = center_height
-    for test_y in range(max(0, y - radius), min(y + radius + 1, rmap.size_v)):
-        for test_x in range(max(0, x - radius), min(x + radius + 1, rmap.size_h)):
-            min_height = max(0, min(min_height, rmap.height_map[test_y][test_x]))
+    # min_height = center_height
+    # max_height = center_height
+    # for test_y in range(max(0, y - radius), min(y + radius + 1, rmap.size_v)):
+    #     for test_x in range(max(0, x - radius), min(x + radius + 1, rmap.size_h)):
+    #         test_height = rmap.height_map[test_y][test_x]
+    #         min_height = max(0, min(min_height, test_height))
+    #         max_height = max(max_height, test_height)
+    #         avg_height = (min_height + max_height) / 2
     for test_y in range(max(0, y - radius), min(y + radius + 1, rmap.size_v)):
         for test_x in range(max(0, x - radius), min(x + radius + 1, rmap.size_h)):
             test_height = max(0, rmap.height_map[test_y][test_x])
-            if test_height - min_height > 1:
-                rmap.height_map[test_y][test_x] = min_height + 1
+            height_diff = test_height - center_height
+            if height_diff > 1:
+                rmap.height_map[test_y][test_x] = center_height + 1
+                smooth = False
+            elif height_diff < -1:
+                rmap.height_map[test_y][test_x] = center_height - 1
                 smooth = False
     return smooth
 

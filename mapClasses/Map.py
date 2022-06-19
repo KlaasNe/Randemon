@@ -31,7 +31,7 @@ class Map:
         print(Fore.LIGHTBLUE_EX + "seed = " + Fore.LIGHTYELLOW_EX + str(self.seed) + Style.RESET_ALL)
         print("Creating terrain...")
         off_x, off_y = random.randint(0, 1000000), random.randint(0, 1000000)
-        self.height_map = generate_height_map(self.chunk_size * self.chunk_nb_h, self.chunk_size * self.chunk_nb_v, 5, off_x, off_y, additional_noise_maps=7, island=island)
+        self.height_map = generate_height_map(self.chunk_size * self.chunk_nb_h, self.chunk_size * self.chunk_nb_v, 5, off_x, off_y, additional_noise_maps=3, island=island)
         # self.height_map = generate_height_map_from_image("heightMaps/earthLandMassHeight.png")
         smooth_height(self, radius=5)
         self.chunks = [[Chunk(self, chunk_size, x, y, off_x + x * self.chunk_size, off_y + y * self.chunk_size) for x in range(chunk_nb_h)] for y in range(chunk_nb_v)]
