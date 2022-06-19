@@ -3,7 +3,9 @@ import sys
 from colorama import Fore
 from colorama import Style
 
+from buildings.BuildingTheme import BuildingTheme
 from buildings.BuildingTypes import BuildingTypes
+from buildings.BuildingTypes import BuildingThemes
 from generators.buildingGenerator import *
 from generators.hillGenerator import *
 from generators.plantGenerator import *
@@ -18,7 +20,7 @@ from alive_progress import alive_bar
 
 class Map:
 
-    def __init__(self, chunk_nb_h, chunk_nb_v, chunk_size, max_buildings=16, island=False, seed=random.randint(0, sys.maxsize), height_map=False):
+    def __init__(self, chunk_nb_h, chunk_nb_v, chunk_size, max_buildings=16, island=False, seed=random.randint(0, sys.maxsize), height_map=False, themed_towns=False):
         self.chunk_size = chunk_size
         self.chunk_nb_h = chunk_nb_h
         self.chunk_nb_v = chunk_nb_v
@@ -31,7 +33,7 @@ class Map:
         off_x, off_y = random.randint(0, 1000000), random.randint(0, 1000000)
         self.height_map = generate_height_map(self.chunk_size * self.chunk_nb_h, self.chunk_size * self.chunk_nb_v, 5, off_x, off_y, additional_noise_maps=7, island=island)
         # self.height_map = generate_height_map_from_image("heightMaps/earthLandMassHeight.png")
-        smooth_height(self, radius=1)
+        smooth_height(self, radius=5)
         self.chunks = [[Chunk(self, chunk_size, x, y, off_x + x * self.chunk_size, off_y + y * self.chunk_size) for x in range(chunk_nb_h)] for y in range(chunk_nb_v)]
         self.lake_tiles = set()
         self.sea_tiles = set()
@@ -56,8 +58,13 @@ class Map:
                             path_type = random.randint(0, 7)
                             valid_town = spawn_functional_buildings(current_chunk)
                             if valid_town:
+                                if themed_towns:
+                                    building_theme: BuildingTheme = BuildingThemes.get_random_theme().value
                                 for b in range(max_buildings):
-                                    spawn_building(current_chunk, BuildingTypes["H" + str(random.randint(0, 21))].value)
+                                    if themed_towns:
+                                        spawn_building(current_chunk, building_theme.get_random_building_type().value)
+                                    else:
+                                        spawn_building(current_chunk, BuildingTypes["H" + str(random.randint(0, 21))].value)
                                 draw_path2(current_chunk)
                                 create_path(current_chunk, path_type)
                             else:

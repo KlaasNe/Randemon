@@ -1,5 +1,5 @@
 import random
-from math import sqrt, pow
+from math import pow
 from PIL import Image
 
 from alive_progress import alive_bar
