@@ -1,40 +1,46 @@
 from enum import Enum
 
+from alive_progress import alive_bar
+
 from mapClasses import Tile
 from generators.heightMapGenerator import get_height
 
 
 def create_lakes_and_sea(rmap, sea_threshold=0.20):
+
     def validate(x, y):
         return rmap.in_bounds(x, y) and rmap.get_raw_height(x, y) <= 0 and (x, y) not in current_water
+
     seen = set()
     water_queue = set()
     current_water = set()
     new_water_found = False
-    for y in range(rmap.size_v):
-        for x in range(rmap.size_h):
-            if rmap.height_map[y][x] <= 0 and (x, y) not in seen:
-                new_water_found = True
-                water_queue.add((x, y))
-                while len(water_queue) > 0:
-                    (x, y) = water_queue.pop()
-                    current_water.add((x, y))
-                    seen.add((x, y))
-                    
-                    if validate(x + 1, y):
-                        water_queue.add((x + 1, y))
-                    if validate(x - 1, y):
-                        water_queue.add((x - 1, y))
-                    if validate(x, y + 1):
-                        water_queue.add((x, y + 1))
-                    if validate(x, y - 1):
-                        water_queue.add((x, y - 1))
-                if new_water_found:
-                    if len(current_water) / (rmap.size_v * rmap.size_h) >= sea_threshold:
-                        rmap.sea_tiles = rmap.sea_tiles.union(current_water)
-                    else:
-                        rmap.lake_tiles = rmap.lake_tiles.union(current_water)
-                    current_water = set()
+    with alive_bar(rmap.size_v * rmap.size_h, title="Dividing into lakes and seas", theme="classic") as water_bar:
+        for y in range(rmap.size_v):
+            for x in range(rmap.size_h):
+                if rmap.height_map[y][x] <= 0 and (x, y) not in seen:
+                    new_water_found = True
+                    water_queue.add((x, y))
+                    while len(water_queue) > 0:
+                        (x, y) = water_queue.pop()
+                        current_water.add((x, y))
+                        seen.add((x, y))
+
+                        if validate(x + 1, y):
+                            water_queue.add((x + 1, y))
+                        if validate(x - 1, y):
+                            water_queue.add((x - 1, y))
+                        if validate(x, y + 1):
+                            water_queue.add((x, y + 1))
+                        if validate(x, y - 1):
+                            water_queue.add((x, y - 1))
+                    if new_water_found:
+                        if len(current_water) / (rmap.size_v * rmap.size_h) >= sea_threshold:
+                            rmap.sea_tiles = rmap.sea_tiles.union(current_water)
+                        else:
+                            rmap.lake_tiles = rmap.lake_tiles.union(current_water)
+                        current_water = set()
+                water_bar()
 
 
 # Creates rivers for a chunk

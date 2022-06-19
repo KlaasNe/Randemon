@@ -12,7 +12,8 @@ def generate_height_map(size_h, size_v, max_height, off_x, off_y, additional_noi
     static_offset_array = [(off_x, off_y)]
     for i in range(additional_noise_maps):
         static_offset_array.append((random.randint(0, 1000000), random.randint(0, 1000000)))
-    return [[(get_height(max_height, x, y, static_offset_array, size_h, size_v, island=island)) for x in range(size_h)] for y in range(size_v)]
+    return [[(get_height(max_height, x, y, static_offset_array, size_h, size_v, island=island))
+             for x in range(size_h)] for y in range(size_v)]
 
 
 def get_height(max_height, x, y, static_offset_array, size_h, size_v, octaves=1, freq=50, cubic_factor=4, island=False):
@@ -21,7 +22,10 @@ def get_height(max_height, x, y, static_offset_array, size_h, size_v, octaves=1,
     tuple_count = 1
     for offset_tuple in static_offset_array:
         off_x, off_y = offset_tuple
-        noise += 1 / tuple_count * snoise2(tuple_count * ((off_x + x // cubic_factor) / freq), tuple_count * ((off_y + y // cubic_factor) / freq), octaves)
+        noise += 1 / tuple_count * snoise2(
+            tuple_count * ((off_x + x // cubic_factor) / (freq * (0.5 + tuple_count / 3))),
+            tuple_count * ((off_y + y // cubic_factor) / (freq * (0.5 + tuple_count / 3))),
+            octaves)
         tuple_count += 1
     if total_noise_maps > 1:
         noise /= sum(1 / i for i in range(1, total_noise_maps))
@@ -30,6 +34,8 @@ def get_height(max_height, x, y, static_offset_array, size_h, size_v, octaves=1,
         ny = 2 * y / size_v - 1
         d = 1 - (1 - nx ** 2) * (1 - ny ** 2)
         noise = (noise + (1 - d)) * 0.5
+    else:
+        noise += 0.45
     return round(pow(noise, 3) * max_height * 2)
 
 

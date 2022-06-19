@@ -60,7 +60,9 @@ class Render:
 
     def save(self, name):
         img_name = name + ".png"
-        self.visual.save(os.path.join("saved images", img_name), "png")
+        with alive_bar(1, title="Saving image", theme="classic") as save_bar:
+            self.visual.save(os.path.join("saved images", img_name), "png")
+            save_bar()
         print("Image saved successfully")
         print(os.path.join(Fore.LIGHTBLUE_EX + os.path.abspath("saved images"), Fore.LIGHTYELLOW_EX + img_name + Style.RESET_ALL))
 

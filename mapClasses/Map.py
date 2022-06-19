@@ -30,19 +30,21 @@ class Map:
         print("Creating terrain...")
         off_x, off_y = random.randint(0, 1000000), random.randint(0, 1000000)
         self.height_map = generate_height_map(self.chunk_size * self.chunk_nb_h, self.chunk_size * self.chunk_nb_v, 5, off_x, off_y, additional_noise_maps=7, island=island)
+        # self.height_map = generate_height_map_from_image("heightMaps/earthLandMassHeight.png")
         smooth_height(self, radius=1)
         self.chunks = [[Chunk(self, chunk_size, x, y, off_x + x * self.chunk_size, off_y + y * self.chunk_size) for x in range(chunk_nb_h)] for y in range(chunk_nb_v)]
         self.lake_tiles = set()
         self.sea_tiles = set()
-        for y in range(chunk_nb_v):
-            for x in range(chunk_nb_h):
-                current_chunk = self.chunks[y][x]
-                remove_faulty_heights(current_chunk)
+        with alive_bar(self.chunk_nb_v * self.chunk_nb_h, title="Removing faulty heights", theme="classic") as faulty_heights_bar:
+            for y in range(chunk_nb_v):
+                for x in range(chunk_nb_h):
+                    current_chunk = self.chunks[y][x]
+                    remove_faulty_heights(current_chunk, force=True)
+                    faulty_heights_bar()
         create_lakes_and_sea(self)
         with alive_bar(self.chunk_nb_v * self.chunk_nb_h, title="Generating chunks", theme="classic") as chunk_bar:
             for y in range(chunk_nb_v):
                 for x in range(chunk_nb_h):
-                    chunk_bar()
                     current_chunk = self.chunks[y][x]
                     remove_faulty_heights(current_chunk)
                     if not height_map:
@@ -68,12 +70,16 @@ class Map:
                         grow_grass(current_chunk, 0.6)
                     else:
                         draw_height_map(self, current_chunk)
+                    chunk_bar()
 
     def get_chunk(self, x, y):
         try:
             return self.chunks[y][x]
         except IndexError:
             return None
+
+    def in_bounds(self, x, y):
+        return 0 <= x < self.size_h and 0 <= y < self.size_v
 
     def get_raw_height(self, x, y):
         try:
@@ -83,14 +89,12 @@ class Map:
 
     def get_height(self, chunk, x, y):
         cx, cy = chunk.chunk_x, chunk.chunk_y
-        try:
-            return self.get_raw_height(cx * self.chunk_size + x, cy * self.chunk_size + y)
-        except IndexError as e:
+        x_raw, y_raw = cx * self.chunk_size + x, cy * self.chunk_size + y
+        if self.in_bounds(x_raw, y_raw):
+            return self.get_raw_height(x_raw, y_raw)
+        else:
             return 0
 
     def change_height(self, chunk, x, y, val):
         cx, cy = chunk.chunk_x, chunk.chunk_y
         self.height_map[cy * self.chunk_size + y][cx * self.chunk_size + x] += val
-
-    def in_bounds(self, x, y):
-        return 0 <= x < self.size_h and 0 <= y < self.size_v
