@@ -76,7 +76,7 @@ def build_building(chunk, building, build_spot, fence_opt=True, mail_box_opt=Tru
             chunk.set_tile("GROUND2", house_x - 1, house_y + size_y - 1, Tile("DECO", 7, 3))
 
     if fence_opt and random.randint(1, 4) == 1:
-        create_fence(chunk, house_x + size_x - 1, house_y + 1, 5, random.randint(0, 2), True)
+        create_fence(chunk, house_x + size_x - 1, house_y + 1, 5, random.randint(0, 3), True)
 
 
 # Checks whether a coordinate is at least in radius [distance] of [connections] houses
