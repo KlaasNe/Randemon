@@ -4,7 +4,7 @@ from generators.pathGenerator import get_path_type
 
 # Spawns pokemon on the map most in the pmap.ground_layer
 # Returns true if all existing pokemon are present on the map
-from mapClasses import Tile
+from mapClasses.tile import Tile
 
 pokemon_data = {
     "diglett": {"pos": (0, 0), "size": (1, 1), "odds": 0.001},
@@ -44,7 +44,7 @@ def spawn_pokemons(chunk, shiny_detector=True):
                     if random() < SHINY_PROBABILITY:
                         shiny = 2
                         if shiny_detector:
-                            print(f"shiny at ({x}, {y})")
+                            print(f"shiny lapras at ({x}, {y})")
                     else:
                         shiny = 0
                     mirror = coinflip()
@@ -61,7 +61,7 @@ def spawn_pokemons(chunk, shiny_detector=True):
                     if random() < SHINY_PROBABILITY:
                         shiny = 2
                         if shiny_detector:
-                            print(f"shiny at ({x}, {y})")
+                            print(f"shiny gyarados at ({x}, {y})")
                     else:
                         shiny = 0
                     mirror = coinflip()
@@ -82,7 +82,7 @@ def spawn_pokemons(chunk, shiny_detector=True):
                     if random() < SHINY_PROBABILITY:
                         shiny = 2
                         if shiny_detector:
-                            print(f"shiny at ({x}, {y})")
+                            print(f"shiny diglett at ({x}, {y})")
                     else:
                         shiny = 0
                     mirror = coinflip()
@@ -108,7 +108,7 @@ def spawn_pokemons(chunk, shiny_detector=True):
                     if random() < SHINY_PROBABILITY:
                         shiny = 2
                         if shiny_detector:
-                            print(f"shiny at ({x}, {y})")
+                            print(f"shiny snorlax at ({x}, {y})")
                     else:
                         shiny = 0
                     for snorlax_tile in range(4):
@@ -124,7 +124,7 @@ def spawn_pokemons(chunk, shiny_detector=True):
                     if random() < SHINY_PROBABILITY:
                         shiny = 2
                         if shiny_detector:
-                            print(f"shiny at ({x}, {y})")
+                            print(f"shiny exceguttor at ({x}, {y})")
                     else:
                         shiny = 0
                     mirror = coinflip()
@@ -141,7 +141,7 @@ def spawn_pokemons(chunk, shiny_detector=True):
                     if random() < SHINY_PROBABILITY:
                         shiny = 2
                         if shiny_detector:
-                            print(f"shiny at ({x}, {y})")
+                            print(f"shiny togetic at ({x}, {y})")
                     else:
                         shiny = 0
                     mirror = coinflip()
@@ -150,8 +150,8 @@ def spawn_pokemons(chunk, shiny_detector=True):
                     togetic = True
         return togetic
 
-    lapras = spawn_lapras(0.0005)
-    gyarados = spawn_gyarados(0.00025)
+    lapras = spawn_lapras(0.000125)
+    gyarados = spawn_gyarados(0.000125)
     diglett = spawn_diglett(0.0005)
     snorlax = spawn_snorlax(0.025)
     # exceguttor = spawn_exceguttor(0.0025)

@@ -1,49 +1,55 @@
 from enum import Enum
 
-from mapClasses import Tile
-from generators.heightMapGenerator import get_height
+from alive_progress import alive_bar
+
+from mapClasses import Map
+from mapClasses.chunk import Chunk
+from mapClasses.tile import Tile
 
 
-def create_lakes_and_sea(rmap, sea_threshold=0.20):
+def create_lakes_and_sea(rmap: Map, sea_threshold=0.20):
+
     def validate(x, y):
-        return rmap.in_bounds(x, y) and rmap.get_raw_height(x, y) <= 0 and (x, y) not in current_water
+        return rmap.in_bounds(x, y) and rmap.get_height_raw_pos(x, y) <= 0 and (x, y) not in current_water
+
     seen = set()
     water_queue = set()
     current_water = set()
-    new_water_found = False
-    for y in range(rmap.size_v):
-        for x in range(rmap.size_h):
-            if rmap.height_map[y][x] <= 0 and (x, y) not in seen:
-                new_water_found = True
-                water_queue.add((x, y))
-                while len(water_queue) > 0:
-                    (x, y) = water_queue.pop()
-                    current_water.add((x, y))
-                    seen.add((x, y))
-                    
-                    if validate(x + 1, y):
-                        water_queue.add((x + 1, y))
-                    if validate(x - 1, y):
-                        water_queue.add((x - 1, y))
-                    if validate(x, y + 1):
-                        water_queue.add((x, y + 1))
-                    if validate(x, y - 1):
-                        water_queue.add((x, y - 1))
-                if new_water_found:
-                    if len(current_water) / (rmap.size_v * rmap.size_h) >= sea_threshold:
-                        rmap.sea_tiles = rmap.sea_tiles.union(current_water)
-                    else:
-                        rmap.lake_tiles = rmap.lake_tiles.union(current_water)
-                    current_water = set()
+    with alive_bar(rmap.size_v * rmap.size_h, title="Dividing into lakes and seas", theme="classic") as water_bar:
+        for y in range(rmap.size_v):
+            for x in range(rmap.size_h):
+                if rmap.height_map[y][x] <= 0 and (x, y) not in seen:
+                    new_water_found = True
+                    water_queue.add((x, y))
+                    while len(water_queue) > 0:
+                        (x, y) = water_queue.pop()
+                        current_water.add((x, y))
+                        seen.add((x, y))
+
+                        if validate(x + 1, y):
+                            water_queue.add((x + 1, y))
+                        if validate(x - 1, y):
+                            water_queue.add((x - 1, y))
+                        if validate(x, y + 1):
+                            water_queue.add((x, y + 1))
+                        if validate(x, y - 1):
+                            water_queue.add((x, y - 1))
+                    if new_water_found:
+                        if len(current_water) / (rmap.size_v * rmap.size_h) >= sea_threshold:
+                            rmap.sea_tiles = rmap.sea_tiles.union(current_water)
+                        else:
+                            rmap.lake_tiles = rmap.lake_tiles.union(current_water)
+                        current_water = set()
+                water_bar()
 
 
 # Creates rivers for a chunk
-def create_rivers(chunk):
+def create_rivers(chunk: Chunk, lake_tiles: set[tuple[int, int]]):
     for y in range(chunk.size):
         for x in range(chunk.size):
             if chunk.get_height(x, y) <= 0:
-                raw_pos = chunk.size * chunk.chunk_x + x, chunk.size * chunk.chunk_y + y
-                water_type = 0 if raw_pos in chunk.map.lake_tiles else 1
+                raw_pos = chunk.height_map_pos(x, y)
+                water_type = 0 if raw_pos in lake_tiles else 1
                 curr_surrounding = get_surrounding_tiles(chunk, x, y)
                 tile = get_tile_from_surrounding(curr_surrounding)
                 chunk.set_tile("GROUND0", x, y, WaterTiles.specific_tile(tile, water_type))
@@ -73,7 +79,7 @@ class WaterTiles(Enum):
 
     @staticmethod
     def specific_tile(tile, tile_type):
-        return Tile(tile.reader_name, tile.x, tile.y + tile_type * 3)
+        return Tile(tile.type, tile.x, tile.y + tile_type * 3)
 
     O = "000\n000\n000", Tile("WATER", 0, 0)
     A = "100\n000\n000", Tile("WATER", 2, 2)
@@ -81,14 +87,14 @@ class WaterTiles(Enum):
     X1 = "000\n000\n001", Tile("WATER", 3, 2)
     X2 = "000\n000\n100", Tile("WATER", 4, 2)
     C = "a0a\n000\na0a", Tile("WATER", 0, 0)
-    D = "a0a\naa0\na0a", Tile("WATER", 1, 0)
-    E = "a0a\n0a0\naaa", Tile("WATER", 4, 0)
-    F = "a0a\n0aa\na0a", Tile("WATER", 2, 0)
-    G = "aaa\n0a0\na0a", Tile("WATER", 3, 0)
-    H = "aaa\naa0\na0a", Tile("WATER", 3, 1)
-    I = "a0a\naa0\naaa", Tile("WATER", 1, 1)
-    J = "a0a\n0aa\naaa", Tile("WATER", 2, 1)
-    K = "aaa\n0aa\na0a", Tile("WATER", 4, 1)
+    D = "a0a\na00\na0a", Tile("WATER", 1, 0)
+    E = "a0a\n000\naaa", Tile("WATER", 4, 0)
+    F = "a0a\n00a\na0a", Tile("WATER", 2, 0)
+    G = "aaa\n000\na0a", Tile("WATER", 3, 0)
+    H = "aaa\na00\na0a", Tile("WATER", 3, 1)
+    I = "a0a\na00\naaa", Tile("WATER", 1, 1)
+    J = "a0a\n00a\naaa", Tile("WATER", 2, 1)
+    K = "aaa\n00a\na0a", Tile("WATER", 4, 1)
     default = "aaa\naaa\naaa", Tile("WATER", 0, 0)
 
 

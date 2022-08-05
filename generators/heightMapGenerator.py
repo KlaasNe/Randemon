@@ -1,5 +1,5 @@
 import random
-from math import sqrt, pow
+from math import pow
 from PIL import Image
 
 from alive_progress import alive_bar
@@ -12,7 +12,10 @@ def generate_height_map(size_h, size_v, max_height, off_x, off_y, additional_noi
     static_offset_array = [(off_x, off_y)]
     for i in range(additional_noise_maps):
         static_offset_array.append((random.randint(0, 1000000), random.randint(0, 1000000)))
-    return [[(get_height(max_height, x, y, static_offset_array, size_h, size_v, island=island)) for x in range(size_h)] for y in range(size_v)]
+    return [
+        [(get_height(max_height, x, y, static_offset_array, size_h, size_v, island=island)) for x in range(size_h)]
+        for y in range(size_v)
+    ]
 
 
 def get_height(max_height, x, y, static_offset_array, size_h, size_v, octaves=1, freq=50, cubic_factor=4, island=False):
@@ -21,7 +24,10 @@ def get_height(max_height, x, y, static_offset_array, size_h, size_v, octaves=1,
     tuple_count = 1
     for offset_tuple in static_offset_array:
         off_x, off_y = offset_tuple
-        noise += 1 / tuple_count * snoise2(tuple_count * ((off_x + x // cubic_factor) / freq), tuple_count * ((off_y + y // cubic_factor) / freq), octaves)
+        noise += 1 / tuple_count * snoise2(
+            tuple_count * ((off_x + x // cubic_factor) / (freq * (0.5 + tuple_count / 3))),
+            tuple_count * ((off_y + y // cubic_factor) / (freq * (0.5 + tuple_count / 3))),
+            octaves)
         tuple_count += 1
     if total_noise_maps > 1:
         noise /= sum(1 / i for i in range(1, total_noise_maps))
@@ -30,12 +36,14 @@ def get_height(max_height, x, y, static_offset_array, size_h, size_v, octaves=1,
         ny = 2 * y / size_v - 1
         d = 1 - (1 - nx ** 2) * (1 - ny ** 2)
         noise = (noise + (1 - d)) * 0.5
+    else:
+        noise += 0.45
     return round(pow(noise, 3) * max_height * 2)
 
 
 def generate_height_map_from_image(img_path):
     im = Image.open(img_path)
-    width, height = im.size
+    width, height = im.chunk_size
     image_array = list(im.getdata())
     height_map = []
     for y in range(height):
@@ -50,8 +58,11 @@ def generate_height_map_from_image(img_path):
 def smooth_height(rmap, radius=1):
     smooth = False
     max_progress = 0
-    with alive_bar(rmap.size_v * rmap.size_h // radius ** 2, title="smoothening terrain", theme="classic") as smooth_bar:
-        while not smooth:
+    tries = 0
+    with alive_bar(rmap.size_v * rmap.size_h // radius ** 2, title="smoothening terrain",
+                   theme="classic") as smooth_bar:
+        while not smooth and tries < 10:
+            tries += 1
             smooth = True
             progress = 0
             for y in range(0, rmap.size_v, radius):
@@ -69,20 +80,28 @@ def smooth_height(rmap, radius=1):
 def smooth_down(rmap, x, y, radius=1):
     smooth = True
     center_height = rmap.height_map[y][x]
-    min_height = center_height
-    for test_y in range(max(0, y - radius), min(y + radius + 1, rmap.size_v)):
-        for test_x in range(max(0, x - radius), min(x + radius + 1, rmap.size_h)):
-            min_height = max(0, min(min_height, rmap.height_map[test_y][test_x]))
+    # min_height = center_height
+    # max_height = center_height
+    # for test_y in range(max(0, y - radius), min(y + radius + 1, rmap.size_v)):
+    #     for test_x in range(max(0, x - radius), min(x + radius + 1, rmap.size_h)):
+    #         test_height = rmap.height_map[test_y][test_x]
+    #         min_height = max(0, min(min_height, test_height))
+    #         max_height = max(max_height, test_height)
+    #         avg_height = (min_height + max_height) / 2
     for test_y in range(max(0, y - radius), min(y + radius + 1, rmap.size_v)):
         for test_x in range(max(0, x - radius), min(x + radius + 1, rmap.size_h)):
             test_height = max(0, rmap.height_map[test_y][test_x])
-            if test_height - min_height > 1:
-                rmap.height_map[test_y][test_x] = min_height + 1
+            height_diff = test_height - center_height
+            if height_diff > 1:
+                rmap.height_map[test_y][test_x] = center_height + 1
+                smooth = False
+            elif height_diff < -1:
+                rmap.height_map[test_y][test_x] = center_height - 1
                 smooth = False
     return smooth
 
 
 def draw_height_map(rmap, chunk):
-    for y in range(chunk.size):
-        for x in range(chunk.size):
+    for y in range(chunk.chunk_size):
+        for x in range(chunk.chunk_size):
             chunk.set_tile("HEIGHTMAP", x, y, Tile("HEIGHTS", rmap.get_height(chunk, x, y), 0))

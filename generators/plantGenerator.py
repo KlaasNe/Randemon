@@ -2,7 +2,8 @@ import random
 
 from noise import snoise2
 
-from mapClasses import Tile
+from mapClasses.chunk import Chunk
+from mapClasses.tile import Tile
 
 
 octaves1 = 2
@@ -16,13 +17,13 @@ freq3 = 100
 # Checks if enough space is available to plant a tree
 # No trees above the highest path height
 # Adds an overlay to decoration_layer if the top of the tree overlaps with another tree
-def create_trees(chunk, spawn_rate):
+def create_trees(chunk: Chunk, spawn_rate):
     double = False
     for y in range(chunk.size):
         for x in range(chunk.size):
             # if chunk.tile_heights.get((x, y), -1) <= chunk.highest_path:
-            if (x, y) not in chunk.get_ex_pos("GROUND0") and (x, y) not in chunk.get_ex_pos("BUILDINGS") and (x, y) not in chunk.get_ex_pos("HILLS") \
-                    and (x, y - 1) not in chunk.get_ex_pos("GROUND1") \
+            if not chunk.has_tile_at_layer("GROUND0", x, y) and not chunk.has_tile_at_layer("BUILDINGS", x, y) and not chunk.has_tile_at_layer("HILLS", x, y) \
+                    and not chunk.has_tile_at_layer("GROUND1", x, y - 1) \
                     and not chunk.has_tile_at_layer("GROUND2", x, y) and not chunk.has_tile_at_layer("GROUND2", x, y - 1) and not chunk.has_tile_at_layer("GROUND2", x, y - 2)\
                     and not chunk.has_tile_at_layer("FENCE", x, y)\
                     and not chunk.out_of_bounds(x, y) and not chunk.out_of_bounds(x, y - 1 and not chunk.out_of_bounds(x, y - 2)):
