@@ -2,14 +2,14 @@ from enum import Enum
 
 from alive_progress import alive_bar
 
-from mapClasses import Tile
+from mapClasses.tile import Tile
 from generators.heightMapGenerator import get_height
 
 
 def create_lakes_and_sea(rmap, sea_threshold=0.20):
 
     def validate(x, y):
-        return rmap.in_bounds(x, y) and rmap.get_raw_height(x, y) <= 0 and (x, y) not in current_water
+        return rmap.in_bounds(x, y) and rmap.get_height_raw_pos(x, y) <= 0 and (x, y) not in current_water
 
     seen = set()
     water_queue = set()

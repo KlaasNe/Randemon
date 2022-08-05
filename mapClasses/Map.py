@@ -2,6 +2,7 @@ import random
 import sys
 from colorama import Fore
 from colorama import Style
+from typing import Optional
 
 from buildings.BuildingTheme import BuildingTheme
 from buildings.BuildingTypes import BuildingTypes
@@ -13,14 +14,14 @@ from generators.pokemonGenerator import spawn_pokemons
 from generators.waterGenerator import *
 from generators.pathGenerator import *
 from generators.heightMapGenerator import *
-from mapClasses import *
+from mapClasses import Chunk
 
 from alive_progress import alive_bar
 
 
 class Map:
 
-    def __init__(self, chunk_nb_h, chunk_nb_v, chunk_size, max_buildings=16, island=False, seed=random.randint(0, sys.maxsize), height_map=False, themed_towns=False):
+    def __init__(self, chunk_nb_h, chunk_nb_v, chunk_size, max_buildings=16, island=False, seed=random.randint(0, sys.maxsize), height_map=False, themed_towns=False) -> None:
         self.chunk_size = chunk_size
         self.chunk_nb_h = chunk_nb_h
         self.chunk_nb_v = chunk_nb_v
@@ -79,29 +80,29 @@ class Map:
                         draw_height_map(self, current_chunk)
                     chunk_bar()
 
-    def get_chunk(self, x, y):
+    def get_chunk(self, x: int, y: int) -> Optional[Chunk]:
         try:
             return self.chunks[y][x]
         except IndexError:
             return None
 
-    def in_bounds(self, x, y):
+    def in_bounds(self, x: int, y: int) -> bool:
         return 0 <= x < self.size_h and 0 <= y < self.size_v
 
-    def get_raw_height(self, x, y):
+    def get_height_raw_pos(self, x: int, y: int) -> int:
         try:
             return self.height_map[y][x]
         except IndexError as e:
             return 0
 
-    def get_height(self, chunk, x, y):
-        cx, cy = chunk.chunk_x, chunk.chunk_y
+    def get_height(self, c: Chunk, x: int, y: int) -> int:
+        cx, cy = c.chunk_x, c.chunk_y
         x_raw, y_raw = cx * self.chunk_size + x, cy * self.chunk_size + y
         if self.in_bounds(x_raw, y_raw):
-            return self.get_raw_height(x_raw, y_raw)
+            return self.get_height_raw_pos(x_raw, y_raw)
         else:
             return 0
 
-    def change_height(self, chunk, x, y, val):
-        cx, cy = chunk.chunk_x, chunk.chunk_y
+    def change_height(self, c: Chunk, x: int, y: int, val: int) -> None:
+        cx, cy = c.chunk_x, c.chunk_y
         self.height_map[cy * self.chunk_size + y][cx * self.chunk_size + x] += val

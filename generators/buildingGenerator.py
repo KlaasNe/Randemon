@@ -6,7 +6,8 @@ from math import sqrt
 # house if not, choose a new position. There's an upper limit to try find a building spot.
 from buildings.Building import Building
 from buildings.BuildingTypes import BuildingTypes
-from mapClasses import Tile
+from mapClasses.chunk import Chunk
+from mapClasses.tile import Tile
 
 
 def spawn_building(chunk, building, fence_opt=True, mail_box_opt=True):
@@ -58,7 +59,7 @@ def spawn_building(chunk, building, fence_opt=True, mail_box_opt=True):
         return False
 
 
-def build_building(chunk, building, build_spot, fence_opt=True, mail_box_opt=True):
+def build_building(chunk: Chunk, building, build_spot, fence_opt=True, mail_box_opt=True):
     size_x, size_y = building.size
     house_x, house_y = build_spot
     for house_build_y in range(size_y):
@@ -70,8 +71,9 @@ def build_building(chunk, building, build_spot, fence_opt=True, mail_box_opt=Tru
         for front_x in range(size_x):
             chunk.set_tile("GROUND0", house_x + front_x, house_y + size_y + front_y, Tile("PATH", 0, 0))
     if mail_box_opt:
-        if random.randint(0, 1) == 1 and not (house_x - 1, house_y + size_y - 2) in chunk.get_ex_pos(
-                "BUILDINGS") and not (house_x - 1, house_y + size_y - 2) in chunk.get_ex_pos("HILLS"):
+        if random.randint(0, 1) == 1 and \
+                not chunk.has_tile_at_layer("BUILDINGS", house_x - 1, house_y + size_y - 2) and \
+                not chunk.has_tile_at_layer("HILLS", house_x - 1, house_y + size_y - 2):
             chunk.set_tile("GROUND2", house_x - 1, house_y + size_y - 2, Tile("DECO", 7, 2))
             chunk.set_tile("GROUND2", house_x - 1, house_y + size_y - 1, Tile("DECO", 7, 3))
 

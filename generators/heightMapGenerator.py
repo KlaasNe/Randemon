@@ -12,8 +12,10 @@ def generate_height_map(size_h, size_v, max_height, off_x, off_y, additional_noi
     static_offset_array = [(off_x, off_y)]
     for i in range(additional_noise_maps):
         static_offset_array.append((random.randint(0, 1000000), random.randint(0, 1000000)))
-    return [[(get_height(max_height, x, y, static_offset_array, size_h, size_v, island=island))
-             for x in range(size_h)] for y in range(size_v)]
+    return [
+        [(get_height(max_height, x, y, static_offset_array, size_h, size_v, island=island)) for x in range(size_h)]
+        for y in range(size_v)
+    ]
 
 
 def get_height(max_height, x, y, static_offset_array, size_h, size_v, octaves=1, freq=50, cubic_factor=4, island=False):
@@ -57,7 +59,8 @@ def smooth_height(rmap, radius=1):
     smooth = False
     max_progress = 0
     tries = 0
-    with alive_bar(rmap.size_v * rmap.size_h // radius ** 2, title="smoothening terrain", theme="classic") as smooth_bar:
+    with alive_bar(rmap.size_v * rmap.size_h // radius ** 2, title="smoothening terrain",
+                   theme="classic") as smooth_bar:
         while not smooth and tries < 10:
             tries += 1
             smooth = True

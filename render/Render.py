@@ -1,11 +1,16 @@
 import ctypes
 import os
+from typing import Union, Optional
+
+from mapClasses.chunk import Chunk
+
 from colorama import Fore
 from colorama import Style
 from datetime import datetime
 
 from PIL import Image
 
+from mapClasses import Map
 from .SpriteSheetWriter import *
 from alive_progress import alive_bar
 
@@ -13,7 +18,7 @@ from alive_progress import alive_bar
 class Render:
     TILE_SIZE = 16
 
-    def __init__(self, map_obj):
+    def __init__(self, map_obj: Map) -> None:
         self.map = map_obj
         self.size = map_obj.chunk_size
         self.visual = Image.new("RGBA",
@@ -31,7 +36,7 @@ class Render:
                     cx += 1
                 cy += 1
 
-    def render(self, chunk, cx, cy):
+    def render(self, chunk: Chunk, cx: int, cy: int) -> None:
         sheet_writer = SpriteSheetWriter()
         for layer in chunk.layers.values():
             for tile_x, tile_y in layer.get_ex_pos():
@@ -55,10 +60,10 @@ class Render:
     #         except KeyError:
     #             pass
 
-    def show(self):
+    def show(self) -> None:
         self.visual.show()
 
-    def save(self, name):
+    def save(self, name: str) -> None:
         img_name = name + ".png"
         with alive_bar(1, title="Saving image", theme="classic") as save_bar:
             self.visual.save(os.path.join("saved images", img_name), "png")
@@ -66,9 +71,9 @@ class Render:
         print("Image saved successfully")
         print(os.path.join(Fore.LIGHTBLUE_EX + os.path.abspath("saved images"), Fore.LIGHTYELLOW_EX + img_name + Style.RESET_ALL))
 
-    def save_prompt(self, map_obj):
+    def save_prompt(self, seed: Union[int, str] = "") -> None:
         save = input('\n' + Fore.LIGHTBLUE_EX + "Save this image? (y/n/w): " + Style.RESET_ALL)
-        file_n = "{} {}".format(datetime.now().strftime("%G-%m-%d %H-%M-%S"), map_obj.seed)
+        file_n = "{} {}".format(datetime.now().strftime("%G-%m-%d %H-%M-%S"), str(seed))
         if save == "y" or save == "w":
             if not os.path.isdir("saved images"):
                 os.mkdir("saved images")

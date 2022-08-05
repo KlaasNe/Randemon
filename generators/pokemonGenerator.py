@@ -4,7 +4,7 @@ from generators.pathGenerator import get_path_type
 
 # Spawns pokemon on the map most in the pmap.ground_layer
 # Returns true if all existing pokemon are present on the map
-from mapClasses import Tile
+from mapClasses.tile import Tile
 
 pokemon_data = {
     "diglett": {"pos": (0, 0), "size": (1, 1), "odds": 0.001},

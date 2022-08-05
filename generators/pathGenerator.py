@@ -2,6 +2,7 @@ from enum import Enum
 from random import shuffle
 from sys import maxsize
 
+from mapClasses.chunk import Chunk
 from mapClasses.tile import Tile
 from mapClasses.tile.TileWeights import TileWeights
 from mapClasses.tile.WeightTile import WeightTile
@@ -176,7 +177,7 @@ def draw_path2(chunk):
     create_lanterns(chunk)
 
 
-def determine_weight(chunk, x, y, avoid_hill_corners=True):
+def determine_weight(chunk: Chunk, x, y, avoid_hill_corners=True):
     def is_2x2_tile_type(layer, x, y, tile_type):
         return any((chunk.get_tile_type(layer, x, y) == tile_type,
                    chunk.get_tile_type(layer, x - 1, y) == tile_type,
@@ -184,9 +185,9 @@ def determine_weight(chunk, x, y, avoid_hill_corners=True):
                     chunk.get_tile_type(layer, x - 1, y - 1) == tile_type))
 
     def is_corner(x, y):
-        return (x, y) in chunk.get_ex_pos("HILLS") and chunk.get_tile("HILLS", x, y).y in [1, 3] or \
+        return chunk.has_tile_at_layer("HILLS", x, y) and chunk.get_tile("HILLS", x, y).y in [1, 3] or \
                 chunk.get_tile("HILLS", x, y) == Tile("HILLS", 0, 2) or \
-                chunk.get_tile("HILLS", x, y) == Tile("HILLS", 3, 0) and (x, y - 1) in chunk.get_ex_pos("HILLS")
+                chunk.get_tile("HILLS", x, y) == Tile("HILLS", 3, 0) and chunk.has_tile_at_layer("HILLS", x, y - 1)
 
     if is_2x2_tile_type("BUILDINGS", x, y, "BUILDINGS"): return TileWeights.IMPASSABLE.value
     if is_2x2_tile_type("FENCE", x, y, "FENCE"): return TileWeights.IMPASSABLE.value
@@ -260,7 +261,7 @@ def create_stairs(chunk, pl, bl):
                         bl.set_tile(px, py + 1, Tile("ROAD", 5, 1))
 
 
-def create_lanterns(chunk):
+def create_lanterns(chunk: Chunk):
     from random import random
 
     def check_availability_zone(x1, y1, x2, y2):
@@ -273,28 +274,27 @@ def create_lanterns(chunk):
 
     for y in range(chunk.size):
         for x in range(chunk.size):
-            if chunk.get_tile_type("GROUND1", x, y) != "FENCES":
-                if is_actual_path(chunk.get_layer("GROUND0"), x - 1, y) and (x - 1, y) not in chunk.get_ex_pos("BUILDINGS") and (x - 1, y) not in chunk.get_ex_pos("GROUND2"):
-                    if random() < 0.08 and check_availability_zone(x, y - 2, x + 2, y + 1):
-                        chunk.set_tile("GROUND2", x, y, Tile("DECO", 4, 2))
-                        chunk.set_tile("GROUND2", x, y - 1, Tile("DECO", 4, 1))
-                        chunk.set_tile("GROUND2", x, y - 2, Tile("DECO", 4, 0))
-                        chunk.set_tile("GROUND2", x + 1, y, Tile("DECO", 5, 2))
-                if is_actual_path(chunk.get_layer("GROUND0"), x + 1, y) and (x + 1, y) not in chunk.get_ex_pos("BUILDINGS") and (x + 1, y) not in chunk.get_ex_pos("GROUND2"):
-                    if random() < 0.08 and check_availability_zone(x, y - 2, x, y + 1):
-                        chunk.set_tile("GROUND2", x, y, Tile("DECO", 3, 2))
-                        chunk.set_tile("GROUND2", x, y - 1, Tile("DECO", 3, 1))
-                        chunk.set_tile("GROUND2", x, y - 2, Tile("DECO", 3, 0))
+            if random() < 0.08:
+                if chunk.get_tile_type("GROUND1", x, y) != "FENCES":
+                    if is_actual_path(chunk.get_layer("GROUND0"), x - 1, y) and not chunk.has_tile_at_layer("BUILDINGS", x - 1, y) and not chunk.has_tile_at_layer("GROUND2", x - 1, y):
+                        if check_availability_zone(x, y - 2, x + 2, y + 1):
+                            chunk.set_tile("GROUND2", x, y, Tile("DECO", 4, 2))
+                            chunk.set_tile("GROUND2", x, y - 1, Tile("DECO", 4, 1))
+                            chunk.set_tile("GROUND2", x, y - 2, Tile("DECO", 4, 0))
+                            chunk.set_tile("GROUND2", x + 1, y, Tile("DECO", 5, 2))
+                    if is_actual_path(chunk.get_layer("GROUND0"), x + 1, y) and not chunk.has_tile_at_layer("BUILDINGS", x + 1, y) and not chunk.has_tile_at_layer("GROUND2", x + 1, y):
+                        if check_availability_zone(x, y - 2, x, y + 1):
+                            chunk.set_tile("GROUND2", x, y, Tile("DECO", 3, 2))
+                            chunk.set_tile("GROUND2", x, y - 1, Tile("DECO", 3, 1))
+                            chunk.set_tile("GROUND2", x, y - 2, Tile("DECO", 3, 0))
 
 
-def remove_path(chunk):
-    delete_pos = set()
+def remove_path(chunk: Chunk):
+    delete_pos = set[tuple[int, int]]()
 
-    for pos in chunk.get_ex_pos("GROUND0"):
-        x, y = pos[0], pos[1]
+    for x, y in chunk.get_layer("GROUND0").get_ex_pos():
         if chunk.get_tile_type("GROUND0", x, y) == "PATH":
             delete_pos.add((x, y))
 
-    for pos in delete_pos:
-        x, y = pos[0], pos[1]
+    for x, y in delete_pos:
         chunk.remove_tile("GROUND0", x, y)
