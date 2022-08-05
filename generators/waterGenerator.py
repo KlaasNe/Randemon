@@ -2,11 +2,12 @@ from enum import Enum
 
 from alive_progress import alive_bar
 
+from mapClasses import Map
+from mapClasses.chunk import Chunk
 from mapClasses.tile import Tile
-from generators.heightMapGenerator import get_height
 
 
-def create_lakes_and_sea(rmap, sea_threshold=0.20):
+def create_lakes_and_sea(rmap: Map, sea_threshold=0.20):
 
     def validate(x, y):
         return rmap.in_bounds(x, y) and rmap.get_height_raw_pos(x, y) <= 0 and (x, y) not in current_water
@@ -14,7 +15,6 @@ def create_lakes_and_sea(rmap, sea_threshold=0.20):
     seen = set()
     water_queue = set()
     current_water = set()
-    new_water_found = False
     with alive_bar(rmap.size_v * rmap.size_h, title="Dividing into lakes and seas", theme="classic") as water_bar:
         for y in range(rmap.size_v):
             for x in range(rmap.size_h):
@@ -44,12 +44,12 @@ def create_lakes_and_sea(rmap, sea_threshold=0.20):
 
 
 # Creates rivers for a chunk
-def create_rivers(chunk):
+def create_rivers(chunk: Chunk, lake_tiles: set[tuple[int, int]]):
     for y in range(chunk.size):
         for x in range(chunk.size):
             if chunk.get_height(x, y) <= 0:
-                raw_pos = chunk.size * chunk.chunk_x + x, chunk.size * chunk.chunk_y + y
-                water_type = 0 if raw_pos in chunk.map.lake_tiles else 1
+                raw_pos = chunk.height_map_pos(x, y)
+                water_type = 0 if raw_pos in lake_tiles else 1
                 curr_surrounding = get_surrounding_tiles(chunk, x, y)
                 tile = get_tile_from_surrounding(curr_surrounding)
                 chunk.set_tile("GROUND0", x, y, WaterTiles.specific_tile(tile, water_type))

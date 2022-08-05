@@ -35,7 +35,7 @@ class Map:
         self.height_map = generate_height_map(self.chunk_size * self.chunk_nb_h, self.chunk_size * self.chunk_nb_v, 5, off_x, off_y, additional_noise_maps=3, island=island)
         # self.height_map = generate_height_map_from_image("heightMaps/earthLandMassHeight.png")
         smooth_height(self, radius=5)
-        self.chunks = [[Chunk(self, chunk_size, x, y, off_x + x * self.chunk_size, off_y + y * self.chunk_size) for x in range(chunk_nb_h)] for y in range(chunk_nb_v)]
+        self.chunks = [[Chunk(self.height_map, chunk_size, x, y, off_x + x * self.chunk_size, off_y + y * self.chunk_size) for x in range(chunk_nb_h)] for y in range(chunk_nb_v)]
         self.lake_tiles = set()
         self.sea_tiles = set()
         with alive_bar(self.chunk_nb_v * self.chunk_nb_h, title="Removing faulty heights", theme="classic") as faulty_heights_bar:
@@ -49,11 +49,9 @@ class Map:
             for y in range(chunk_nb_v):
                 for x in range(chunk_nb_h):
                     current_chunk = self.chunks[y][x]
-                    remove_faulty_heights(current_chunk)
                     if not height_map:
                         create_edges(current_chunk, 0)
-                        create_rivers(current_chunk)
-
+                        create_rivers(current_chunk, self.lake_tiles)
                         if max_buildings > 0 and random.randint(0, 3) <= 1:
                             current_chunk.has_town = True
                             path_type = random.randint(0, 7)
