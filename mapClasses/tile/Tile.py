@@ -17,7 +17,7 @@ class Tile:
         return "Tile: " + ', '.join("%s=%s" % item for item in vars(self).items())
 
     def __hash__(self) -> int:
-        return hash(str(self))
+        return hash((self.x, self.y, self.reader_name, self.mirror))
 
     def get_type(self) -> str:
         return self.reader_name

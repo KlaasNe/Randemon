@@ -43,7 +43,7 @@ def get_height(max_height, x, y, static_offset_array, size_h, size_v, octaves=1,
 
 def generate_height_map_from_image(img_path):
     im = Image.open(img_path)
-    width, height = im.size
+    width, height = im.chunk_size
     image_array = list(im.getdata())
     height_map = []
     for y in range(height):
@@ -102,6 +102,6 @@ def smooth_down(rmap, x, y, radius=1):
 
 
 def draw_height_map(rmap, chunk):
-    for y in range(chunk.size):
-        for x in range(chunk.size):
+    for y in range(chunk.chunk_size):
+        for x in range(chunk.chunk_size):
             chunk.set_tile("HEIGHTMAP", x, y, Tile("HEIGHTS", rmap.get_height(chunk, x, y), 0))

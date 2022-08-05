@@ -13,9 +13,11 @@ from mapClasses.tile import Tile
 def spawn_building(chunk, building, fence_opt=True, mail_box_opt=True):
     # checks if a chosen position has enough free space for the house + spacing, starting from the top left corner
     def is_available_spot(x1, y1, x2, y2):
+        if chunk.out_of_bounds(x1, y1) or chunk.out_of_bounds(x2, y2):
+            return False
         for y in range(y1, y2 + 1):
             for x in range(x1 - 2, x2 + 1 + 2):
-                if chunk.out_of_bounds(x, y) or chunk.has_tile_at_layer("GROUND0", x, y) or chunk.has_tile_at_layer("FENCE", x, y):
+                if chunk.has_tile_at_layer("GROUND0", x, y) or chunk.has_tile_at_layer("FENCE", x, y):
                     return False
                 if x1 <= x < x2 + 2 and y1 <= y < y2 + 1:
                     if chunk.has_tile_at_layer("BUILDINGS", x, y) or chunk.has_tile_at_layer("HILLS", x, y):
@@ -51,7 +53,7 @@ def spawn_building(chunk, building, fence_opt=True, mail_box_opt=True):
     size_x, size_y = building.size
     map_size_factor = max(chunk.size * chunk.size // 2500, 1) ** 2
     max_attempts = size_x * size_y * 100 * map_size_factor
-    build_spot = search_available_spot(building, 30, max_attempts)
+    build_spot = search_available_spot(building, 25, max_attempts)
     if build_spot:
         build_building(chunk, building, build_spot, fence_opt, mail_box_opt)
         return True
@@ -92,7 +94,7 @@ def is_inside_cluster(chunk, x, y, radius, connections):
         if sqrt((x - front_door_x) ** 2 + (y - front_door_y) ** 2) < radius:
             found_connections += 1
         if connections > len(chunk.buildings):
-            if found_connections == 1:
+            if found_connections == len(chunk.buildings) - 1:
                 return True
         else:
             if found_connections == connections:

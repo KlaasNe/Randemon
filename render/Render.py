@@ -19,37 +19,31 @@ class Render:
     TILE_SIZE = 16
 
     def __init__(self, map_obj: Map) -> None:
-        self.map = map_obj
-        self.size = map_obj.chunk_size
+        chunk_size = map_obj.chunk_size
+        chunk_nb_h, chunk_nb_v = map_obj.chunk_nb_h, map_obj.chunk_nb_v
         self.visual = Image.new("RGBA",
-                                (self.size * Render.TILE_SIZE * self.map.chunk_nb_h,
-                                 self.size * Render.TILE_SIZE * self.map.chunk_nb_v),
+                                (chunk_size * TILE_SIZE * chunk_nb_h,
+                                 chunk_size * TILE_SIZE * chunk_nb_v),
                                 (0, 0, 0, 0))
         self.tile_buffer = dict()
-        with alive_bar(self.map.chunk_nb_h * self.map.chunk_nb_v, title="rendering chunks", theme="classic") as render_bar:
-            cy = 0
-            for chunk_row in self.map.chunks:
-                cx = 0
-                for chunk in chunk_row:
-                    self.render(chunk, cx, cy)
-                    render_bar()
-                    cx += 1
-                cy += 1
+        with alive_bar(chunk_nb_h * chunk_nb_v, title="rendering chunks", theme="classic") as render_bar:
+            for chunk in map_obj:
+                self.render(chunk)
+                render_bar()
 
-    def render(self, chunk: Chunk, cx: int, cy: int) -> None:
+    def render(self, chunk: Chunk) -> None:
         sheet_writer = SpriteSheetWriter()
-        for layer in chunk.layers.values():
-            for tile_x, tile_y in layer.get_ex_pos():
-                current_tile = layer.get_tile(tile_x, tile_y)
-                x, y = tile_x * TILE_SIZE, tile_y * TILE_SIZE
-                c_offset_x, c_offset_y = cx * TILE_SIZE * chunk.size, cy * TILE_SIZE * chunk.size
-                x += c_offset_x
-                y += c_offset_y
+        for layer in chunk.get_layers():
+            for (tile_x, tile_y), tile in layer.get_items():
+                curr_hash = hash(tile)
+                x, y = chunk.height_map_pos(tile_x, tile_y)
+                x *= TILE_SIZE
+                y *= TILE_SIZE
                 try:
-                    img = self.tile_buffer[current_tile]
+                    img = self.tile_buffer[curr_hash]
                     sheet_writer.draw_img(img, self.visual, x, y)
                 except KeyError:
-                    self.tile_buffer[current_tile] = sheet_writer.draw_tile(current_tile, self.visual, x, y)
+                    self.tile_buffer[curr_hash] = sheet_writer.draw_tile(tile, self.visual, x, y)
 
     # def render_npc(self, layer):
     #     sheet_writer = SpriteSheetWriter(Image.open(os.path.join("resources", "npc.png")), 20, 23)

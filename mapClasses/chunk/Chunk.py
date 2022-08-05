@@ -25,7 +25,10 @@ class Chunk:
     def get_layer(self, layer: str) -> Layer:
         return self.layers[layer]
 
-    def clear_layer(self, layer: Layer) -> None:
+    def get_layers(self) -> Iterator[Layer]:
+        return self.layers.values().__iter__()
+
+    def clear_layer(self, layer: str) -> None:
         self.layers[layer].clear()
 
     def get_tile(self, layer: str, x: int, y: int) -> Optional[Tile]:

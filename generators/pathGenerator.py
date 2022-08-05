@@ -219,7 +219,7 @@ def create_bridges(chunk, layer):
                     layer.set_tile(x, y, Tile("ROAD", 1, 1))
                     layer.set_tile(x - 1, y, Tile("ROAD", 1, 0))
                 else:
-                    layer.set_tile(x, y, ("PATH", 0, 10))
+                    layer.set_tile(x, y, Tile("PATH", 0, 10))
 
             if layer.get_tile_type(x, y - 1) == "ROAD" and layer.get_tile_type(x, y) == "WATER":
                 chunk.set_tile("GROUND1", x, y, Tile("DECO", 6, 0))

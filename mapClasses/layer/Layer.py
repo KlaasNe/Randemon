@@ -11,6 +11,10 @@ class Layer:
     def get_tile(self, x: int, y: int) -> Optional[Tile]:
         return self.tiles.get((x, y), None)
 
+    def get_items(self):
+        for item in self.tiles.items():
+            yield item
+
     def set_tile(self, x: int, y: int, tile: Tile) -> None:
         self.tiles[(x, y)] = tile
 

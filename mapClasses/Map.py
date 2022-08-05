@@ -50,7 +50,7 @@ class Map:
                 for x in range(chunk_nb_h):
                     current_chunk = self.chunks[y][x]
                     if not height_map:
-                        create_edges(current_chunk, 0)
+                        create_edges(current_chunk, hill_type=0)
                         create_rivers(current_chunk, self.lake_tiles)
                         if max_buildings > 0 and random.randint(0, 3) <= 1:
                             current_chunk.has_town = True
@@ -59,7 +59,7 @@ class Map:
                             if valid_town:
                                 if themed_towns:
                                     building_theme: BuildingTheme = BuildingThemes.get_random_theme().value
-                                for b in range(max_buildings):
+                                for b in range(random.randint(1, max_buildings)):
                                     if themed_towns:
                                         spawn_building(current_chunk, building_theme.get_random_building_type().value)
                                     else:
@@ -77,6 +77,11 @@ class Map:
                     else:
                         draw_height_map(self, current_chunk)
                     chunk_bar()
+
+    def __iter__(self):
+        for chunk_row in self.chunks:
+            for chunk in chunk_row:
+                yield chunk
 
     def get_chunk(self, x: int, y: int) -> Optional[Chunk]:
         try:
