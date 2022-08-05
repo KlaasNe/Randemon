@@ -1,6 +1,8 @@
 import ctypes
 import os
-from typing import Union, Optional
+from typing import Union
+
+from PIL import Image
 
 from mapClasses.chunk import Chunk
 
@@ -8,42 +10,48 @@ from colorama import Fore
 from colorama import Style
 from datetime import datetime
 
-from PIL import Image
-
-from mapClasses import Map
-from .SpriteSheetWriter import *
+from mapClasses import Map, Tile
+from render.SpriteSheetReaders import *
 from alive_progress import alive_bar
 
 
 class Render:
     TILE_SIZE = 16
+    TNF = Tile("TNF", 0, 0)
 
     def __init__(self, map_obj: Map) -> None:
+        self.readers = dict()
+        for reader in SpriteSheetReaders:
+            self.readers[reader.name] = reader.value
         chunk_size = map_obj.chunk_size
         chunk_nb_h, chunk_nb_v = map_obj.chunk_nb_h, map_obj.chunk_nb_v
         self.visual = Image.new("RGBA",
-                                (chunk_size * TILE_SIZE * chunk_nb_h,
-                                 chunk_size * TILE_SIZE * chunk_nb_v),
+                                (chunk_size * Render.TILE_SIZE * chunk_nb_h,
+                                 chunk_size * Render.TILE_SIZE * chunk_nb_v),
                                 (0, 0, 0, 0))
-        self.tile_buffer = dict()
         with alive_bar(chunk_nb_h * chunk_nb_v, title="rendering chunks", theme="classic") as render_bar:
             for chunk in map_obj:
-                self.render(chunk)
+                self.render_chunk(chunk)
                 render_bar()
 
-    def render(self, chunk: Chunk) -> None:
-        sheet_writer = SpriteSheetWriter()
+    def get_tile_img(self, tile):
+        try:
+            return self.readers[tile.type].get_tile(tile)
+        except KeyError:
+            return self.readers["TNF"].get_tile(Render.TNF)
+
+    def draw_tile(self, tile, x, y):
+        img = self.get_tile_img(tile)
+        dest_box = (x, y, x + Render.TILE_SIZE, y + Render.TILE_SIZE)
+        self.visual.paste(img, dest_box, img)
+
+    def render_chunk(self, chunk: Chunk) -> None:
         for layer in chunk.get_layers():
             for (tile_x, tile_y), tile in layer.get_items():
-                curr_hash = hash(tile)
                 x, y = chunk.height_map_pos(tile_x, tile_y)
-                x *= TILE_SIZE
-                y *= TILE_SIZE
-                try:
-                    img = self.tile_buffer[curr_hash]
-                    sheet_writer.draw_img(img, self.visual, x, y)
-                except KeyError:
-                    self.tile_buffer[curr_hash] = sheet_writer.draw_tile(tile, self.visual, x, y)
+                x *= Render.TILE_SIZE
+                y *= Render.TILE_SIZE
+                self.draw_tile(tile, x, y)
 
     # def render_npc(self, layer):
     #     sheet_writer = SpriteSheetWriter(Image.open(os.path.join("resources", "npc.png")), 20, 23)

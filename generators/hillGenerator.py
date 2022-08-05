@@ -60,7 +60,7 @@ class HillTiles(Enum):
 
     @staticmethod
     def specific_tile(tile, tile_type):
-        return Tile(tile.reader_name, tile.x + tile_type * 5, tile.y)
+        return Tile(tile.type, tile.x + tile_type * 5, tile.y)
 
     A = [[None, None, None], [0, 0, None], [-1, 0, None]], Tile("HILLS", 0, 1)
     B = [[None, None, None], [None, 0, 0], [None, 0, -1]], Tile("HILLS", 0, 2)

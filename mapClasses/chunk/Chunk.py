@@ -22,6 +22,9 @@ class Chunk:
         self.buildings = []
         self.has_town = False
 
+    def __getitem__(self, layer: str) -> Layer:
+        return self.layers[layer]
+
     def get_layer(self, layer: str) -> Layer:
         return self.layers[layer]
 

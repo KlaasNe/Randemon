@@ -79,7 +79,7 @@ class WaterTiles(Enum):
 
     @staticmethod
     def specific_tile(tile, tile_type):
-        return Tile(tile.reader_name, tile.x, tile.y + tile_type * 3)
+        return Tile(tile.type, tile.x, tile.y + tile_type * 3)
 
     O = "000\n000\n000", Tile("WATER", 0, 0)
     A = "100\n000\n000", Tile("WATER", 2, 2)

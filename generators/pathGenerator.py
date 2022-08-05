@@ -10,7 +10,7 @@ from mapClasses.tile.WeightTile import WeightTile
 
 def get_path_type(layer, x, y):
     tile = layer.get_tile(x, y)
-    return tile.y // 3 if type(tile) == Tile and tile.get_type() == "PATH" else None
+    return tile.y // 3 if type(tile) == Tile and tile.type == "PATH" else None
 
 
 def create_path(chunk, path_type):
@@ -276,13 +276,13 @@ def create_lanterns(chunk: Chunk):
         for x in range(chunk.size):
             if random() < 0.08:
                 if chunk.get_tile_type("GROUND1", x, y) != "FENCES":
-                    if is_actual_path(chunk.get_layer("GROUND0"), x - 1, y) and not chunk.has_tile_at_layer("BUILDINGS", x - 1, y) and not chunk.has_tile_at_layer("GROUND2", x - 1, y):
+                    if is_actual_path(chunk["GROUND0"], x - 1, y) and not chunk.has_tile_at_layer("BUILDINGS", x - 1, y) and not chunk.has_tile_at_layer("GROUND2", x - 1, y):
                         if check_availability_zone(x, y - 2, x + 2, y + 1):
                             chunk.set_tile("GROUND2", x, y, Tile("DECO", 4, 2))
                             chunk.set_tile("GROUND2", x, y - 1, Tile("DECO", 4, 1))
                             chunk.set_tile("GROUND2", x, y - 2, Tile("DECO", 4, 0))
                             chunk.set_tile("GROUND2", x + 1, y, Tile("DECO", 5, 2))
-                    if is_actual_path(chunk.get_layer("GROUND0"), x + 1, y) and not chunk.has_tile_at_layer("BUILDINGS", x + 1, y) and not chunk.has_tile_at_layer("GROUND2", x + 1, y):
+                    if is_actual_path(chunk["GROUND0"], x + 1, y) and not chunk.has_tile_at_layer("BUILDINGS", x + 1, y) and not chunk.has_tile_at_layer("GROUND2", x + 1, y):
                         if check_availability_zone(x, y - 2, x, y + 1):
                             chunk.set_tile("GROUND2", x, y, Tile("DECO", 3, 2))
                             chunk.set_tile("GROUND2", x, y - 1, Tile("DECO", 3, 1))

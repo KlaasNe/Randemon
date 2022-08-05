@@ -8,6 +8,9 @@ class Layer:
     def __init__(self) -> None:
         self.tiles: dict[tuple[int, int], Tile] = dict()
 
+    def __getitem__(self, pos: tuple[int, int]) -> Tile:
+        return self.tiles.get(pos, None)
+
     def get_tile(self, x: int, y: int) -> Optional[Tile]:
         return self.tiles.get((x, y), None)
 
@@ -33,7 +36,7 @@ class Layer:
 
     def get_tile_type(self, x: int, y: int) -> Optional[str]:
         tile: Tile = self.get_tile(x, y)
-        return None if tile is None else tile.get_type()
+        return None if tile is None else tile.type
 
     def clear(self) -> None:
         self.tiles.clear()
