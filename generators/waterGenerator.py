@@ -1,6 +1,7 @@
 from enum import Enum
 
 from alive_progress import alive_bar
+from noise import snoise2
 
 from mapClasses import Map
 from mapClasses.chunk import Chunk
@@ -99,21 +100,17 @@ class WaterTiles(Enum):
 
 
 # Creates sandy path around rivers; inside a perlin noise field
-# def create_beach(layer, height_map, x_offset, y_offset):
-#     def check_for_water_around(x, y, beach_width):
-#         for around in range(0, (beach_width + 2) ** 2):
-#             check_x = x + around % (beach_width + 2) - beach_width
-#             check_y = y + around // (beach_width + 2) - beach_width
-#             if layer.get_tile_type((check_x, check_y)) == "wa":
-#                 return True
-#         return False
-#
-#     octaves = 1
-#     freq = 100
-#     for y in range(0, layer.sy):
-#         for x in range(0, layer.sx):
-#             beach = snoise2((x + x_offset) / freq, (y + y_offset) / freq, octaves) + 0.5 > 0.5
-#             if beach and ((x, y) not in layer.get_ex_pos()
-#                           and height_map.get((x, y), 0) == 1
-#                           and check_for_water_around(x, y, 4)):
-#                 layer.set_tile((x, y), ("pa", 0, 9))
+def create_beach(c: Chunk):
+    def check_for_water_around(x, y, radius):
+        for check_y in range(y - radius, y + radius + 1):
+            for check_x in range(x - radius, x + radius + 1):
+                if c["GROUND0"].get_tile_type(check_x, check_y) == "WATER":
+                    return True
+        return False
+
+    octaves = 1
+    freq = 100
+    for y in range(c.size):
+        for x in range(c.size):
+            if c["GROUND0"][(x, y)] is None and c.get_height(x, y) == 1 and check_for_water_around(x, y, 4):
+                c["GROUND0"][(x, y)] = Tile("PATH", 0, 9)
