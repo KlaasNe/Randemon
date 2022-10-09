@@ -1,42 +1,46 @@
 from enum import Enum
 from random import shuffle
 
+from mapClasses import Map
 from mapClasses.chunk import Chunk
+from mapClasses.layer import Layer
 from mapClasses.tile import Tile
 from mapClasses.tile.TileWeights import TileWeights
 from mapClasses.tile.WeightTile import WeightTile
 
 
-def get_path_type(layer, x, y):
+def get_path_type(layer: Layer, x: int, y: int) -> int:
     tile = layer[(x, y)]
     return tile.y // 3 if type(tile) == Tile and tile.type == "PATH" else None
 
 
-def create_path(chunk: Chunk):
-    for y in range(chunk.size):
+def create_path(rmap: Map) -> None:
+    for y in range(rmap.size_v):
         prev_surrounding = None
-        for x in range(chunk.size):
-            tile: Tile = chunk["GROUND0"][(x, y)]
+        for x in range(rmap.size_h):
+            chunk, cx, cy = rmap.parse_to_chunk_coordinate(x, y)
+            tile: Tile = chunk["GROUND0"][(cx, cy)]
             if tile is not None and tile.type == "PATH":
                 path_type = tile.y // 3
-                prev_surrounding = get_surrounding_tiles(chunk, x, y, prev_surrounding)
+                prev_surrounding = get_surrounding_tiles(rmap, x, y)
                 tile = get_tile_from_surrounding(prev_surrounding)
                 if tile is None:
-                    chunk["GROUND0"].remove_tile(x, y)
+                    chunk["GROUND0"].remove_tile(cx, cy)
                 else:
-                    chunk["GROUND0"][(x, y)] = PathTiles.specific_tile(tile, path_type)
+                    chunk["GROUND0"][(cx, cy)] = PathTiles.specific_tile(tile, path_type)
             else:
                 prev_surrounding = None
 
 
-def get_surrounding_tiles(chunk, x, y, prev):
-    if prev is None:
-        return [[1 if chunk.get_tile_type("GROUND0", hx, hy) == "PATH" or chunk.get_tile_type("GROUND0", hx, hy) == "ROAD" else 0 for hx in range(x - 1, x + 2)] for hy in range(y - 1, y + 2)]
-    else:
-        new = [r[1:] for r in prev]
-        for hy in range(3):
-            new[hy].append(1 if chunk.get_tile_type("GROUND0", x + 1, y - 1 + hy) == "PATH" or chunk.get_tile_type("GROUND0", x + 1, y - 1 + hy) == "ROAD" else 0)
-        return new
+def get_surrounding_tiles(rmap: Map, x: int, y: int) -> list[list]:
+    surrounding = []
+    for py in range(y - 1, y + 2):
+        row = []
+        for px in range(x - 1, x + 2):
+            chunk, cx, cy = rmap.parse_to_chunk_coordinate(px, py)
+            row.append(1 if chunk["GROUND0"].get_tile_type(cx, cy) in ["PATH", "ROAD"] else 0)
+        surrounding.append(row)
+    return surrounding
 
 
 def get_tile_from_surrounding(surrounding) -> Tile:
@@ -74,7 +78,7 @@ class PathTiles(Enum):
     K = "a1a\n0a1\na0a", Tile("PATH", 1, 1)
     L = "a1a\n1a0\na0a", Tile("PATH", 2, 1)
     M = "a0a\n1a0\na1a", Tile("PATH", 4, 1)
-    # DEFAULT = "aaa\naaa\naaa", None
+    # DEFAULT = "aaa\naaa\naaa", Tile("PATH", 0, 1)
 
 
 def is_actual_path(layer, x, y):

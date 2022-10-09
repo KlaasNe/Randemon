@@ -10,7 +10,7 @@ from mapClasses.tile import Tile
 def create_lakes_and_sea(rmap: Map, sea_threshold=0.20) -> None:
 
     def validate(x0: int, y0: int) -> bool:
-        return rmap.in_bounds(x0, y0) and rmap.get_height_raw_pos(x0, y0) <= 0 and (x0, y0) not in current_water
+        return rmap.in_bounds(x0, y0) and rmap.get_height_parsed_pos(x0, y0) <= 0 and (x0, y0) not in current_water
 
     seen = set()
     water_queue = set()
@@ -99,15 +99,18 @@ class WaterTiles(Enum):
 
 
 # Creates sandy path around rivers; inside a perlin noise field
-def create_beach(c: Chunk) -> None:
+def create_beach(rmap: Map) -> None:
     def check_for_water_around(x0: int, y0: int, radius: int) -> bool:
         for check_y in range(y0 - radius, y0 + radius + 1):
             for check_x in range(x0 - radius, x0 + radius + 1):
-                if c["GROUND0"].get_tile_type(check_x, check_y) == "WATER":
+                chunk, cx, cy = rmap.parse_to_chunk_coordinate(check_x, check_y)
+                if chunk is not None and chunk["GROUND0"].get_tile_type(cx, cy) == "WATER":
                     return True
         return False
 
-    for y in range(c.size):
-        for x in range(c.size):
-            if c["GROUND0"][(x, y)] is None and c.get_height(x, y) == 1 and check_for_water_around(x, y, 4):
-                c["GROUND0"][(x, y)] = Tile("PATH", 0, 9)
+    for y in range(rmap.size_v):
+        for x in range(rmap.size_h):
+            if rmap.get_height_parsed_pos(x, y) == 1:
+                chunk, cx, cy = rmap.parse_to_chunk_coordinate(x, y)
+                if chunk["GROUND0"][(cx, cy)] is None and check_for_water_around(x, y, 4):
+                    chunk["GROUND0"][(cx, cy)] = Tile("PATH", 0, 9)

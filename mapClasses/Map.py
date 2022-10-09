@@ -77,8 +77,9 @@ class Map:
                                 current_chunk.has_town = False
                                 current_chunk.clear_layer("BUILDINGS")
                                 remove_path(current_chunk)
-                        create_beach(current_chunk)
-                        create_path(current_chunk)
+
+                        create_beach(self)
+                        create_path(self)
 
                         spawn_pokemons(current_chunk)
                         create_trees(current_chunk, 0.55)
@@ -101,20 +102,29 @@ class Map:
     def in_bounds(self, x: int, y: int) -> bool:
         return 0 <= x < self.size_h and 0 <= y < self.size_v
 
-    def get_height_raw_pos(self, x: int, y: int) -> int:
+    def parse_chunk_coordinate(self, c: Chunk, x: int, y: int) -> tuple[int, int]:
+        cx, cy = c.chunk_x, c.chunk_y
+        x_parsed, y_parsed = cx * self.chunk_size + x, cy * self.chunk_size + y
+        return x_parsed, y_parsed
+
+    def parse_to_chunk_coordinate(self, x: int, y: int) -> tuple[Chunk, int, int]:
+        cx, cy = x // self.chunk_size, y // self.chunk_size
+        x_parsed, y_parsed = x % self.chunk_size, y % self.chunk_size
+        return self.get_chunk(cx, cy), x_parsed, y_parsed
+
+    def get_height_parsed_pos(self, x: int, y: int) -> int:
         try:
             return self.height_map[y][x]
         except IndexError as e:
             return 0
 
     def get_height(self, c: Chunk, x: int, y: int) -> int:
-        cx, cy = c.chunk_x, c.chunk_y
-        x_raw, y_raw = cx * self.chunk_size + x, cy * self.chunk_size + y
-        if self.in_bounds(x_raw, y_raw):
-            return self.get_height_raw_pos(x_raw, y_raw)
+        x_parsed, y_parsed = self.parse_chunk_coordinate(c, x, y)
+        if self.in_bounds(x_parsed, y_parsed):
+            return self.get_height_parsed_pos(x_parsed, y_parsed)
         else:
             return 0
 
     def change_height(self, c: Chunk, x: int, y: int, val: int) -> None:
-        cx, cy = c.chunk_x, c.chunk_y
-        self.height_map[cy * self.chunk_size + y][cx * self.chunk_size + x] += val
+        x_parsed, y_parsed = self.parse_chunk_coordinate(c, x, y)
+        self.height_map[y_parsed][x_parsed] += val
