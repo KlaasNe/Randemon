@@ -16,7 +16,6 @@ def get_path_type(layer: Layer, x: int, y: int) -> int:
 
 def create_path(rmap: Map) -> None:
     for y in range(rmap.size_v):
-        prev_surrounding = None
         for x in range(rmap.size_h):
             chunk, cx, cy = rmap.parse_to_chunk_coordinate(x, y)
             tile: Tile = chunk["GROUND0"][(cx, cy)]
@@ -28,8 +27,6 @@ def create_path(rmap: Map) -> None:
                     chunk["GROUND0"].remove_tile(cx, cy)
                 else:
                     chunk["GROUND0"][(cx, cy)] = PathTiles.specific_tile(tile, path_type)
-            else:
-                prev_surrounding = None
 
 
 def get_surrounding_tiles(rmap: Map, x: int, y: int) -> list[list]:
@@ -208,6 +205,7 @@ def determine_weight(chunk: Chunk, x, y, avoid_hill_corners=True):
             is_actual_path(chunk.layers["GROUND0"], x, y - 1) and\
             is_actual_path(chunk.layers["GROUND0"], x, y):
         return TileWeights.PATH.value
+    if is_2x2_tile_type("GROUND0", x, y, "PATH"): return TileWeights.GRASS.value
     return TileWeights.GRASS.value if is_2x2_tile_type("GROUND0", x, y, None) else TileWeights.IMPASSABLE.value
 
 

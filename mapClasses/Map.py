@@ -77,16 +77,22 @@ class Map:
                                 current_chunk.has_town = False
                                 current_chunk.clear_layer("BUILDINGS")
                                 remove_path(current_chunk)
-
-                        create_beach(self)
-                        create_path(self)
-
-                        spawn_pokemons(current_chunk)
-                        create_trees(current_chunk, 0.55)
-                        grow_grass(current_chunk, 0.6)
                     else:
                         draw_height_map(self, current_chunk)
                     chunk_bar()
+
+        create_beach(self)
+        create_path(self)
+
+        if not height_map:
+            with alive_bar(self.chunk_nb_v * self.chunk_nb_h, title="Updating chunks (nature and plants and stuff)", theme="classic") as chunk_bar:
+                for y in range(chunk_nb_v):
+                    for x in range(chunk_nb_h):
+                        current_chunk = self.chunks[y][x]
+                        spawn_pokemons(current_chunk)
+                        create_trees(current_chunk, 0.55)
+                        grow_grass(current_chunk, 0.6)
+                        chunk_bar()
 
     def __iter__(self) -> Iterator[Chunk]:
         for chunk_row in self.chunks:

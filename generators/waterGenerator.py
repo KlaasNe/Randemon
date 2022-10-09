@@ -103,8 +103,8 @@ def create_beach(rmap: Map) -> None:
     def check_for_water_around(x0: int, y0: int, radius: int) -> bool:
         for check_y in range(y0 - radius, y0 + radius + 1):
             for check_x in range(x0 - radius, x0 + radius + 1):
-                chunk, cx, cy = rmap.parse_to_chunk_coordinate(check_x, check_y)
-                if chunk is not None and chunk["GROUND0"].get_tile_type(cx, cy) == "WATER":
+                chunk0, cx0, cy0 = rmap.parse_to_chunk_coordinate(check_x, check_y)
+                if chunk0 is not None and chunk0["GROUND0"].get_tile_type(cx0, cy0) == "WATER":
                     return True
         return False
 
