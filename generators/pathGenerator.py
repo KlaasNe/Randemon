@@ -1,6 +1,5 @@
 from enum import Enum
 from random import shuffle
-from sys import maxsize
 
 from mapClasses.chunk import Chunk
 from mapClasses.tile import Tile
@@ -13,7 +12,7 @@ def get_path_type(layer, x, y):
     return tile.y // 3 if type(tile) == Tile and tile.type == "PATH" else None
 
 
-def create_path(chunk):
+def create_path(chunk: Chunk):
     for y in range(chunk.size):
         prev_surrounding = None
         for x in range(chunk.size):
@@ -21,7 +20,11 @@ def create_path(chunk):
             if tile is not None and tile.type == "PATH":
                 path_type = tile.y // 3
                 prev_surrounding = get_surrounding_tiles(chunk, x, y, prev_surrounding)
-                chunk["GROUND0"][(x, y)] = PathTiles.specific_tile(get_tile_from_surrounding(prev_surrounding), path_type)
+                tile = get_tile_from_surrounding(prev_surrounding)
+                if tile is None:
+                    chunk["GROUND0"].remove_tile(x, y)
+                else:
+                    chunk["GROUND0"][(x, y)] = PathTiles.specific_tile(tile, path_type)
             else:
                 prev_surrounding = None
 
@@ -36,7 +39,7 @@ def get_surrounding_tiles(chunk, x, y, prev):
         return new
 
 
-def get_tile_from_surrounding(surrounding):
+def get_tile_from_surrounding(surrounding) -> Tile:
     for tile in PathTiles:
         template = [[c for c in s] for s in tile.value[0].splitlines()]
         if equal_surrounding(template, surrounding):
@@ -55,7 +58,7 @@ def equal_surrounding(template, arr):
 class PathTiles(Enum):
 
     @staticmethod
-    def specific_tile(tile, tile_type):
+    def specific_tile(tile: Tile, tile_type: int) -> Tile:
         return Tile("PATH", tile.x, tile.y + tile_type * 3)
 
     A = "111\n111\n011", Tile("PATH", 2, 2)
@@ -71,7 +74,7 @@ class PathTiles(Enum):
     K = "a1a\n0a1\na0a", Tile("PATH", 1, 1)
     L = "a1a\n1a0\na0a", Tile("PATH", 2, 1)
     M = "a0a\n1a0\na1a", Tile("PATH", 4, 1)
-    default = "aaa\naaa\naaa", Tile("PATH", 0, 1)
+    # DEFAULT = "aaa\naaa\naaa", None
 
 
 def is_actual_path(layer, x, y):

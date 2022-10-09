@@ -1,17 +1,16 @@
 from enum import Enum
 
 from alive_progress import alive_bar
-from noise import snoise2
 
 from mapClasses import Map
 from mapClasses.chunk import Chunk
 from mapClasses.tile import Tile
 
 
-def create_lakes_and_sea(rmap: Map, sea_threshold=0.20):
+def create_lakes_and_sea(rmap: Map, sea_threshold=0.20) -> None:
 
-    def validate(x, y):
-        return rmap.in_bounds(x, y) and rmap.get_height_raw_pos(x, y) <= 0 and (x, y) not in current_water
+    def validate(x0: int, y0: int) -> bool:
+        return rmap.in_bounds(x0, y0) and rmap.get_height_raw_pos(x0, y0) <= 0 and (x0, y0) not in current_water
 
     seen = set()
     water_queue = set()
@@ -100,16 +99,14 @@ class WaterTiles(Enum):
 
 
 # Creates sandy path around rivers; inside a perlin noise field
-def create_beach(c: Chunk):
-    def check_for_water_around(x, y, radius):
-        for check_y in range(y - radius, y + radius + 1):
-            for check_x in range(x - radius, x + radius + 1):
+def create_beach(c: Chunk) -> None:
+    def check_for_water_around(x0: int, y0: int, radius: int) -> bool:
+        for check_y in range(y0 - radius, y0 + radius + 1):
+            for check_x in range(x0 - radius, x0 + radius + 1):
                 if c["GROUND0"].get_tile_type(check_x, check_y) == "WATER":
                     return True
         return False
 
-    octaves = 1
-    freq = 100
     for y in range(c.size):
         for x in range(c.size):
             if c["GROUND0"][(x, y)] is None and c.get_height(x, y) == 1 and check_for_water_around(x, y, 4):
