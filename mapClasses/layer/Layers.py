@@ -1,12 +1,12 @@
-from .Layer import Layer
-from enum import Enum
+from enum import Enum, auto
 
 
 class Layers(Enum):
-    GROUND0 = Layer()
-    HILLS = Layer()
-    FENCE = Layer()
-    BUILDINGS = Layer()
-    GROUND1 = Layer()
-    GROUND2 = Layer()
-    HEIGHTMAP = Layer()
+
+    GROUND0 = auto()
+    HILLS = auto()
+    FENCE = auto()
+    BUILDINGS = auto()
+    GROUND1 = auto()
+    GROUND2 = auto()
+    HEIGHTMAP = auto()

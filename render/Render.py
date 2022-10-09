@@ -1,50 +1,57 @@
 import ctypes
 import os
+from typing import Union
+
+from PIL import Image
+
+from mapClasses.chunk import Chunk
+
 from colorama import Fore
 from colorama import Style
 from datetime import datetime
 
-from PIL import Image
-
-from .SpriteSheetWriter import *
+from mapClasses import Map, Tile
+from render.SpriteSheetReaders import *
 from alive_progress import alive_bar
 
 
 class Render:
     TILE_SIZE = 16
+    TNF = Tile("TNF", 0, 0)
 
-    def __init__(self, map_obj):
-        self.map = map_obj
-        self.size = map_obj.chunk_size
+    def __init__(self, map_obj: Map) -> None:
+        self.readers = dict()
+        for reader in SpriteSheetReaders:
+            self.readers[reader.name] = reader.value
+        chunk_size = map_obj.chunk_size
+        chunk_nb_h, chunk_nb_v = map_obj.chunk_nb_h, map_obj.chunk_nb_v
         self.visual = Image.new("RGBA",
-                                (self.size * Render.TILE_SIZE * self.map.chunk_nb_h,
-                                 self.size * Render.TILE_SIZE * self.map.chunk_nb_v),
+                                (chunk_size * Render.TILE_SIZE * chunk_nb_h,
+                                 chunk_size * Render.TILE_SIZE * chunk_nb_v),
                                 (0, 0, 0, 0))
-        self.tile_buffer = dict()
-        with alive_bar(self.map.chunk_nb_h * self.map.chunk_nb_v, title="rendering chunks", theme="classic") as render_bar:
-            cy = 0
-            for chunk_row in self.map.chunks:
-                cx = 0
-                for chunk in chunk_row:
-                    self.render(chunk, cx, cy)
-                    render_bar()
-                    cx += 1
-                cy += 1
+        with alive_bar(chunk_nb_h * chunk_nb_v, title="rendering chunks", theme="classic") as render_bar:
+            for chunk in map_obj:
+                self.render_chunk(chunk)
+                render_bar()
 
-    def render(self, chunk, cx, cy):
-        sheet_writer = SpriteSheetWriter()
-        for layer in chunk.layers.values():
-            for tile_x, tile_y in layer.get_ex_pos():
-                current_tile = layer.get_tile(tile_x, tile_y)
-                x, y = tile_x * TILE_SIZE, tile_y * TILE_SIZE
-                c_offset_x, c_offset_y = cx * TILE_SIZE * chunk.size, cy * TILE_SIZE * chunk.size
-                x += c_offset_x
-                y += c_offset_y
-                try:
-                    img = self.tile_buffer[current_tile]
-                    sheet_writer.draw_img(img, self.visual, x, y)
-                except KeyError:
-                    self.tile_buffer[current_tile] = sheet_writer.draw_tile(current_tile, self.visual, x, y)
+    def get_tile_img(self, tile):
+        try:
+            return self.readers[tile.type].get_tile(tile)
+        except KeyError:
+            return self.readers["TNF"].get_tile(Render.TNF)
+
+    def draw_tile(self, tile, x, y):
+        img = self.get_tile_img(tile)
+        dest_box = (x, y, x + Render.TILE_SIZE, y + Render.TILE_SIZE)
+        self.visual.paste(img, dest_box, img)
+
+    def render_chunk(self, chunk: Chunk) -> None:
+        for layer in chunk.get_layers():
+            for (tile_x, tile_y), tile in layer.get_items():
+                x, y = chunk.height_map_pos(tile_x, tile_y)
+                x *= Render.TILE_SIZE
+                y *= Render.TILE_SIZE
+                self.draw_tile(tile, x, y)
 
     # def render_npc(self, layer):
     #     sheet_writer = SpriteSheetWriter(Image.open(os.path.join("resources", "npc.png")), 20, 23)
@@ -55,18 +62,20 @@ class Render:
     #         except KeyError:
     #             pass
 
-    def show(self):
+    def show(self) -> None:
         self.visual.show()
 
-    def save(self, name):
+    def save(self, name: str) -> None:
         img_name = name + ".png"
-        self.visual.save(os.path.join("saved images", img_name), "png")
+        with alive_bar(1, title="Saving image", theme="classic") as save_bar:
+            self.visual.save(os.path.join("saved images", img_name), "png")
+            save_bar()
         print("Image saved successfully")
         print(os.path.join(Fore.LIGHTBLUE_EX + os.path.abspath("saved images"), Fore.LIGHTYELLOW_EX + img_name + Style.RESET_ALL))
 
-    def save_prompt(self, map_obj):
+    def save_prompt(self, seed: Union[int, str] = "") -> None:
         save = input('\n' + Fore.LIGHTBLUE_EX + "Save this image? (y/n/w): " + Style.RESET_ALL)
-        file_n = "{} {}".format(datetime.now().strftime("%G-%m-%d %H-%M-%S"), map_obj.seed)
+        file_n = "{} {}".format(datetime.now().strftime("%G-%m-%d %H-%M-%S"), str(seed))
         if save == "y" or save == "w":
             if not os.path.isdir("saved images"):
                 os.mkdir("saved images")

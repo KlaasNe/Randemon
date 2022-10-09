@@ -2,7 +2,8 @@ import random
 
 from noise import snoise2
 
-from mapClasses import Tile
+from mapClasses.chunk import Chunk
+from mapClasses.tile import Tile
 
 
 octaves1 = 2
@@ -16,15 +17,15 @@ freq3 = 100
 # Checks if enough space is available to plant a tree
 # No trees above the highest path height
 # Adds an overlay to decoration_layer if the top of the tree overlaps with another tree
-def create_trees(chunk, spawn_rate):
+def create_trees(chunk: Chunk, spawn_rate):
     double = False
     for y in range(chunk.size):
         for x in range(chunk.size):
             # if chunk.tile_heights.get((x, y), -1) <= chunk.highest_path:
-            if (x, y) not in chunk.get_ex_pos("GROUND0") and (x, y) not in chunk.get_ex_pos("BUILDINGS") and (x, y) not in chunk.get_ex_pos("HILLS") \
-                    and (x, y - 1) not in chunk.get_ex_pos("GROUND1") \
-                    and not chunk.has_tile_at_layer("GROUND2", x, y) and not chunk.has_tile_at_layer("GROUND2", x, y - 1) and not chunk.has_tile_at_layer("GROUND2", x, y - 2)\
-                    and not chunk.has_tile_at_layer("FENCE", x, y)\
+            if not chunk.has_tile_in_layer_at("GROUND0", x, y) and not chunk.has_tile_in_layer_at("BUILDINGS", x, y) and not chunk.has_tile_in_layer_at("HILLS", x, y) \
+                    and not chunk.has_tile_in_layer_at("GROUND1", x, y - 1) \
+                    and not chunk.has_tile_in_layer_at("GROUND2", x, y) and not chunk.has_tile_in_layer_at("GROUND2", x, y - 1) and not chunk.has_tile_in_layer_at("GROUND2", x, y - 2)\
+                    and not chunk.has_tile_in_layer_at("FENCE", x, y)\
                     and not chunk.out_of_bounds(x, y) and not chunk.out_of_bounds(x, y - 1 and not chunk.out_of_bounds(x, y - 2)):
                 if random.random() > 0.3 and tree_formula(chunk, x, y) > 1 - spawn_rate:
                     if double:
@@ -60,7 +61,7 @@ def grow_grass(chunk, coverage):
     freq = 10 * octaves
     for y in range(chunk.size):
         for x in range(chunk.size):
-            if not chunk.has_tile_at_layer("GROUND0", x, y):
+            if not chunk.has_tile_in_layer_at("GROUND0", x, y):
                 sne_prob = abs(snoise2((x + chunk.off_x) / freq, (y + chunk.off_y) / freq, octaves))
                 if not chunk.has_town:
                     tile = random_tall_grass() if sne_prob >= 1 - coverage else random_grass()

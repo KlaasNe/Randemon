@@ -1,23 +1,20 @@
 class Tile:
 
-    def __init__(self, reader_name, x, y, mirror=False):
-        self.reader_name = reader_name
-        self.x = x
-        self.y = y
-        self.mirror = mirror
+    def __init__(self, reader_name: str, x: int, y: int, mirror: bool = False) -> None:
+        self.type: str = reader_name
+        self.x: int = x
+        self.y: int = y
+        self.mirror: bool = mirror
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         return other is not None \
                and self.x == other.x \
                and self.y == other.y \
-               and self.reader_name == other.reader_name \
+               and self.type == other.type \
                and self.mirror == other.mirror
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "Tile: " + ', '.join("%s=%s" % item for item in vars(self).items())
 
-    def __hash__(self):
-        return hash(str(self))
-
-    def get_type(self):
-        return self.reader_name
+    def __hash__(self) -> int:
+        return hash((self.x, self.y, self.type))

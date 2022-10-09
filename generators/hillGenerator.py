@@ -1,24 +1,31 @@
 import random
 from enum import Enum
 
-from mapClasses import Tile
+from mapClasses.tile import Tile
 
 
 def create_edges(chunk, hill_type=0):
     create_hill_edges(chunk, hill_type)
 
 
-def remove_faulty_heights(chunk):
+def remove_faulty_heights(chunk, force=False):
     smooth = False
+    last_change = None
+    ignore_list = set()
     while not smooth:
         smooth = True
         for y in range(0, chunk.size):
             for x in range(0, chunk.size):
                 curr_surrounding = get_surrounding_tiles(chunk, x, y)
                 height_change = get_tile_from_surrounding(curr_surrounding, FaultyHillTiles)
-                if height_change is not None:
-                    chunk.change_height(x, y, height_change)
-                    smooth = False
+                if height_change is not None and (x, y) not in ignore_list:
+                    if last_change == (x, y):
+                        ignore_list.add((x, y))
+                    else:
+                        last_change = (x, y)
+                        chunk.change_height(x, y, height_change)
+                    if force:
+                        smooth = False
 
 
 def create_hill_edges(chunk, hill_type):
@@ -59,7 +66,7 @@ class HillTiles(Enum):
 
     @staticmethod
     def specific_tile(tile, tile_type):
-        return Tile(tile.reader_name, tile.x + tile_type * 5, tile.y)
+        return Tile(tile.type, tile.x + tile_type * 5, tile.y)
 
     A = [[None, None, None], [0, 0, None], [-1, 0, None]], Tile("HILLS", 0, 1)
     B = [[None, None, None], [None, 0, 0], [None, 0, -1]], Tile("HILLS", 0, 2)
