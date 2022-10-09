@@ -18,19 +18,19 @@ def generate_height_map(size_h, size_v, max_height, off_x, off_y, additional_noi
     ]
 
 
-def get_height(max_height, x, y, static_offset_array, size_h, size_v, octaves=1, freq=50, cubic_factor=4, island=False):
+def get_height(max_height, x, y, static_offset_array, size_h, size_v, octaves=4, freq=150, island=False):
     noise = 0
     total_noise_maps = len(static_offset_array)
     tuple_count = 1
     for offset_tuple in static_offset_array:
         off_x, off_y = offset_tuple
-        noise += 1 / tuple_count * snoise2(
-            tuple_count * ((off_x + x // cubic_factor) / (freq * (0.5 + tuple_count / 3))),
-            tuple_count * ((off_y + y // cubic_factor) / (freq * (0.5 + tuple_count / 3))),
+        noise += (1 / tuple_count) * snoise2(
+            (off_x + x) / freq,
+            (off_y + y) / freq,
             octaves)
         tuple_count += 1
     if total_noise_maps > 1:
-        noise /= sum(1 / i for i in range(1, total_noise_maps))
+        noise /= sum(1 / i for i in range(1, total_noise_maps + 1))
     if island:
         nx = 2 * x / size_h - 1
         ny = 2 * y / size_v - 1
@@ -38,7 +38,7 @@ def get_height(max_height, x, y, static_offset_array, size_h, size_v, octaves=1,
         noise = (noise + (1 - d)) * 0.5
     else:
         noise += 0.45
-    return round(pow(noise, 3) * max_height * 2)
+    return round(pow(noise, 2) * max_height * 2)
 
 
 def generate_height_map_from_image(img_path):
@@ -102,6 +102,6 @@ def smooth_down(rmap, x, y, radius=1):
 
 
 def draw_height_map(rmap, chunk):
-    for y in range(chunk.chunk_size):
-        for x in range(chunk.chunk_size):
+    for y in range(chunk.size):
+        for x in range(chunk.size):
             chunk.set_tile("HEIGHTMAP", x, y, Tile("HEIGHTS", rmap.get_height(chunk, x, y), 0))

@@ -14,7 +14,7 @@ class SpriteSheetReader:
     def __init__(self, name: str, path: str) -> None:
         self.name: str = name
         self.tiles: dict[int, bytes] = dict()
-        with Image.open(os.path.join(TILE_SHEET_DIRECTORY, path)) as tile_sheet:
+        with Image.open(os.path.join(TILE_SHEET_DIRECTORY, path)).convert("RGBA") as tile_sheet:
             tile_sheet.load()
             self._init_tiles(tile_sheet)
 

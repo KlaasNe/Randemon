@@ -2,7 +2,7 @@ import random
 from math import sqrt
 
 # Spawns a house on the map with house_front_path_type as its front porch
-# Houses are spawned by chosing a random x and y coordinate, checking whether enough space is available for the given
+# Houses are spawned by choosing a random x and y coordinate, checking whether enough space is available for the given
 # house if not, choose a new position. There's an upper limit to try find a building spot.
 from buildings.Building import Building
 from buildings.BuildingTypes import BuildingTypes
@@ -10,17 +10,17 @@ from mapClasses.chunk import Chunk
 from mapClasses.tile import Tile
 
 
-def spawn_building(chunk, building, fence_opt=True, mail_box_opt=True):
+def spawn_building(chunk: Chunk, building, path_type: int, fence_opt=True, mail_box_opt=True) -> bool:
     # checks if a chosen position has enough free space for the house + spacing, starting from the top left corner
     def is_available_spot(x1, y1, x2, y2):
         if chunk.out_of_bounds(x1, y1) or chunk.out_of_bounds(x2, y2):
             return False
         for y in range(y1, y2 + 1):
             for x in range(x1 - 2, x2 + 1 + 2):
-                if chunk.has_tile_at_layer("GROUND0", x, y) or chunk.has_tile_at_layer("FENCE", x, y):
+                if chunk.has_tile_in_layer_at("GROUND0", x, y) or chunk.has_tile_in_layer_at("FENCE", x, y):
                     return False
                 if x1 <= x < x2 + 2 and y1 <= y < y2 + 1:
-                    if chunk.has_tile_at_layer("BUILDINGS", x, y) or chunk.has_tile_at_layer("HILLS", x, y):
+                    if chunk.has_tile_in_layer_at("BUILDINGS", x, y) or chunk.has_tile_in_layer_at("HILLS", x, y):
                         return False
         return True
 
@@ -55,13 +55,13 @@ def spawn_building(chunk, building, fence_opt=True, mail_box_opt=True):
     max_attempts = size_x * size_y * 100 * map_size_factor
     build_spot = search_available_spot(building, 25, max_attempts)
     if build_spot:
-        build_building(chunk, building, build_spot, fence_opt, mail_box_opt)
+        build_building(chunk, building, build_spot, path_type, fence_opt=fence_opt, mail_box_opt=mail_box_opt)
         return True
     else:
         return False
 
 
-def build_building(chunk: Chunk, building, build_spot, fence_opt=True, mail_box_opt=True):
+def build_building(chunk: Chunk, building, build_spot, path_type, fence_opt=True, mail_box_opt=True):
     size_x, size_y = building.size
     house_x, house_y = build_spot
     for house_build_y in range(size_y):
@@ -71,11 +71,11 @@ def build_building(chunk: Chunk, building, build_spot, fence_opt=True, mail_box_
     chunk.buildings.append(Building(building, build_spot[0], build_spot[1]))
     for front_y in range(2):
         for front_x in range(size_x):
-            chunk.set_tile("GROUND0", house_x + front_x, house_y + size_y + front_y, Tile("PATH", 0, 0))
+            chunk.set_tile("GROUND0", house_x + front_x, house_y + size_y + front_y, Tile("PATH", 0, path_type * 3))
     if mail_box_opt:
         if random.randint(0, 1) == 1 and \
-                not chunk.has_tile_at_layer("BUILDINGS", house_x - 1, house_y + size_y - 2) and \
-                not chunk.has_tile_at_layer("HILLS", house_x - 1, house_y + size_y - 2):
+                not chunk.has_tile_in_layer_at("BUILDINGS", house_x - 1, house_y + size_y - 2) and \
+                not chunk.has_tile_in_layer_at("HILLS", house_x - 1, house_y + size_y - 2):
             chunk.set_tile("GROUND2", house_x - 1, house_y + size_y - 2, Tile("DECO", 7, 2))
             chunk.set_tile("GROUND2", house_x - 1, house_y + size_y - 1, Tile("DECO", 7, 3))
 
@@ -102,10 +102,10 @@ def is_inside_cluster(chunk, x, y, radius, connections):
     return False
 
 
-def spawn_functional_buildings(chunk):
-    pc = spawn_building(chunk, BuildingTypes.POKECENTER.value, fence_opt=False, mail_box_opt=False)
-    g = spawn_building(chunk, BuildingTypes.GYM.value, fence_opt=False, mail_box_opt=False)
-    pm = spawn_building(chunk, BuildingTypes.POKEMART.value, fence_opt=False, mail_box_opt=False)
+def spawn_functional_buildings(chunk, path_type):
+    pc = spawn_building(chunk, BuildingTypes.POKECENTER.value, path_type, fence_opt=False, mail_box_opt=False)
+    g = spawn_building(chunk, BuildingTypes.GYM.value, path_type, fence_opt=False, mail_box_opt=False)
+    pm = spawn_building(chunk, BuildingTypes.POKEMART.value, path_type, fence_opt=False, mail_box_opt=False)
     return pc and g and pm
 
 
@@ -132,7 +132,7 @@ def create_fence(chunk, x, y, max_y, rel_fence_type, tree=False):
 
     def check_house_width():
         test_x = x
-        while chunk.has_tile_at_layer("BUILDINGS", test_x, y):  # and not is_special_building(pmap, test_x, y):
+        while chunk.has_tile_in_layer_at("BUILDINGS", test_x, y):  # and not is_special_building(pmap, test_x, y):
             test_x -= 1
         return x - test_x - 1
 
