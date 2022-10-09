@@ -8,7 +8,7 @@ import time
 
 def main():
     t = time.time()
-    my_map: Map = Map(4, 4, 50, max_buildings=16, height_map=False, island=True, themed_towns=True, seed=6991162885917810235)
+    my_map: Map = Map(4, 4, 50, max_buildings=16, height_map=False, island=True, themed_towns=True)
     r = Render(my_map)
     print(Fore.LIGHTBLACK_EX + "Total generation time={}{}".format(str(time.time() - t), "s") + Style.RESET_ALL)
     r.show()
