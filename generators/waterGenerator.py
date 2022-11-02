@@ -104,7 +104,7 @@ def create_beach(rmap: Map) -> None:
         for check_y in range(y0 - radius, y0 + radius + 1):
             for check_x in range(x0 - radius, x0 + radius + 1):
                 chunk0, cx0, cy0 = rmap.parse_to_chunk_coordinate(check_x, check_y)
-                if chunk0 is not None and chunk0["GROUND0"].get_tile_type(cx0, cy0) == "WATER":
+                if chunk0 is not None and (chunk0.height_map[check_y][check_x] <= 0 or chunk0["GROUND0"].get_tile_type(cx0, cy0) == "WATER"):
                     return True
         return False
 
@@ -112,5 +112,5 @@ def create_beach(rmap: Map) -> None:
         for x in range(rmap.size_h):
             if rmap.get_height_parsed_pos(x, y) == 1:
                 chunk, cx, cy = rmap.parse_to_chunk_coordinate(x, y)
-                if chunk["GROUND0"][(cx, cy)] is None and check_for_water_around(x, y, 4):
+                if chunk.height_map[y][x] and check_for_water_around(x, y, 4):
                     chunk["GROUND0"][(cx, cy)] = Tile("PATH", 0, 9)

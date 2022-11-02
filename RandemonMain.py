@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from mapClasses.Map import Map
 from render import Render
 from colorama import Fore
@@ -25,7 +27,7 @@ def main():
     if not args.no_show_opt:
         r.show()
     if args.save_opt:
-        r.save(str(my_map.seed))
+        r.save("{} {}".format(datetime.now().strftime("%G-%m-%d %H-%M-%S"), str(my_map.seed)))
     else:
         r.save_prompt(my_map.seed)
 
