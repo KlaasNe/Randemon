@@ -35,7 +35,7 @@ def get_surrounding_tiles(rmap: Map, x: int, y: int) -> list[list]:
         row = []
         for px in range(x - 1, x + 2):
             chunk, cx, cy = rmap.parse_to_chunk_coordinate(px, py)
-            row.append(1 if chunk["GROUND0"].get_tile_type(cx, cy) in ["PATH", "ROAD"] else 0)
+            row.append(1 if chunk is not None and chunk["GROUND0"].get_tile_type(cx, cy) in ["PATH", "ROAD"] else 0)
         surrounding.append(row)
     return surrounding
 
@@ -134,11 +134,11 @@ def draw_path2(chunk: Chunk, path_type: int):
                     path_extention.add((x, y))
 
         for (x, y) in path_extention:
-            if chunk.get_height(x, y) > 0:
-                if chunk.get_tile("GROUND0", x, y) is None:
+            if chunk["GROUND0"][(x, y)] is None:
+                if chunk.get_height(x, y) > 0:
                     chunk.set_tile("GROUND0", x, y, Tile("PATH", 0, path_type * 3))
-            elif chunk.get_tile_type("GROUND0", x, y) == "WATER":
-                chunk.set_tile("GROUND0", x, y, Tile("ROAD", -1, -1))
+                elif chunk.get_tile_type("GROUND0", x, y) == "WATER":
+                    chunk.set_tile("GROUND0", x, y, Tile("ROAD", -1, -1))
 
     connected_buildings = set()
     chunk_wght_tiles = init_weight_tiles()
@@ -235,16 +235,16 @@ def create_bridges(chunk, layer):
 def create_stairs(chunk, pl, bl):
 
     def path_above(x, y):
-        return is_actual_path(pl, x, y - 1)
+        return chunk.get_tile_type("GROUND0", x, y - 1) == "PATH"
 
     def path_under(x, y):
-        return is_actual_path(pl, x, y + 1)
+        return chunk.get_tile_type("GROUND0", x, y + 1) == "PATH"
 
     def path_left(x, y):
-        return is_actual_path(pl, x - 1, y)
+        return chunk.get_tile_type("GROUND0", x - 1, y) == "PATH"
 
     def path_right(x, y):
-        return is_actual_path(pl, x + 1, y)
+        return chunk.get_tile_type("GROUND0", x + 1, y) == "PATH"
 
     for py in range(chunk.size):
         for px in range(chunk.size):
