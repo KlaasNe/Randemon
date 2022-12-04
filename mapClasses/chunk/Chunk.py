@@ -60,12 +60,15 @@ class Chunk:
         """
         return self.chunk_x * self.size + x, self.chunk_y * self.size + y
 
-    def get_height(self, x: int, y: int) -> int:
+    def get_height_exact(self, x: int, y: int) -> int:
         hmx, hmy = self.height_map_pos(x, y)
         try:
             return self.height_map[hmy][hmx]
         except IndexError:
             return 0
+
+    def get_height(self, x: int, y: int) -> int:
+        return round(self.get_height_exact(x, y))
 
     def change_height(self, x: int, y: int, val: int) -> None:
         hmx, hmy = self.height_map_pos(x, y)

@@ -44,19 +44,19 @@ def create_lakes_and_sea(rmap: Map, sea_threshold=0.20) -> None:
 
 
 # Creates rivers for a chunk
-def create_rivers(chunk: Chunk, lake_tiles: set[tuple[int, int]]):
+def create_rivers(chunk: Chunk, lake_tiles: set[tuple[int, int]], threshold):
     for y in range(chunk.size):
         for x in range(chunk.size):
             if chunk.get_height(x, y) <= 0:
                 raw_pos = chunk.height_map_pos(x, y)
                 water_type = 0 if raw_pos in lake_tiles else 1
-                curr_surrounding = get_surrounding_tiles(chunk, x, y)
+                curr_surrounding = get_surrounding_tiles(chunk, x, y, threshold)
                 tile = get_tile_from_surrounding(curr_surrounding)
                 chunk.set_tile("GROUND0", x, y, WaterTiles.specific_tile(tile, water_type))
 
 
-def get_surrounding_tiles(chunk, x, y):
-    return [[max(0, chunk.get_height(hx, hy)) for hx in range(x - 1, x + 2)] for hy in range(y - 1, y + 2)]
+def get_surrounding_tiles(chunk, x, y, threshold: int):
+    return [[0 if chunk.get_height_exact(hx, hy) < threshold else 1 for hx in range(x - 1, x + 2)] for hy in range(y - 1, y + 2)]
 
 
 def get_tile_from_surrounding(surrounding):
@@ -99,18 +99,28 @@ class WaterTiles(Enum):
 
 
 # Creates sandy path around rivers; inside a perlin noise field
-def create_beach(rmap: Map) -> None:
+def create_beach(rmap: Map, threshold: int) -> None:
     def check_for_water_around(x0: int, y0: int, radius: int) -> bool:
         for check_y in range(y0 - radius, y0 + radius + 1):
             for check_x in range(x0 - radius, x0 + radius + 1):
                 chunk0, cx0, cy0 = rmap.parse_to_chunk_coordinate(check_x, check_y)
-                if chunk0 is not None and chunk0["GROUND0"].get_tile_type(cx0, cy0) == "WATER":
+                if chunk0 is not None and chunk0.get_height(cx0, cy0) == 0:
                     return True
         return False
 
     for y in range(rmap.size_v):
         for x in range(rmap.size_h):
-            if rmap.get_height_parsed_pos(x, y) == 1:
+            if round(rmap.get_height_parsed_pos(x, y)) == 1:
                 chunk, cx, cy = rmap.parse_to_chunk_coordinate(x, y)
-                if chunk["GROUND0"][(cx, cy)] is None and check_for_water_around(x, y, 4):
+                if chunk["GROUND0"][(cx, cy)] is None and check_for_water_around(x, y, 1):
+                    if chunk.get_height_exact(cx, cy) > threshold:
+                        chunk["GROUND0"][(cx, cy)] = Tile("PATH", 0, 9)
+                    else:
+                        chunk["GROUND0"][(cx, cy)] = Tile("PATH", 0, 27)
+
+    for y in range(rmap.size_v):
+        for x in range(rmap.size_h):
+            if round(rmap.get_height_parsed_pos(x, y)) == 1:
+                chunk, cx, cy = rmap.parse_to_chunk_coordinate(x, y)
+                if chunk["GROUND0"][(cx, cy)] is None and chunk.get_height_exact(cx, cy) < 0.7 and check_for_water_around(x, y, 4):  #
                     chunk["GROUND0"][(cx, cy)] = Tile("PATH", 0, 9)

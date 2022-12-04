@@ -17,6 +17,8 @@ def spawn_building(chunk: Chunk, building, path_type: int, fence_opt=True, mail_
             return False
         for y in range(y1, y2 + 1):
             for x in range(x1 - 2, x2 + 1 + 2):
+                if chunk.get_height(x, y) == 0:
+                    return False
                 if chunk.has_tile_in_layer_at("GROUND0", x, y) or chunk.has_tile_in_layer_at("FENCE", x, y):
                     return False
                 if x1 <= x < x2 + 2 and y1 <= y < y2 + 1:

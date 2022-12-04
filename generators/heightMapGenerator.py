@@ -38,7 +38,7 @@ def get_height(max_height, x, y, static_offset_array, size_h, size_v, octaves=4,
         noise = (noise + (1 - d)) * 0.5
     else:
         noise += 0.45
-    return round(pow(noise, 2) * max_height * 2)
+    return max(0, pow(noise, 2) * max_height * 2)
 
 
 def generate_height_map_from_image(img_path):

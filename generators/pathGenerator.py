@@ -14,14 +14,14 @@ def get_path_type(layer: Layer, x: int, y: int) -> int:
     return tile.y // 3 if type(tile) == Tile and tile.type == "PATH" else None
 
 
-def create_path(rmap: Map) -> None:
+def create_path(rmap: Map, separated: bool = True) -> None:
     for y in range(rmap.size_v):
         for x in range(rmap.size_h):
             chunk, cx, cy = rmap.parse_to_chunk_coordinate(x, y)
             tile: Tile = chunk["GROUND0"][(cx, cy)]
             if tile is not None and tile.type == "PATH":
                 path_type = tile.y // 3
-                prev_surrounding = get_surrounding_tiles(rmap, x, y, path_type)
+                prev_surrounding = get_surrounding_tiles(rmap, x, y, path_type, separated)
                 tile = get_tile_from_surrounding(prev_surrounding)
                 if tile is None:
                     chunk["GROUND0"].remove_tile(cx, cy)
@@ -29,14 +29,16 @@ def create_path(rmap: Map) -> None:
                     chunk["GROUND0"][(cx, cy)] = PathTiles.specific_tile(tile, path_type)
 
 
-def get_surrounding_tiles(rmap: Map, x: int, y: int, path_type: int) -> list[list]:
+def get_surrounding_tiles(rmap: Map, x: int, y: int, path_type: int, separated: bool) -> list[list]:
     surrounding = []
     for py in range(y - 1, y + 2):
         row = []
         for px in range(x - 1, x + 2):
             chunk, cx, cy = rmap.parse_to_chunk_coordinate(px, py)
             if chunk is not None:
-                row.append(1 if get_path_type(chunk["GROUND0"], cx, cy) == path_type else 0)
+                pt = get_path_type(chunk["GROUND0"], cx, cy)
+                valid = (pt == path_type or any([path_type == 3 and pt == 9, path_type == 9 and pt == 3])) if separated else pt is not None
+                row.append(1 if valid or (path_type == 3 and chunk.get_height(cx, cy) == 0) else 0)
         surrounding.append(row)
     return surrounding
 
@@ -83,7 +85,7 @@ class PathTiles(Enum):
 
 
 def is_actual_path(layer, x, y):
-    return get_path_type(layer, x, y) not in [None, 3]
+    return get_path_type(layer, x, y) not in [None, 3, 9]
 
 
 def place_path_tile(chunk: Chunk, x: int, y: int, path_type: int) -> None:
