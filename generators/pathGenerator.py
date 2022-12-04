@@ -21,7 +21,7 @@ def create_path(rmap: Map) -> None:
             tile: Tile = chunk["GROUND0"][(cx, cy)]
             if tile is not None and tile.type == "PATH":
                 path_type = tile.y // 3
-                prev_surrounding = get_surrounding_tiles(rmap, x, y)
+                prev_surrounding = get_surrounding_tiles(rmap, x, y, path_type)
                 tile = get_tile_from_surrounding(prev_surrounding)
                 if tile is None:
                     chunk["GROUND0"].remove_tile(cx, cy)
@@ -29,13 +29,14 @@ def create_path(rmap: Map) -> None:
                     chunk["GROUND0"][(cx, cy)] = PathTiles.specific_tile(tile, path_type)
 
 
-def get_surrounding_tiles(rmap: Map, x: int, y: int) -> list[list]:
+def get_surrounding_tiles(rmap: Map, x: int, y: int, path_type: int) -> list[list]:
     surrounding = []
     for py in range(y - 1, y + 2):
         row = []
         for px in range(x - 1, x + 2):
             chunk, cx, cy = rmap.parse_to_chunk_coordinate(px, py)
-            row.append(1 if chunk["GROUND0"].get_tile_type(cx, cy) in ["PATH", "ROAD"] else 0)
+            if chunk is not None:
+                row.append(1 if get_path_type(chunk["GROUND0"], cx, cy) == path_type else 0)
         surrounding.append(row)
     return surrounding
 
@@ -51,7 +52,10 @@ def equal_surrounding(template, arr):
     if arr is not None:
         for y in range(3):
             for x in range(3):
-                if template[y][x] != 'a' and template[y][x] != str(arr[y][x]):
+                try:
+                    if template[y][x] != 'a' and template[y][x] != str(arr[y][x]):
+                        return False
+                except IndexError:
                     return False
     return True
 
@@ -80,6 +84,14 @@ class PathTiles(Enum):
 
 def is_actual_path(layer, x, y):
     return get_path_type(layer, x, y) not in [None, 3]
+
+
+def place_path_tile(chunk: Chunk, x: int, y: int, path_type: int) -> None:
+    if chunk.get_height(x, y) > 0:
+        if chunk.get_tile("GROUND0", x, y) is None:
+            chunk.set_tile("GROUND0", x, y, Tile("PATH", 0, path_type * 3))
+    elif chunk.get_tile_type("GROUND0", x, y) == "WATER":
+        chunk.set_tile("GROUND0", x, y, Tile("ROAD", -1, -1))
 
 
 def draw_path2(chunk: Chunk, path_type: int):
@@ -134,11 +146,7 @@ def draw_path2(chunk: Chunk, path_type: int):
                     path_extention.add((x, y))
 
         for (x, y) in path_extention:
-            if chunk.get_height(x, y) > 0:
-                if chunk.get_tile("GROUND0", x, y) is None:
-                    chunk.set_tile("GROUND0", x, y, Tile("PATH", 0, path_type * 3))
-            elif chunk.get_tile_type("GROUND0", x, y) == "WATER":
-                chunk.set_tile("GROUND0", x, y, Tile("ROAD", -1, -1))
+            place_path_tile(chunk, x, y, path_type)
 
     connected_buildings = set()
     chunk_wght_tiles = init_weight_tiles()
