@@ -245,16 +245,16 @@ def create_bridges(chunk, layer):
 def create_stairs(chunk, pl, bl):
 
     def path_above(x, y):
-        return is_actual_path(pl, x, y - 1)
+        return chunk.get_tile_type("GROUND0", x, y - 1) == "PATH"
 
     def path_under(x, y):
-        return is_actual_path(pl, x, y + 1)
+        return chunk.get_tile_type("GROUND0", x, y + 1) == "PATH"
 
     def path_left(x, y):
-        return is_actual_path(pl, x - 1, y)
+        return chunk.get_tile_type("GROUND0", x - 1, y) == "PATH"
 
     def path_right(x, y):
-        return is_actual_path(pl, x + 1, y)
+        return chunk.get_tile_type("GROUND0", x + 1, y) == "PATH"
 
     for py in range(chunk.size):
         for px in range(chunk.size):
