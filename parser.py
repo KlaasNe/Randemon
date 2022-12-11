@@ -37,7 +37,7 @@ def make_parser() -> ArgumentParser:
 
     parser.add_argument(
         '--seed',
-        dest='seed_opt',
+        dest='seed',
         type=int,
         default=random.randint(0, maxsize),
         help='The world generation seed')

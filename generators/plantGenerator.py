@@ -21,30 +21,31 @@ def create_trees(chunk: Chunk, spawn_rate):
     double = False
     for y in range(chunk.size):
         for x in range(chunk.size):
-            # if chunk.tile_heights.get((x, y), -1) <= chunk.highest_path:
-            if not chunk.has_tile_in_layer_at("GROUND0", x, y) and not chunk.has_tile_in_layer_at("BUILDINGS", x, y) and not chunk.has_tile_in_layer_at("HILLS", x, y) \
-                    and not chunk.has_tile_in_layer_at("GROUND1", x, y - 1) \
-                    and not chunk.has_tile_in_layer_at("GROUND2", x, y) and not chunk.has_tile_in_layer_at("GROUND2", x, y - 1) and not chunk.has_tile_in_layer_at("GROUND2", x, y - 2)\
-                    and not chunk.has_tile_in_layer_at("FENCE", x, y)\
-                    and not chunk.out_of_bounds(x, y) and not chunk.out_of_bounds(x, y - 1 and not chunk.out_of_bounds(x, y - 2)):
-                if random.random() > 0.3 and tree_formula(chunk, x, y) > 1 - spawn_rate:
-                    if double:
-                        chunk.set_tile("GROUND2", x - 1, y - 2, Tile("NATURE", 1, 5))
-                        chunk.set_tile("GROUND2", x, y - 2, Tile("NATURE", 2, 5))
-                        chunk.set_tile("GROUND1", x - 1, y - 1, Tile("NATURE", 1, 6))
-                        chunk.set_tile("GROUND1", x, y - 1, Tile("NATURE", 2, 6))
-                        chunk.set_tile("GROUND0", x - 1, y, Tile("NATURE", 1, 7))
-                        chunk.set_tile("GROUND0", x, y, Tile("NATURE", 2, 7))
-                        double = False
+            if chunk.get_height_exact(x, y) >= 0.75:
+                # if chunk.tile_heights.get((x, y), -1) <= chunk.highest_path:
+                if not chunk.has_tile_in_layer_at("GROUND0", x, y) and not chunk.has_tile_in_layer_at("BUILDINGS", x, y) and not chunk.has_tile_in_layer_at("HILLS", x, y) \
+                        and not chunk.has_tile_in_layer_at("GROUND1", x, y - 1) \
+                        and not chunk.has_tile_in_layer_at("GROUND2", x, y) and not chunk.has_tile_in_layer_at("GROUND2", x, y - 1) and not chunk.has_tile_in_layer_at("GROUND2", x, y - 2)\
+                        and not chunk.has_tile_in_layer_at("FENCE", x, y)\
+                        and not chunk.out_of_bounds(x, y) and not chunk.out_of_bounds(x, y - 1 and not chunk.out_of_bounds(x, y - 2)):
+                    if random.random() > 0.3 and tree_formula(chunk, x, y) > 1 - spawn_rate:
+                        if double:
+                            chunk.set_tile("GROUND2", x - 1, y - 2, Tile("NATURE", 1, 5))
+                            chunk.set_tile("GROUND2", x, y - 2, Tile("NATURE", 2, 5))
+                            chunk.set_tile("GROUND1", x - 1, y - 1, Tile("NATURE", 1, 6))
+                            chunk.set_tile("GROUND1", x, y - 1, Tile("NATURE", 2, 6))
+                            chunk.set_tile("GROUND0", x - 1, y, Tile("NATURE", 1, 7))
+                            chunk.set_tile("GROUND0", x, y, Tile("NATURE", 2, 7))
+                            double = False
+                        else:
+                            chunk.set_tile("GROUND2", x, y - 2, Tile("NATURE", 2, 0))
+                            chunk.set_tile("GROUND1", x, y - 1, Tile("NATURE", 2, 1))
+                            chunk.set_tile("GROUND0", x, y, Tile("NATURE", 2, 2))
+                            double = True
                     else:
-                        chunk.set_tile("GROUND2", x, y - 2, Tile("NATURE", 2, 0))
-                        chunk.set_tile("GROUND1", x, y - 1, Tile("NATURE", 2, 1))
-                        chunk.set_tile("GROUND0", x, y, Tile("NATURE", 2, 2))
-                        double = True
+                        double = False
                 else:
                     double = False
-            else:
-                double = False
 
 
 def tree_formula(chunk, x, y):

@@ -18,7 +18,7 @@ def create_lakes_and_sea(rmap: Map, sea_threshold=0.20) -> None:
     with alive_bar(rmap.size_v * rmap.size_h, title="Dividing into lakes and seas", theme="classic") as water_bar:
         for y in range(rmap.size_v):
             for x in range(rmap.size_h):
-                if rmap.height_map[y][x] <= 0 and (x, y) not in seen:
+                if (x, y) not in seen and rmap.height_map[y][x] < 0.5:
                     new_water_found = True
                     water_queue.add((x, y))
                     while len(water_queue) > 0:
@@ -122,5 +122,5 @@ def create_beach(rmap: Map, threshold: int) -> None:
         for x in range(rmap.size_h):
             if round(rmap.get_height_parsed_pos(x, y)) == 1:
                 chunk, cx, cy = rmap.parse_to_chunk_coordinate(x, y)
-                if chunk["GROUND0"][(cx, cy)] is None and chunk.get_height_exact(cx, cy) < 0.7 and check_for_water_around(x, y, 4):  #
+                if chunk["GROUND0"][(cx, cy)] is None and chunk.get_height_exact(cx, cy) < 0.75 and check_for_water_around(x, y, 4):  #
                     chunk["GROUND0"][(cx, cy)] = Tile("PATH", 0, 9)

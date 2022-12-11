@@ -19,6 +19,8 @@ def generate_height_map(size_h, size_v, max_height, off_x, off_y, additional_noi
 
 
 def get_height(max_height, x, y, static_offset_array, size_h, size_v, octaves=4, freq=150, island=False, flattening=2):
+    if island and (x == 0 or y == 0 or x == size_h - 1 or y == size_v - 1):
+        return 0
     noise = 0
     total_noise_maps = len(static_offset_array)
     tuple_count = 1
@@ -35,10 +37,10 @@ def get_height(max_height, x, y, static_offset_array, size_h, size_v, octaves=4,
         nx = 2 * x / size_h - 1
         ny = 2 * y / size_v - 1
         d = 1 - (1 - nx ** 2) * (1 - ny ** 2)
-        noise = (noise + (1 - d)) / flattening
+        elevation = (noise + (1 - d)) / flattening
     else:
-        noise += 0.45
-    return max(0, pow(noise, 2) * max_height * 2)
+        elevation = noise + 0.45
+    return max(0, pow(elevation, 3) * max_height * 2)
 
 
 def generate_height_map_from_image(img_path):

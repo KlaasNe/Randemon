@@ -40,7 +40,7 @@ class Map:
         print(Fore.LIGHTBLUE_EX + "seed = " + Fore.LIGHTYELLOW_EX + str(self.seed) + Style.RESET_ALL)
         print("Creating terrain...")
         off_x, off_y = random.randint(0, 1000000), random.randint(0, 1000000)
-        self.height_map: list[list[int]] = generate_height_map(self.chunk_size * self.chunk_nb_h, self.chunk_size * self.chunk_nb_v, 5, off_x, off_y, additional_noise_maps=3, island=island)
+        self.height_map: list[list[int]] = generate_height_map(self.chunk_size * self.chunk_nb_h, self.chunk_size * self.chunk_nb_v, 5, off_x, off_y, additional_noise_maps=0, island=island)
         # self.height_map = generate_height_map_from_image("heightMaps/earthLandMassHeight.png")
         smooth_height(self, radius=5)
         self.chunks: list[list[Chunk]] = [[Chunk(self.height_map, chunk_size, x, y, off_x + x * self.chunk_size, off_y + y * self.chunk_size) for x in range(chunk_nb_h)] for y in range(chunk_nb_v)]
@@ -53,7 +53,7 @@ class Map:
                     current_chunk = self.chunks[y][x]
                     remove_faulty_heights(current_chunk, force=True)
                     faulty_heights_bar()
-        create_lakes_and_sea(self)
+        # create_lakes_and_sea(self) TODO fix this
         create_beach(self, water_threshold)  # TODO dont do create beach twice
         with alive_bar(self.chunk_nb_v * self.chunk_nb_h, title="Generating chunks", theme="classic") as chunk_bar:
             for y in range(chunk_nb_v):

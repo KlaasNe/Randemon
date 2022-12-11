@@ -20,7 +20,8 @@ def main():
         max_buildings=args.max_buildings,
         height_map=args.height_map_opt,
         island=not args.mainland_opt,
-        themed_towns=args.themed_towns_opt
+        themed_towns=args.themed_towns_opt,
+        seed=args.seed
     )
     r = Render(my_map)
     print(Fore.LIGHTBLACK_EX + "Total generation time={}{}".format(str(time.time() - t), "s") + Style.RESET_ALL)
