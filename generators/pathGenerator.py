@@ -14,19 +14,35 @@ def get_path_type(layer: Layer, x: int, y: int) -> int:
     return tile.y // 3 if type(tile) == Tile and tile.type == "PATH" else None
 
 
+def draw_path_tile(rmap: Map, x: int, y: int, separated: bool) -> bool:
+    chunk, cx, cy = rmap.parse_to_chunk_coordinate(x, y)
+    if chunk is not None:
+        tile: Tile = chunk["GROUND0"][(cx, cy)]
+        if tile is not None and tile.type == "PATH":
+            path_type = tile.y // 3
+            prev_surrounding = get_surrounding_tiles(rmap, x, y, path_type, separated)
+            tile = get_tile_from_surrounding(prev_surrounding)
+            if tile is None:
+                chunk["GROUND0"].remove_tile(cx, cy)
+                return False
+            else:
+                chunk["GROUND0"][(cx, cy)] = PathTiles.specific_tile(tile, path_type)
+                return True
+    else:
+        return True
+
+
+def update_path(rmap: Map, coordinates: set[tuple[int, int]], separated):
+    for x, y in coordinates:
+        draw_path_tile(rmap, x, y, separated)
+
+
 def create_path(rmap: Map, separated: bool = True) -> None:
     for y in range(rmap.size_v):
         for x in range(rmap.size_h):
-            chunk, cx, cy = rmap.parse_to_chunk_coordinate(x, y)
-            tile: Tile = chunk["GROUND0"][(cx, cy)]
-            if tile is not None and tile.type == "PATH":
-                path_type = tile.y // 3
-                prev_surrounding = get_surrounding_tiles(rmap, x, y, path_type, separated)
-                tile = get_tile_from_surrounding(prev_surrounding)
-                if tile is None:
-                    chunk["GROUND0"].remove_tile(cx, cy)
-                else:
-                    chunk["GROUND0"][(cx, cy)] = PathTiles.specific_tile(tile, path_type)
+            if not draw_path_tile(rmap, x, y, separated):
+                update_path(rmap, {(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1),
+                 (x - 1, y - 1), (x - 1, y + 1), (x + 1, y - 1), (x + 1, y + 1)}, separated)
 
 
 def get_surrounding_tiles(rmap: Map, x: int, y: int, path_type: int, separated: bool) -> list[list]:

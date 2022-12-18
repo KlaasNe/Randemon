@@ -24,13 +24,16 @@ class Layer:
     def remove_tile(self, x: int, y: int) -> None:
         self.tiles.pop((x, y))
 
+    def has_tile_at(self, x: int, y: int) -> bool:
+        return self[(x, y)] is not None
+
     def get_ex_pos(self) -> Iterator[tuple[int, int]]:
         return self.tiles.keys().__iter__()
 
     def has_tiles_in_area(self, x1: int, y1: int, x2: int, y2: int) -> bool:
         for y in range(y1, y2 + 1):
             for x in range(x1, x2 + 1):
-                if self[(x, y)] is not None:
+                if self.has_tile_at(x, y):
                     return True
         return False
 

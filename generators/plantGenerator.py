@@ -21,7 +21,7 @@ def create_trees(chunk: Chunk, spawn_rate):
     double = False
     for y in range(chunk.size):
         for x in range(chunk.size):
-            if chunk.get_height_exact(x, y) >= 0.75:
+            if chunk.get_height_exact(x, y) > 0.75:
                 # if chunk.tile_heights.get((x, y), -1) <= chunk.highest_path:
                 if not chunk.has_tile_in_layer_at("GROUND0", x, y) and not chunk.has_tile_in_layer_at("BUILDINGS", x, y) and not chunk.has_tile_in_layer_at("HILLS", x, y) \
                         and not chunk.has_tile_in_layer_at("GROUND1", x, y - 1) \
@@ -46,6 +46,8 @@ def create_trees(chunk: Chunk, spawn_rate):
                         double = False
                 else:
                     double = False
+            else:
+                double = False
 
 
 def tree_formula(chunk, x, y):

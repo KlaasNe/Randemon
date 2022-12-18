@@ -48,7 +48,7 @@ class Chunk:
         return False
 
     def has_tile_in_layer_at(self, layer: str, x: int, y: int) -> bool:
-        return self.get_tile(layer, x, y) is not None
+        return self[layer].has_tile_at(x, y)
 
     def height_map_pos(self, x: int, y: int) -> tuple[int, int]:
         """
