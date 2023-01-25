@@ -17,6 +17,8 @@ def spawn_building(chunk: Chunk, building, path_type: int, fence_opt=True, mail_
             return False
         for y in range(y1, y2 + 1):
             for x in range(x1 - 2, x2 + 1 + 2):
+                if chunk.get_height(x, y) == 0:
+                    return False
                 if chunk.has_tile_in_layer_at("GROUND0", x, y) or chunk.has_tile_in_layer_at("FENCE", x, y):
                     return False
                 if x1 <= x < x2 + 2 and y1 <= y < y2 + 1:
@@ -137,7 +139,7 @@ def create_fence(chunk, x, y, max_y, rel_fence_type, tree=False):
         return x - test_x - 1
 
     def try_build_fence(fx, fy, height, fence):
-        if chunk.get_height(fx, fy) == height and chunk.get_tile_type("GROUND0", fx, fy) != "HILLS":  # or chunk.get_tile("GROUND0", fx, fy)[1] == 3):
+        if chunk.get_height(fx, fy) == height:  # or chunk.get_tile("GROUND0", fx, fy)[1] == 3):
             chunk.set_tile("FENCE", fx, fy, fence)
 
     size_x = check_house_width()
