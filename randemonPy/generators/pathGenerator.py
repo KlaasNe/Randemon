@@ -1,12 +1,12 @@
 from enum import Enum
 from random import shuffle
 
-from randemonPy.mapClasses import Map
-from randemonPy.mapClasses.chunk import Chunk
-from randemonPy.mapClasses.layer import Layer
-from randemonPy.mapClasses.tile import Tile
-from randemonPy.mapClasses.tile.TileWeights import TileWeights
-from randemonPy.mapClasses.tile.WeightTile import WeightTile
+from mapClasses import Map
+from mapClasses.chunk import Chunk
+from mapClasses.layer import Layer
+from mapClasses.tile import Tile
+from mapClasses.tile.TileWeights import TileWeights
+from mapClasses.tile.WeightTile import WeightTile
 
 
 def get_path_type(layer: Layer, x: int, y: int) -> int:

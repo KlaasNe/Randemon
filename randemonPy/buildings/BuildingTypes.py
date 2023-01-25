@@ -1,8 +1,8 @@
 from enum import Enum
 from random import choices
 
-from randemonPy.buildings.BuildingType import BuildingType
-from randemonPy.buildings.BuildingTheme import BuildingTheme
+from buildings.BuildingType import BuildingType
+from buildings.BuildingTheme import BuildingTheme
 
 
 class BuildingTypes(Enum):

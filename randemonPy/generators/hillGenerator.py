@@ -1,7 +1,7 @@
 import random
 from enum import Enum
 
-from randemonPy.mapClasses.tile import Tile
+from mapClasses.tile import Tile
 
 
 def create_edges(chunk, hill_type=0):

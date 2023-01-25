@@ -5,7 +5,7 @@ from PIL import Image
 from alive_progress import alive_bar
 from noise import snoise2
 
-from randemonPy.mapClasses.tile.Tile import Tile
+from mapClasses.tile.Tile import Tile
 
 
 def generate_height_map(size_h, size_v, max_height, off_x, off_y, additional_noise_maps=0, island=False):

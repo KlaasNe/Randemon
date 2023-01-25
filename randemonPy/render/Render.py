@@ -7,9 +7,9 @@ from PIL import Image
 from alive_progress import alive_bar
 from colorama import Fore, Style
 
-from randemonPy.mapClasses import Tile, Map
-from randemonPy.mapClasses.chunk import Chunk
-from randemonPy.render.SpriteSheetReaders import *
+from mapClasses import Tile, Map
+from mapClasses.chunk import Chunk
+from render.SpriteSheetReaders import *
 
 
 class Render:

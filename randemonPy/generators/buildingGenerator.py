@@ -4,10 +4,10 @@ from math import sqrt
 # Spawns a house on the map with house_front_path_type as its front porch
 # Houses are spawned by choosing a random x and y coordinate, checking whether enough space is available for the given
 # house if not, choose a new position. There's an upper limit to try find a building spot.
-from randemonPy.buildings.Building import Building
-from randemonPy.buildings.BuildingTypes import BuildingTypes
-from randemonPy.mapClasses.chunk import Chunk
-from randemonPy.mapClasses.tile import Tile
+from buildings.Building import Building
+from buildings.BuildingTypes import BuildingTypes
+from mapClasses.chunk import Chunk
+from mapClasses.tile import Tile
 
 
 def spawn_building(chunk: Chunk, building, path_type: int, fence_opt=True, mail_box_opt=True) -> bool:

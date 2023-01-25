@@ -2,9 +2,9 @@ from enum import Enum
 
 from alive_progress import alive_bar
 
-from randemonPy.mapClasses import Map
-from randemonPy.mapClasses.chunk import Chunk
-from randemonPy.mapClasses.tile import Tile
+from mapClasses import Map
+from mapClasses.chunk import Chunk
+from mapClasses.tile import Tile
 
 
 def create_lakes_and_sea(rmap: Map, sea_threshold=0.20) -> None:

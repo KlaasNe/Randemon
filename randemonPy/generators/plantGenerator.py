@@ -2,8 +2,8 @@ import random
 
 from noise import snoise2
 
-from randemonPy.mapClasses.chunk import Chunk
-from randemonPy.mapClasses.tile import Tile
+from mapClasses.chunk import Chunk
+from mapClasses.tile import Tile
 
 
 octaves1 = 2

@@ -5,16 +5,16 @@ from colorama import Fore
 from colorama import Style
 from typing import Optional, Iterator
 
-from randemonPy.buildings.BuildingTheme import BuildingTheme
-from randemonPy.buildings.BuildingTypes import BuildingThemes
-from randemonPy.generators.pokemonGenerator import spawn_pokemons
-from randemonPy.generators.heightMapGenerator import *
-from randemonPy.generators.buildingGenerator import *
-from randemonPy.generators.hillGenerator import *
-from randemonPy.generators.pathGenerator import *
-from randemonPy.generators.plantGenerator import *
-from randemonPy.generators.waterGenerator import *
-from randemonPy.mapClasses import Chunk
+from buildings.BuildingTheme import BuildingTheme
+from buildings.BuildingTypes import BuildingThemes
+from generators.pokemonGenerator import spawn_pokemons
+from generators.heightMapGenerator import *
+from generators.buildingGenerator import *
+from generators.hillGenerator import *
+from generators.pathGenerator import *
+from generators.plantGenerator import *
+from generators.waterGenerator import *
+from mapClasses import Chunk
 
 from alive_progress import alive_bar
 

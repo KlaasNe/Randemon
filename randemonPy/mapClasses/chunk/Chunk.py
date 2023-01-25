@@ -1,5 +1,5 @@
-from randemonPy.mapClasses.layer import *
-from randemonPy.buildings import Building
+from mapClasses.layer import *
+from buildings import Building
 
 MAX_HEIGHT = 5
 
