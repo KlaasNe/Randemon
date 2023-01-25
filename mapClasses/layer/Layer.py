@@ -14,12 +14,9 @@ class Layer:
     def __setitem__(self, pos: tuple[int, int], tile: Tile) -> None:
         self.tiles[pos] = tile
 
-    def get_items(self):
+    def __iter__(self):
         for item in self.tiles.items():
             yield item
-
-    def set_tile(self, x: int, y: int, tile: Tile) -> None:
-        self[(x, y)] = tile  # TODO remove this and update code
 
     def remove_tile(self, x: int, y: int) -> None:
         self.tiles.pop((x, y))

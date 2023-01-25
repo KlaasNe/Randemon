@@ -19,10 +19,13 @@ class Render:
     TILE_SIZE = 16
     TNF = Tile("TNF", 0, 0)
 
-    def __init__(self, map_obj: Map) -> None:
+    def __init__(self):
         self.readers = dict()
+        self.visual = None
         for reader in SpriteSheetReaders:
             self.readers[reader.name] = reader.value
+
+    def render(self, map_obj: Map):
         chunk_size = map_obj.chunk_size
         chunk_nb_h, chunk_nb_v = map_obj.chunk_nb_h, map_obj.chunk_nb_v
         self.visual = Image.new("RGBA",
@@ -34,20 +37,20 @@ class Render:
                 self.render_chunk(chunk)
                 render_bar()
 
-    def get_tile_img(self, tile):
+    def get_tile_img(self, tile: Tile) -> Image:
         try:
             return self.readers[tile.type].get_tile(tile)
         except KeyError:
             return self.readers["TNF"].get_tile(Render.TNF)
 
-    def draw_tile(self, tile, x, y):
+    def draw_tile(self, tile: Tile, x: int, y: int) -> None:
         img = self.get_tile_img(tile)
         dest_box = (x, y, x + Render.TILE_SIZE, y + Render.TILE_SIZE)
         self.visual.paste(img, dest_box, img)
 
     def render_chunk(self, chunk: Chunk) -> None:
         for layer in chunk.get_layers():
-            for (tile_x, tile_y), tile in layer.get_items():
+            for (tile_x, tile_y), tile in layer:
                 x, y = chunk.height_map_pos(tile_x, tile_y)
                 x *= Render.TILE_SIZE
                 y *= Render.TILE_SIZE
@@ -68,19 +71,19 @@ class Render:
     def save(self, name: str) -> None:
         img_name = name + ".png"
         with alive_bar(1, title="Saving image", theme="classic") as save_bar:
-            self.visual.save(os.path.join("saved images", img_name), "png")
+            self.visual.save(os.path.join("saved_images", img_name), "png")
             save_bar()
         print("Image saved successfully")
-        print(os.path.join(Fore.LIGHTBLUE_EX + os.path.abspath("saved images"), Fore.LIGHTYELLOW_EX + img_name + Style.RESET_ALL))
+        print(os.path.join(Fore.LIGHTBLUE_EX + os.path.abspath("saved_images"), Fore.LIGHTYELLOW_EX + img_name + Style.RESET_ALL))
 
     def save_prompt(self, seed: Union[int, str] = "") -> None:
         save = input('\n' + Fore.LIGHTBLUE_EX + "Save this image? (y/n/w): " + Style.RESET_ALL)
-        file_n = "{} {}".format(datetime.now().strftime("%G-%m-%d %H-%M-%S"), str(seed))
+        file_n = "{}_{}".format(datetime.now().strftime("%G-%m-%d_%H-%M-%S"), str(seed))
         if save == "y" or save == "w":
-            if not os.path.isdir("saved images"):
-                os.mkdir("saved images")
+            if not os.path.isdir("saved_images"):
+                os.mkdir("saved_images")
             self.save(file_n)
             if save == "w":
                 cwd = os.getcwd()
-                file_path = os.path.join(cwd, "saved images", file_n + ".png")
+                file_path = os.path.join(cwd, "saved_images", file_n + ".png")
                 ctypes.windll.user32.SystemParametersInfoW(20, 0, file_path, 0)

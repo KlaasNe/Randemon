@@ -277,21 +277,21 @@ def create_stairs(chunk, pl, bl):
             if chunk.get_height(px, py) > 1 and pl.get_tile_type(px, py) == "PATH" and bl.get_tile_type(px, py) is None:
                 if path_above(px, py) and path_under(px, py) and (path_left(px, py) or path_right(px, py)):
                     if chunk.get_height(px, py) > chunk.get_height(px, py - 1):
-                        bl.set_tile(px, py, Tile("ROAD", 3, 0))
-                        bl.set_tile(px + 1, py, Tile("ROAD", 3, 1))
+                        bl[px, py] = Tile("ROAD", 3, 0)
+                        bl[px + 1, py] = Tile("ROAD", 3, 1)
 
                     elif chunk.get_height(px, py) > chunk.get_height(px, py + 1):
-                        bl.set_tile(px, py, Tile("ROAD", 2, 0))
-                        bl.set_tile(px + 1, py, Tile("ROAD", 2, 1))
+                        bl[px, py] = Tile("ROAD", 2, 0)
+                        bl[px + 1, py] = Tile("ROAD", 2, 1)
 
                 elif path_left(px, py) and path_right(px, py) and path_under(px, py):
                     if chunk.get_height(px, py) > chunk.get_height(px - 1, py):
-                        bl.set_tile(px, py, Tile("ROAD", 4, 0))
-                        bl.set_tile(px, py + 1, Tile("ROAD", 4, 1))
+                        bl[px, py] = Tile("ROAD", 4, 0)
+                        bl[px, py + 1] = Tile("ROAD", 4, 1)
 
                     elif chunk.get_height(px, py) > chunk.get_height(px + 1, py):
-                        bl.set_tile(px, py, Tile("ROAD", 5, 0))
-                        bl.set_tile(px, py + 1, Tile("ROAD", 5, 1))
+                        bl[px, py] = Tile("ROAD", 5, 0)
+                        bl[px, py + 1] = Tile("ROAD", 5, 1)
 
 
 def create_lanterns(chunk: Chunk):

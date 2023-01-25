@@ -23,14 +23,16 @@ def main():
         themed_towns=args.themed_towns_opt,
         seed=args.seed
     )
-    r = Render(my_map)
-    print(Fore.LIGHTBLACK_EX + "Total generation time={}{}".format(str(time.time() - t), "s") + Style.RESET_ALL)
+    r = Render()
+    r.render(my_map)
+    print(Fore.LIGHTBLACK_EX + "Total generation time={}s".format(str(time.time() - t)) + Style.RESET_ALL)
     if not args.no_show_opt:
         r.show()
     if args.save_opt:
         r.save("{} {}".format(datetime.now().strftime("%G-%m-%d %H-%M-%S"), str(my_map.seed)))
     else:
         r.save_prompt(my_map.seed)
+    return r
 
 
 if __name__ == "__main__":

@@ -40,7 +40,7 @@ def get_height(max_height, x, y, static_offset_array, size_h, size_v, octaves=4,
         elevation = (noise + (1 - d)) / flattening
     else:
         elevation = noise + 0.45
-    return max(0, pow(elevation, 3) * max_height * 2)
+    return max(0, pow(elevation, 3) * max_height * 2 + 0.05)
 
 
 def generate_height_map_from_image(img_path):
@@ -61,8 +61,7 @@ def smooth_height(rmap, radius=1):
     smooth = False
     max_progress = 0
     tries = 0
-    with alive_bar(rmap.size_v * rmap.size_h // radius ** 2, title="smoothening terrain",
-                   theme="classic") as smooth_bar:
+    with alive_bar(rmap.size_v * rmap.size_h // radius ** 2, title="smoothening terrain", theme="classic") as smooth_bar:
         while not smooth and tries < 10:
             tries += 1
             smooth = True
