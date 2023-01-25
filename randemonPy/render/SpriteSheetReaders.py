@@ -1,6 +1,6 @@
 from enum import Enum
 
-from render.SpriteSheetReader import SpriteSheetReader
+from randemonPy.render.SpriteSheetReader import SpriteSheetReader
 
 
 class SpriteSheetReaders(Enum):

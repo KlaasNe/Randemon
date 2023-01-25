@@ -1,20 +1,20 @@
-import random
 import sys
+from random import random
+
 from colorama import Fore
 from colorama import Style
 from typing import Optional, Iterator
 
-from buildings.BuildingTheme import BuildingTheme
-from buildings.BuildingTypes import BuildingTypes
-from buildings.BuildingTypes import BuildingThemes
-from generators.buildingGenerator import *
-from generators.hillGenerator import *
-from generators.plantGenerator import *
-from generators.pokemonGenerator import spawn_pokemons
-from generators.waterGenerator import *
-from generators.pathGenerator import *
-from generators.heightMapGenerator import *
-from mapClasses import Chunk
+from randemonPy.buildings.BuildingTheme import BuildingTheme
+from randemonPy.buildings.BuildingTypes import BuildingThemes
+from randemonPy.generators.pokemonGenerator import spawn_pokemons
+from randemonPy.generators.heightMapGenerator import *
+from randemonPy.generators.buildingGenerator import *
+from randemonPy.generators.hillGenerator import *
+from randemonPy.generators.pathGenerator import *
+from randemonPy.generators.plantGenerator import *
+from randemonPy.generators.waterGenerator import *
+from randemonPy.mapClasses import Chunk
 
 from alive_progress import alive_bar
 

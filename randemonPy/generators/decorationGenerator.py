@@ -1,7 +1,7 @@
 import math
 import random
 
-from generators.pathGenerator import is_actual_path, get_path_type
+from randemonPy.generators.pathGenerator import is_actual_path, get_path_type
 
 
 # Spawns a truck on top of path

@@ -1,12 +1,11 @@
 import os
-import io
 
 from PIL import ImageOps, Image
 
-from mapClasses.tile import Tile
+from randemonPy.mapClasses import Tile
 
 TILE_SIZE = 16
-TILE_SHEET_DIRECTORY = os.path.join("render", "tileSheets")
+TILE_SHEET_DIRECTORY = os.path.join("randemonPy", "render", "tileSheets")
 
 
 class SpriteSheetReader:

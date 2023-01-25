@@ -1,7 +1,7 @@
 from datetime import datetime
 
-from mapClasses.Map import Map
-from render import Render
+from randemonPy.mapClasses import Map
+from randemonPy.render import Render
 from colorama import Fore
 from colorama import Style
 

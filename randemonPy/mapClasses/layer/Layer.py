@@ -1,6 +1,6 @@
 from typing import Optional, Iterator
 
-from mapClasses.tile import Tile
+from randemonPy.mapClasses.tile import Tile
 
 
 class Layer:
