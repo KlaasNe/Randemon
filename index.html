@@ -16,38 +16,40 @@
         <div class="row">
             <div class="col-12 col-lg-8 pe-lg-2 mb-4 mb-lg-0">
                 <div class="row mb-3">
-                    <img src="randemonPy/saved_images/2022-12-18 20-44-22 306763900766793577.png"
+                    <img src=""
                          class="img-fluid mb-2"
                          alt="Latest generated randemon map" id="latest"/>
-                    <div class="d-grid gap-2 mb-2">
-                        <button class="btn btn-primary">
-                            <img src="assets/bootstrap-icons/download.svg" alt="Bootstrap"
-                                 width="12" height="12">
-                            Save
-                        </button>
-                    </div>
-                    <div class="d-flex">
-                        <div class="col-4 pe-1">
-                            <div class="d-grid">
-                                <button class="btn btn-outline-primary">
-                                    <!--                                <img src="assets/bootstrap-icons/plus-square.svg" style="color: white;" alt="Bootstrap"-->
-                                    <!--                                     width="12" height="12">-->
-                                    Keep
-                                </button>
-                            </div>
+                    <div id="latest-buttons">
+                        <div class="d-grid mb-2">
+                            <button class="btn btn-primary">
+                                <img src="assets/bootstrap-icons/download.svg" alt="Bootstrap"
+                                     width="12" height="12">
+                                Save
+                            </button>
                         </div>
-                        <div class="col-4 px-1">
-                            <div class="d-grid">
-                                <button class="btn btn-outline-secondary">
-                                    Copy seed
-                                </button>
+                        <div class="row">
+                            <div class="col-4 pe-1">
+                                <div class="d-grid">
+                                    <button class="btn btn-outline-primary">
+                                        <!--                                <img src="assets/bootstrap-icons/plus-square.svg" style="color: white;" alt="Bootstrap"-->
+                                        <!--                                     width="12" height="12">-->
+                                        Keep
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-4 ps-1">
-                            <div class="d-grid">
-                                <button class="btn btn-outline-warning">
-                                    Reload
-                                </button>
+                            <div class="col-4 px-1">
+                                <div class="d-grid">
+                                    <button class="btn btn-outline-secondary">
+                                        Copy seed
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-4 ps-1">
+                                <div class="d-grid">
+                                    <button class="btn btn-outline-warning">
+                                        Reload
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -64,7 +66,7 @@
                             <label class="form-check-label text-body" for="islandMode">Island</label>
                         </div>
                         <div class="d-grid">
-                            <button type="submit" class="btn btn-primary">
+                            <button onclick="generate_map()" type="submit" class="btn btn-primary">
                                 <img src="assets/bootstrap-icons/terminal.svg" alt="Bootstrap"
                                      width="12" height="12">
                                 Generate
@@ -75,70 +77,75 @@
             </div>
 
             <!--Column with last 5 generated images-->
-            <div class="col-12 col-lg-3 mt-4 mt-lg-0">
-                <div class="text-center mb-2"><h3 class="m-0">Previous maps</h3></div>
-                <div class="border rounded center-text" style="height: 87.5vh;">
-                    <div class="navbar-nav navbar-nav-scroll d-flex flex-column" style="--bs-scroll-height: 100%;">
-                        <card>
-                            <div class="card m-2">
-                                <img src="randemonPy/saved_images/2023-01-25_19-47-51_7117294270402732484.png"
-                                     class="card-img-top" alt="...">
-                                <div class="card-body">
-                                    <h5 class="card-title">7117294270402732484</h5>
-                                    <p class="card-text">
-                                        2023-01-25_19-47-51_7117294270402732484.png
-                                    </p>
-                                    <div class="row mb-2">
-                                        <div class="col-xl-7 col-lg-6 col-sm-8 ps-2 pe-1">
-                                            <div class="d-grid">
-                                                <button class="btn btn-primary">
-                                                    <img src="assets/bootstrap-icons/download.svg" alt="Bootstrap"
-                                                         width="12" height="12">
-                                                    Save
-                                                </button>
+            <div class="col-12 col-lg-3 mt-2 mt-lg-0">
+                <div class="sticky-lg-top pt-2">
+                    <div class="text-center"><h3 class="m-0">Previous maps</h3></div>
+                    <div class="mt-2 border rounded center-text" style="max-height: 88vh;">
+                        <div class="navbar-nav navbar-nav-scroll d-flex flex-column" style="--bs-scroll-height: 100%;">
+                            <card>
+                                <div class="card m-2">
+                                    <img src="randemonPy/saved_images/2023-01-25_19-47-51_7117294270402732484.png"
+                                         class="card-img-top" alt="...">
+                                    <div class="card-body">
+                                        <h5 class="card-title">7117294270402732484</h5>
+                                        <p class="card-text">
+                                            2023-01-25_19-47-51_7117294270402732484.png
+                                        </p>
+                                        <div class="row mb-2">
+                                            <div class="col-xxl-7 col-lg-6 col-sm-8 ps-2 pe-1">
+                                                <div class="d-grid">
+                                                    <button class="btn btn-primary">
+                                                        <img src="assets/bootstrap-icons/download.svg" alt="Bootstrap"
+                                                             width="12" height="12">
+                                                        Save
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div class="col-xxl-5 col-lg-6 col-sm-4 ps-1 pe-2">
+                                                <div class="d-grid">
+                                                    <button class="btn btn-danger">
+                                                        <img src="assets/bootstrap-icons/trash.svg" alt="Bootstrap"
+                                                             width="12" height="12">
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
-                                        <div class="col-xl-5 col-lg-6 col-sm-4 ps-1 pe-2">
-                                            <div class="d-grid">
-                                                <button class="btn btn-danger">Delete</button>
+                                        <div class="row">
+                                            <div class="col-xxl-4 col-lg-12 col-4 ps-xxl-2 pe-xxl-1 ps-2 pe-1 my-xxl-0 my-1">
+                                                <div class="d-grid">
+                                                    <button class="btn btn-outline-primary">
+                                                        <!--                                <img src="assets/bootstrap-icons/plus-square.svg" style="color: white;" alt="Bootstrap"-->
+                                                        <!--                                     width="12" height="12">-->
+                                                        Keep
+                                                    </button>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-xxl-4 col-lg-12 col-4 ps-xxl-2 pe-xxl-1 ps-2 pe-1 my-xxl-0 my-1">
-                                            <div class="d-grid">
-                                                <button class="btn btn-outline-primary">
-                                                    <!--                                <img src="assets/bootstrap-icons/plus-square.svg" style="color: white;" alt="Bootstrap"-->
-                                                    <!--                                     width="12" height="12">-->
-                                                    Keep
-                                                </button>
+                                            <div class="col-xxl-4 col-lg-12 col-4 px-xxl-1 px-1 my-xxl-0 my-1">
+                                                <div class="d-grid">
+                                                    <button class="btn btn-outline-secondary">
+                                                        Seed
+                                                    </button>
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div class="col-xxl-4 col-lg-12 col-4 px-xxl-1 px-1 my-xxl-0 my-1">
-                                            <div class="d-grid">
-                                                <button class="btn btn-outline-secondary">
-                                                    Seed
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <div class="col-xxl-4 col-lg-12 col-4 ps-xxl-1 pe-xxl-2 ps-1 pe-2 my-xxl-0 my-1">
-                                            <div class="d-grid">
-                                                <button class="btn btn-outline-warning">
-                                                    Reload
-                                                </button>
+                                            <div class="col-xxl-4 col-lg-12 col-4 ps-xxl-1 pe-xxl-2 ps-1 pe-2 my-xxl-0 my-1">
+                                                <div class="d-grid">
+                                                    <button class="btn btn-outline-warning">
+                                                        Reload
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        </card>
+                            </card>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </main>
-<footer class="text-center border-top p-2 mt-4">
+<footer class="text-center border-top p-2 mt-4 sticky-lg-bottom">
     <div class="text-light">
         Copyright (c) 2018-2023, KlaasNe
     </div>
@@ -146,5 +153,24 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN"
         crossorigin="anonymous"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+<script>
+    function generate_image() {
+        console.log("tweedst");
+        $.ajax({
+            url: "randemonPy/RandemonMain.py",
+            context: document.body
+        }).done(function (data) {
+            alert(data);
+            $('#latest').replaceWith(data);
+        });
+        console.log("vierst");
+    }
+
+    function generate_map() {
+        console.log("eerst");
+        generate_image()
+    }
+</script>
 </body>
 </html>

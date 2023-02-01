@@ -28,14 +28,17 @@ class Map:
                  max_buildings: int = 16,
                  island: bool = False,
                  seed: int = random.randint(0, sys.maxsize),
-                 height_map: bool = False,
-                 themed_towns: bool = False) -> None:
+                 draw_height_map: bool = False,
+                 themed_towns: bool = True) -> None:
         self.chunk_size: int = chunk_size
         self.chunk_nb_h: int = chunk_nb_h
         self.chunk_nb_v: int = chunk_nb_v
         self.size_h: int = self.chunk_size * self.chunk_nb_h
         self.size_v: int = self.chunk_size * self.chunk_nb_v
+        self.max_buildings = max_buildings
         self.seed: int = seed
+        self.draw_height_map = draw_height_map
+        self.themed_towns = themed_towns
         random.seed(self.seed)
         print(Fore.LIGHTBLUE_EX + "seed = " + Fore.LIGHTYELLOW_EX + str(self.seed) + Style.RESET_ALL)
         print("Creating terrain...")
@@ -47,35 +50,45 @@ class Map:
         self.water_tiles: set[tuple[int, int]] = set()
         self.lake_tiles: set[tuple[int, int]] = set()
         self.sea_tiles: set[tuple[int, int]] = set()
+
+    def __iter__(self) -> Iterator[Chunk]:
+        for chunk_row in self.chunks:
+            for chunk in chunk_row:
+                yield chunk
+
+    def create(self):
         water_threshold = 2
         max_beach_inland_depth = 5
-        with alive_bar(self.chunk_nb_v * self.chunk_nb_h, title="Removing faulty heights", theme="classic") as faulty_heights_bar:
-            for y in range(chunk_nb_v):
-                for x in range(chunk_nb_h):
+        with alive_bar(self.chunk_nb_v * self.chunk_nb_h, title="Removing faulty heights",
+                       theme="classic") as faulty_heights_bar:
+            for y in range(self.chunk_nb_v):
+                for x in range(self.chunk_nb_h):
                     current_chunk = self.chunks[y][x]
                     remove_faulty_heights(current_chunk, force=True)
                     faulty_heights_bar()
         # create_lakes_and_sea(self) TODO fix this
         create_beach(self, max_beach_inland_depth, water_threshold)  # TODO dont do create beach twice
         with alive_bar(self.chunk_nb_v * self.chunk_nb_h, title="Generating chunks", theme="classic") as chunk_bar:
-            for y in range(chunk_nb_v):
-                for x in range(chunk_nb_h):
+            for y in range(self.chunk_nb_v):
+                for x in range(self.chunk_nb_h):
                     current_chunk = self.chunks[y][x]
-                    if not height_map:
+                    if not self.draw_height_map:
                         create_edges(current_chunk, hill_type=0)
                         # create_rivers(current_chunk, self.lake_tiles)
-                        if max_buildings > 0 and random.randint(0, 2) <= 1:
+                        if self.max_buildings > 0 and random.randint(0, 2) <= 1:
                             path_type = random.randint(0, 7)
                             current_chunk.has_town = True
                             valid_town = spawn_functional_buildings(current_chunk, path_type)
                             if valid_town:
-                                if themed_towns:
+                                if self.themed_towns:
                                     building_theme: BuildingTheme = BuildingThemes.get_random_theme().value
-                                for b in range(random.randint(1, max_buildings)):
-                                    if themed_towns:
-                                        spawn_building(current_chunk, building_theme.get_random_building_type().value, path_type)
+                                for b in range(random.randint(1, self.max_buildings)):
+                                    if self.themed_towns:
+                                        spawn_building(current_chunk, building_theme.get_random_building_type().value,
+                                                       path_type)
                                     else:
-                                        spawn_building(current_chunk, BuildingTypes["H" + str(random.randint(0, 21))].value, path_type)
+                                        spawn_building(current_chunk,
+                                                       BuildingTypes["H" + str(random.randint(0, 21))].value, path_type)
                                 draw_path2(current_chunk, path_type)
                             else:
                                 current_chunk.has_town = False
@@ -85,24 +98,20 @@ class Map:
                         draw_height_map(self, current_chunk)
                     chunk_bar()
 
-        if not height_map:
+        if not self.draw_height_map:
             create_beach(self, max_beach_inland_depth, water_threshold)
             create_path(self)
 
-            with alive_bar(self.chunk_nb_v * self.chunk_nb_h, title="Updating chunks (nature, sea and plants and stuff)", theme="classic") as chunk_bar:
-                for y in range(chunk_nb_v):
-                    for x in range(chunk_nb_h):
+            with alive_bar(self.chunk_nb_v * self.chunk_nb_h,
+                           title="Updating chunks (nature, sea and plants and stuff)", theme="classic") as chunk_bar:
+                for y in range(self.chunk_nb_v):
+                    for x in range(self.chunk_nb_h):
                         current_chunk = self.chunks[y][x]
                         create_rivers(current_chunk, self.lake_tiles, water_threshold, no_sprite=True)
                         spawn_pokemons(current_chunk)
                         create_trees(current_chunk, 0.55)
                         grow_grass(current_chunk, 0.6)
                         chunk_bar()
-
-    def __iter__(self) -> Iterator[Chunk]:
-        for chunk_row in self.chunks:
-            for chunk in chunk_row:
-                yield chunk
 
     def get_chunk(self, x: int, y: int) -> Optional[Chunk]:
         try:
