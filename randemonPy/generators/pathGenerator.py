@@ -15,7 +15,7 @@ def get_path_type(layer: Layer, x: int, y: int) -> int:
 
 
 def draw_path_tile(rmap: Map, x: int, y: int, separated: bool) -> bool:
-    chunk, cx, cy = rmap.parse_to_chunk_coordinate(x, y)
+    chunk, cx, cy = rmap.parse_to_coordinate_in_chunk(x, y)
     if chunk is not None:
         tile: Tile = chunk["GROUND0"][(cx, cy)]
         if tile is not None and tile.type == "PATH":
@@ -50,7 +50,7 @@ def get_surrounding_tiles(rmap: Map, x: int, y: int, path_type: int, separated: 
     for py in range(y - 1, y + 2):
         row = []
         for px in range(x - 1, x + 2):
-            chunk, cx, cy = rmap.parse_to_chunk_coordinate(px, py)
+            chunk, cx, cy = rmap.parse_to_coordinate_in_chunk(px, py)
             if chunk is not None:
                 pt = get_path_type(chunk["GROUND0"], cx, cy)
                 valid = (pt == path_type or any([path_type == 3 and pt == 9, path_type == 9 and pt == 3])) if separated else pt is not None

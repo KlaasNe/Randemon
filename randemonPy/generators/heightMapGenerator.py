@@ -1,19 +1,24 @@
 import random
+import time
 from math import pow
 from PIL import Image
 
 from alive_progress import alive_bar
 from noise import snoise2
 
+from mapClasses import Map
+from mapClasses.Coordinate import Coordinate
 from mapClasses.tile.Tile import Tile
 
 
-def generate_height_map(size_h, size_v, max_height, off_x, off_y, terrain_chaos=4, additional_noise_maps=0, island=False):
+def generate_height_map(size_h, size_v, max_height, off_x, off_y, terrain_chaos=4, additional_noise_maps=0,
+                        island=False):
     static_offset_array = [(off_x, off_y)]
     for i in range(additional_noise_maps):
         static_offset_array.append((random.randint(0, 1000000), random.randint(0, 1000000)))
     return [
-        [(get_height(max_height, x, y, static_offset_array, size_h, size_v, octaves=terrain_chaos, island=island, flattening=2)) for x in range(size_h)]
+        [(get_height(max_height, x, y, static_offset_array, size_h, size_v, octaves=terrain_chaos, island=island,
+                     flattening=2)) for x in range(size_h)]
         for y in range(size_v)
     ]
 
@@ -56,44 +61,53 @@ def generate_height_map_from_image(img_path):
     return height_map
 
 
-def smooth_height(rmap, radius=1):
-    smooth = False
-    max_progress = 0
-    tries = 0
-    with alive_bar(rmap.size_v * rmap.size_h // radius ** 2, title="smoothening terrain", theme="classic") as smooth_bar:
-        while not smooth and tries < 10:
-            tries += 1
+def smooth_height(rmap):
+    with alive_bar(rmap.size_v * rmap.size_h, title="smoothening terrain", theme="classic") as smooth_bar:
+        smooth = False
+        tries = 0
+        while not smooth and tries < 20:
             smooth = True
-            progress = 0
-            for y in range(0, rmap.size_v, radius):
-                for x in range(0, rmap.size_h, radius):
+            tries += 1
+            print(tries)
+            for y in range(0, rmap.size_v):
+                for x in range(0, rmap.size_h):
                     if rmap.height_map[y][x] > 0:
-                        smooth_tile = smooth_down(rmap, x, y, radius=radius)
-                        if not smooth_tile:
+                        if not smooth_down(rmap, x, y):
                             smooth = False
-                    progress += 1
-                    if smooth and progress > max_progress:
-                        smooth_bar()
-                        max_progress = progress
+                    smooth_bar()
 
 
-def smooth_down(rmap, x, y, radius=1):
+def smooth_down(rmap: Map, x, y):
+    def check_and_update_height(u_x, u_y):
+        if rmap.in_bounds(u_x, u_y) and height_diff > 1:
+            rmap.height_map[u_y][u_x] = center_height + 1
+            return set(Coordinate(u_x, u_y).around())
+        elif rmap.in_bounds(u_x, u_y) and height_diff < -1:
+            rmap.height_map[u_y][u_x] = center_height - 1
+            return set(Coordinate(u_x, u_y).around())
+
+    center_height: int = rmap.height_map[y][x]
+    tile_updates: list[tuple] = list()
+    updated_tiles: list[tuple] = list()
     smooth = True
-    center_height = rmap.height_map[y][x]
-    for test_y in range(max(0, y - radius), min(y + radius + 1, rmap.size_v)):
-        for test_x in range(max(0, x - radius), min(x + radius + 1, rmap.size_h)):
-            test_height = max(0, rmap.height_map[test_y][test_x])
+    for test_y in range(max(0, y - 1), min(y + 2, rmap.size_v)):
+        for test_x in range(max(0, x - 1), min(x + 2, rmap.size_h)):
+            test_height = max(0, rmap.get_height_map_pos(test_x, test_y))
             height_diff = test_height - center_height
-            if height_diff > 1:
-                rmap.height_map[test_y][test_x] = center_height + 1
+            tiles_to_check = check_and_update_height(test_x, test_y)
+            if tiles_to_check is not None:
                 smooth = False
-            elif height_diff < -1:
-                rmap.height_map[test_y][test_x] = center_height - 1
-                smooth = False
+                tile_updates += tiles_to_check
+                while tile_updates:
+                    update_x, update_y = tile_updates.pop()
+                    updated_tiles.append((update_x, update_y))
+                    tiles_to_check = check_and_update_height(update_x, update_y)
+                    if tiles_to_check is not None:
+                        tile_updates = list(set(tile_updates).difference(updated_tiles))
     return smooth
 
 
-def draw_height_map(rmap, chunk):
+def draw_height_map(rmap: Map, chunk):
     for y in range(chunk.size):
         for x in range(chunk.size):
-            chunk.set_tile("HEIGHTMAP", x, y, Tile("HEIGHTS", rmap.get_height(chunk, x, y), 0))
+            chunk.set_tile("HEIGHTMAP", x, y, Tile("HEIGHTS", round(rmap.get_height(chunk, x, y)), 0))

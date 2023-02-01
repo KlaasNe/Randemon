@@ -18,11 +18,12 @@ def main():
         args.chunks_vertical,
         args.chunk_size,
         max_buildings=args.max_buildings,
-        draw_height_map=args.height_map_opt,
+        make_height_map=args.height_map_opt,
         island=not args.mainland_opt,
         themed_towns=args.themed_towns_opt,
         seed=args.seed,
-        terrain_chaos=args.terrain_chaos
+        terrain_chaos=args.terrain_chaos,
+        max_height=args.max_height
     )
     my_map.create()
     r = Render()

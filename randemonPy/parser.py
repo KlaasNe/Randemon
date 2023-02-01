@@ -43,21 +43,21 @@ def make_parser() -> ArgumentParser:
         help='The world generation seed')
 
     parser.add_argument(
-        '--maxheight',
+        '--max-height',
         dest='max_height',
         type=int,
-        default=5,
+        default=6,
         help='Maximal height of a hill')
 
     parser.add_argument(
-        '--height_map',
+        '--height-map',
         dest='height_map_opt',
         action='store_true',
         help='Generate a heightmap instead of a regular map.'
     )
 
     parser.add_argument(
-        '--mb',
+        '--max-buildings',
         dest='max_buildings',
         type=int,
         default=16,
