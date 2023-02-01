@@ -212,8 +212,8 @@ def draw_path2(chunk: Chunk, path_type: int):
 def determine_weight(chunk: Chunk, x, y, avoid_hill_corners=True):
     def is_2x2_tile_type(layer, x, y, tile_type):
         return any((chunk.get_tile_type(layer, x, y) == tile_type,
-                   chunk.get_tile_type(layer, x - 1, y) == tile_type,
-                   chunk.get_tile_type(layer, x, y - 1) == tile_type,
+                    chunk.get_tile_type(layer, x - 1, y) == tile_type,
+                    chunk.get_tile_type(layer, x, y - 1) == tile_type,
                     chunk.get_tile_type(layer, x - 1, y - 1) == tile_type))
 
     def is_corner(x, y):
@@ -221,17 +221,19 @@ def determine_weight(chunk: Chunk, x, y, avoid_hill_corners=True):
                chunk.get_tile("HILLS", x, y) == Tile("HILLS", 0, 2) or \
                chunk.get_tile("HILLS", x, y) == Tile("HILLS", 3, 0) and chunk.has_tile_in_layer_at("HILLS", x, y - 1)
 
-    if is_2x2_tile_type("BUILDINGS", x, y, "BUILDINGS"): return TileWeights.IMPASSABLE.value
-    if is_2x2_tile_type("FENCE", x, y, "FENCE"): return TileWeights.IMPASSABLE.value
-    if avoid_hill_corners and any((is_corner(x, y), is_corner(x - 1, y), is_corner(x, y - 1), is_corner(x - 1, y - 1))): return TileWeights.IMPASSABLE.value
-    if is_2x2_tile_type("HILLS", x, y, "HILLS"): return TileWeights.HILL.value
-    if is_2x2_tile_type("GROUND0", x, y, "WATER"): return TileWeights.WATER.value
-    if is_actual_path(chunk.layers["GROUND0"], x - 1, y - 1) and\
-            is_actual_path(chunk.layers["GROUND0"], x - 1, y) and\
-            is_actual_path(chunk.layers["GROUND0"], x, y - 1) and\
-            is_actual_path(chunk.layers["GROUND0"], x, y):
-        return TileWeights.PATH.value
-    if is_2x2_tile_type("GROUND0", x, y, "PATH"): return TileWeights.GRASS.value
+    if chunk.out_of_bounds(x - 1, y) or chunk.out_of_bounds(x, y - 1): return TileWeights.IMPASSABLE.value
+    if any((chunk.has_tile_at(x, y), chunk.has_tile_at(x - 1, y), chunk.has_tile_at(x, y - 1), chunk.has_tile_at(x - 1, y - 1))):
+        if is_2x2_tile_type("BUILDINGS", x, y, "BUILDINGS"): return TileWeights.IMPASSABLE.value
+        if is_2x2_tile_type("FENCE", x, y, "FENCE"): return TileWeights.IMPASSABLE.value
+        if avoid_hill_corners and any((is_corner(x, y), is_corner(x - 1, y), is_corner(x, y - 1), is_corner(x - 1, y - 1))): return TileWeights.IMPASSABLE.value
+        if is_2x2_tile_type("HILLS", x, y, "HILLS"): return TileWeights.HILL.value
+        if is_2x2_tile_type("GROUND0", x, y, "WATER"): return TileWeights.WATER.value
+        if is_actual_path(chunk.layers["GROUND0"], x - 1, y - 1) and\
+                is_actual_path(chunk.layers["GROUND0"], x - 1, y) and\
+                is_actual_path(chunk.layers["GROUND0"], x, y - 1) and\
+                is_actual_path(chunk.layers["GROUND0"], x, y):
+            return TileWeights.PATH.value
+        if is_2x2_tile_type("GROUND0", x, y, "PATH"): return TileWeights.GRASS.value
     return TileWeights.GRASS.value if is_2x2_tile_type("GROUND0", x, y, None) else TileWeights.IMPASSABLE.value
 
 

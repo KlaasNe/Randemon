@@ -48,7 +48,7 @@ class Map:
                                                                self.chunk_size * self.chunk_nb_v, 5, off_x, off_y,
                                                                additional_noise_maps=0, island=island, terrain_chaos=terrain_chaos)
         # self.height_map = generate_height_map_from_image("heightMaps/earthLandMassHeight.png")
-        # smooth_height(self, radius=5)
+        smooth_height(self, radius=1)
         self.chunks: list[list[Chunk]] = [
             [Chunk(self.height_map, chunk_size, x, y, off_x + x * self.chunk_size, off_y + y * self.chunk_size) for x in
              range(chunk_nb_h)] for y in range(chunk_nb_v)]
