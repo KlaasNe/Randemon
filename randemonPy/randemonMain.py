@@ -21,7 +21,8 @@ def main():
         draw_height_map=args.height_map_opt,
         island=not args.mainland_opt,
         themed_towns=args.themed_towns_opt,
-        seed=args.seed
+        seed=args.seed,
+        terrain_chaos=args.terrain_chaos
     )
     my_map.create()
     r = Render()

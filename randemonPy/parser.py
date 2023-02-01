@@ -86,4 +86,12 @@ def make_parser() -> ArgumentParser:
         help="Dont't show the generated image."
     )
 
+    parser.add_argument(
+        '--terrain-chaos',
+        dest='terrain_chaos',
+        type=int,
+        default=4,
+        help='Determine the chaos in the terrain generation process. A higher value means more chaos. Default is 4.'
+    )
+
     return parser

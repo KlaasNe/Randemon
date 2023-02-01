@@ -29,7 +29,8 @@ class Map:
                  island: bool = False,
                  seed: int = random.randint(0, sys.maxsize),
                  draw_height_map: bool = False,
-                 themed_towns: bool = True) -> None:
+                 themed_towns: bool = True,
+                 terrain_chaos: int = 4) -> None:
         self.chunk_size: int = chunk_size
         self.chunk_nb_h: int = chunk_nb_h
         self.chunk_nb_v: int = chunk_nb_v
@@ -43,10 +44,14 @@ class Map:
         print(Fore.LIGHTBLUE_EX + "seed = " + Fore.LIGHTYELLOW_EX + str(self.seed) + Style.RESET_ALL)
         print("Creating terrain...")
         off_x, off_y = random.randint(0, 1000000), random.randint(0, 1000000)
-        self.height_map: list[list[int]] = generate_height_map(self.chunk_size * self.chunk_nb_h, self.chunk_size * self.chunk_nb_v, 5, off_x, off_y, additional_noise_maps=0, island=island)
+        self.height_map: list[list[int]] = generate_height_map(self.chunk_size * self.chunk_nb_h,
+                                                               self.chunk_size * self.chunk_nb_v, 5, off_x, off_y,
+                                                               additional_noise_maps=0, island=island, terrain_chaos=terrain_chaos)
         # self.height_map = generate_height_map_from_image("heightMaps/earthLandMassHeight.png")
-        smooth_height(self, radius=5)
-        self.chunks: list[list[Chunk]] = [[Chunk(self.height_map, chunk_size, x, y, off_x + x * self.chunk_size, off_y + y * self.chunk_size) for x in range(chunk_nb_h)] for y in range(chunk_nb_v)]
+        # smooth_height(self, radius=5)
+        self.chunks: list[list[Chunk]] = [
+            [Chunk(self.height_map, chunk_size, x, y, off_x + x * self.chunk_size, off_y + y * self.chunk_size) for x in
+             range(chunk_nb_h)] for y in range(chunk_nb_v)]
         self.water_tiles: set[tuple[int, int]] = set()
         self.lake_tiles: set[tuple[int, int]] = set()
         self.sea_tiles: set[tuple[int, int]] = set()
@@ -58,7 +63,7 @@ class Map:
 
     def create(self):
         water_threshold = 2
-        max_beach_inland_depth = 5
+        max_beach_inland_depth = 16
         with alive_bar(self.chunk_nb_v * self.chunk_nb_h, title="Removing faulty heights",
                        theme="classic") as faulty_heights_bar:
             for y in range(self.chunk_nb_v):

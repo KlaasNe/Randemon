@@ -8,12 +8,12 @@ from noise import snoise2
 from mapClasses.tile.Tile import Tile
 
 
-def generate_height_map(size_h, size_v, max_height, off_x, off_y, additional_noise_maps=0, island=False):
+def generate_height_map(size_h, size_v, max_height, off_x, off_y, terrain_chaos=4, additional_noise_maps=0, island=False):
     static_offset_array = [(off_x, off_y)]
     for i in range(additional_noise_maps):
         static_offset_array.append((random.randint(0, 1000000), random.randint(0, 1000000)))
     return [
-        [(get_height(max_height, x, y, static_offset_array, size_h, size_v, island=island, flattening=2)) for x in range(size_h)]
+        [(get_height(max_height, x, y, static_offset_array, size_h, size_v, octaves=terrain_chaos, island=island, flattening=2)) for x in range(size_h)]
         for y in range(size_v)
     ]
 
@@ -45,7 +45,7 @@ def get_height(max_height, x, y, static_offset_array, size_h, size_v, octaves=4,
 
 def generate_height_map_from_image(img_path):
     im = Image.open(img_path)
-    width, height = im.chunk_size
+    width, height = im.width, im.height
     image_array = list(im.getdata())
     height_map = []
     for y in range(height):
@@ -53,7 +53,6 @@ def generate_height_map_from_image(img_path):
         for x in range(width):
             height_map_row.append(image_array[y * width + x][0] // 10 - 1)
         height_map.append(height_map_row)
-
     return height_map
 
 
@@ -81,14 +80,6 @@ def smooth_height(rmap, radius=1):
 def smooth_down(rmap, x, y, radius=1):
     smooth = True
     center_height = rmap.height_map[y][x]
-    # min_height = center_height
-    # max_height = center_height
-    # for test_y in range(max(0, y - radius), min(y + radius + 1, rmap.size_v)):
-    #     for test_x in range(max(0, x - radius), min(x + radius + 1, rmap.size_h)):
-    #         test_height = rmap.height_map[test_y][test_x]
-    #         min_height = max(0, min(min_height, test_height))
-    #         max_height = max(max_height, test_height)
-    #         avg_height = (min_height + max_height) / 2
     for test_y in range(max(0, y - radius), min(y + radius + 1, rmap.size_v)):
         for test_x in range(max(0, x - radius), min(x + radius + 1, rmap.size_h)):
             test_height = max(0, rmap.height_map[test_y][test_x])
