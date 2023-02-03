@@ -61,7 +61,7 @@ def generate_height_map_from_image(img_path):
     return height_map
 
 
-def smooth_height(rmap):
+def smooth_height(rmap: Map) -> None:
     with alive_bar(rmap.size_v * rmap.size_h, title="smoothening terrain", theme="classic") as smooth_bar:
         smooth = False
         tries = 0
@@ -69,6 +69,13 @@ def smooth_height(rmap):
             smooth = True
             tries += 1
             print(tries)
+            heights_sorted = dict()
+            for y in range(0, rmap.size_v):
+                for x in range(0, rmap.size_h):
+                    h = rmap.get_height_map_pos(x, y) > 0
+                    if h > 0:
+                        heights_sorted[h] = (x, y)
+
             for y in range(0, rmap.size_v):
                 for x in range(0, rmap.size_h):
                     if rmap.height_map[y][x] > 0:
@@ -77,7 +84,7 @@ def smooth_height(rmap):
                     smooth_bar()
 
 
-def smooth_down(rmap: Map, x, y):
+def smooth_down(rmap: Map, x: int, y: int) -> None:
     def check_and_update_height(u_x, u_y):
         if rmap.in_bounds(u_x, u_y) and height_diff > 1:
             rmap.height_map[u_y][u_x] = center_height + 1
