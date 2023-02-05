@@ -15,7 +15,7 @@ def get_path_type(layer: Layer, x: int, y: int) -> int:
 
 
 def draw_path_tile(rmap: Map, x: int, y: int, separated: bool) -> bool:
-    chunk, cx, cy = rmap.parse_to_chunk_coordinate(x, y)
+    chunk, cx, cy = rmap.parse_to_coordinate_in_chunk(x, y)
     if chunk is not None:
         tile: Tile = chunk["GROUND0"][(cx, cy)]
         if tile is not None and tile.type == "PATH":
@@ -50,7 +50,7 @@ def get_surrounding_tiles(rmap: Map, x: int, y: int, path_type: int, separated: 
     for py in range(y - 1, y + 2):
         row = []
         for px in range(x - 1, x + 2):
-            chunk, cx, cy = rmap.parse_to_chunk_coordinate(px, py)
+            chunk, cx, cy = rmap.parse_to_coordinate_in_chunk(px, py)
             if chunk is not None:
                 pt = get_path_type(chunk["GROUND0"], cx, cy)
                 valid = (pt == path_type or any([path_type == 3 and pt == 9, path_type == 9 and pt == 3])) if separated else pt is not None
@@ -84,6 +84,7 @@ class PathTiles(Enum):
     def specific_tile(tile: Tile, tile_type: int) -> Tile:
         return Tile("PATH", tile.x, tile.y + tile_type * 3)
 
+    O = "111\n111\n111", Tile("PATH", 0, 0)
     A = "111\n111\n011", Tile("PATH", 2, 2)
     B = "111\n111\n110", Tile("PATH", 1, 2)
     C = "110\n111\n111", Tile("PATH", 3, 2)
@@ -212,8 +213,8 @@ def draw_path2(chunk: Chunk, path_type: int):
 def determine_weight(chunk: Chunk, x, y, avoid_hill_corners=True):
     def is_2x2_tile_type(layer, x, y, tile_type):
         return any((chunk.get_tile_type(layer, x, y) == tile_type,
-                   chunk.get_tile_type(layer, x - 1, y) == tile_type,
-                   chunk.get_tile_type(layer, x, y - 1) == tile_type,
+                    chunk.get_tile_type(layer, x - 1, y) == tile_type,
+                    chunk.get_tile_type(layer, x, y - 1) == tile_type,
                     chunk.get_tile_type(layer, x - 1, y - 1) == tile_type))
 
     def is_corner(x, y):
@@ -221,17 +222,19 @@ def determine_weight(chunk: Chunk, x, y, avoid_hill_corners=True):
                chunk.get_tile("HILLS", x, y) == Tile("HILLS", 0, 2) or \
                chunk.get_tile("HILLS", x, y) == Tile("HILLS", 3, 0) and chunk.has_tile_in_layer_at("HILLS", x, y - 1)
 
-    if is_2x2_tile_type("BUILDINGS", x, y, "BUILDINGS"): return TileWeights.IMPASSABLE.value
-    if is_2x2_tile_type("FENCE", x, y, "FENCE"): return TileWeights.IMPASSABLE.value
-    if avoid_hill_corners and any((is_corner(x, y), is_corner(x - 1, y), is_corner(x, y - 1), is_corner(x - 1, y - 1))): return TileWeights.IMPASSABLE.value
-    if is_2x2_tile_type("HILLS", x, y, "HILLS"): return TileWeights.HILL.value
-    if is_2x2_tile_type("GROUND0", x, y, "WATER"): return TileWeights.WATER.value
-    if is_actual_path(chunk.layers["GROUND0"], x - 1, y - 1) and\
-            is_actual_path(chunk.layers["GROUND0"], x - 1, y) and\
-            is_actual_path(chunk.layers["GROUND0"], x, y - 1) and\
-            is_actual_path(chunk.layers["GROUND0"], x, y):
-        return TileWeights.PATH.value
-    if is_2x2_tile_type("GROUND0", x, y, "PATH"): return TileWeights.GRASS.value
+    if chunk.out_of_bounds(x - 1, y) or chunk.out_of_bounds(x, y - 1): return TileWeights.IMPASSABLE.value
+    if any((chunk.has_tile_at(x, y), chunk.has_tile_at(x - 1, y), chunk.has_tile_at(x, y - 1), chunk.has_tile_at(x - 1, y - 1))):
+        if is_2x2_tile_type("BUILDINGS", x, y, "BUILDINGS"): return TileWeights.IMPASSABLE.value
+        if is_2x2_tile_type("FENCE", x, y, "FENCE"): return TileWeights.IMPASSABLE.value
+        if avoid_hill_corners and any((is_corner(x, y), is_corner(x - 1, y), is_corner(x, y - 1), is_corner(x - 1, y - 1))): return TileWeights.IMPASSABLE.value
+        if is_2x2_tile_type("HILLS", x, y, "HILLS"): return TileWeights.HILL.value
+        if is_2x2_tile_type("GROUND0", x, y, "WATER"): return TileWeights.WATER.value
+        if is_actual_path(chunk.layers["GROUND0"], x - 1, y - 1) and\
+                is_actual_path(chunk.layers["GROUND0"], x - 1, y) and\
+                is_actual_path(chunk.layers["GROUND0"], x, y - 1) and\
+                is_actual_path(chunk.layers["GROUND0"], x, y):
+            return TileWeights.PATH.value
+        if is_2x2_tile_type("GROUND0", x, y, "PATH"): return TileWeights.GRASS.value
     return TileWeights.GRASS.value if is_2x2_tile_type("GROUND0", x, y, None) else TileWeights.IMPASSABLE.value
 
 

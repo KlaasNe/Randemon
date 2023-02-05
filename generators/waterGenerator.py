@@ -10,7 +10,7 @@ from mapClasses.tile import Tile
 def create_lakes_and_sea(rmap: Map, sea_threshold=0.20) -> None:
 
     def validate(x0: int, y0: int) -> bool:
-        return rmap.in_bounds(x0, y0) and rmap.get_height_parsed_pos(x0, y0) <= 0 and (x0, y0) not in current_water
+        return rmap.in_bounds(x0, y0) and rmap.get_height_map_pos(x0, y0) <= 0 and (x0, y0) not in current_water
 
     seen = set()
     water_queue = set()
@@ -108,7 +108,7 @@ def create_beach(rmap: Map, max_inland_size: int, threshold: int) -> None:
     def check_for_water_around(x0: int, y0: int, radius: int) -> bool:
         for check_y in range(y0 - radius, y0 + radius + 1):
             for check_x in range(x0 - radius, x0 + radius + 1):
-                chunk0, cx0, cy0 = rmap.parse_to_chunk_coordinate(check_x, check_y)
+                chunk0, cx0, cy0 = rmap.parse_to_coordinate_in_chunk(check_x, check_y)
                 if chunk0 is not None and chunk0.get_height(cx0, cy0) == 0:
                     return True
         return False
@@ -117,8 +117,8 @@ def create_beach(rmap: Map, max_inland_size: int, threshold: int) -> None:
     new_beach_tiles: set[tuple[int, int]] = set()
     for y in range(rmap.size_v):
         for x in range(rmap.size_h):
-            if round(rmap.get_height_parsed_pos(x, y)) == 1:
-                chunk, cx, cy = rmap.parse_to_chunk_coordinate(x, y)
+            if round(rmap.get_height_map_pos(x, y)) == 1:
+                chunk, cx, cy = rmap.parse_to_coordinate_in_chunk(x, y)
                 if chunk["GROUND0"][(cx, cy)] is None and check_for_water_around(x, y, 1):
                     if chunk.get_height_exact(cx, cy) < threshold:
                         chunk["GROUND0"][(cx, cy)] = Tile("PATH", 0, 27)
@@ -127,8 +127,8 @@ def create_beach(rmap: Map, max_inland_size: int, threshold: int) -> None:
     for i in range(max_inland_size - 1):
         i_distance_beach_tiles: set[tuple[int, int]] = set()
         for x, y in new_beach_tiles.difference(beach_tiles):
-            if round(rmap.get_height_parsed_pos(x, y)) == 1:
-                chunk, cx, cy = rmap.parse_to_chunk_coordinate(x, y)
+            if round(rmap.get_height_map_pos(x, y)) == 1:
+                chunk, cx, cy = rmap.parse_to_coordinate_in_chunk(x, y)
                 if chunk["GROUND0"][(cx, cy)] is None and (i == 0 or chunk.get_height_exact(cx, cy) < 0.75):  # i == 0 to prevent buggy path tiles so beach depth will always be at least 2
                     chunk["GROUND0"][(cx, cy)] = Tile("PATH", 0, 9)
                     i_distance_beach_tiles.update({(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1), (x - 1, y - 1), (x - 1, y + 1), (x + 1, y - 1), (x + 1, y + 1)})

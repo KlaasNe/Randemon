@@ -1,6 +1,6 @@
 import random
-from generators.pathGenerator import is_actual_path, get_path_type
-from generators.buildingGenerator import is_inside_cluster
+from randemonPy.generators.pathGenerator import is_actual_path, get_path_type
+from randemonPy.generators.buildingGenerator import is_inside_cluster
 
 # Lists of sprite numbers which can be spawned at certain locations
 NB_NPC = 55  # The amount of different npcs

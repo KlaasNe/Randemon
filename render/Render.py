@@ -1,18 +1,15 @@
 import ctypes
 import os
+from datetime import datetime
 from typing import Union
 
 from PIL import Image
-
-from mapClasses.chunk import Chunk
-
-from colorama import Fore
-from colorama import Style
-from datetime import datetime
-
-from mapClasses import Map, Tile
-from render.SpriteSheetReaders import *
 from alive_progress import alive_bar
+from colorama import Fore, Style
+
+from mapClasses import Tile, Map
+from mapClasses.chunk import Chunk
+from render.SpriteSheetReaders import *
 
 
 class Render:
@@ -74,7 +71,8 @@ class Render:
             self.visual.save(os.path.join("saved_images", img_name), "png")
             save_bar()
         print("Image saved successfully")
-        print(os.path.join(Fore.LIGHTBLUE_EX + os.path.abspath("saved_images"), Fore.LIGHTYELLOW_EX + img_name + Style.RESET_ALL))
+        print(os.path.join(Fore.LIGHTBLUE_EX + os.path.abspath("saved_images"),
+                           Fore.LIGHTYELLOW_EX + img_name + Style.RESET_ALL))
 
     def save_prompt(self, seed: Union[int, str] = "") -> None:
         save = input('\n' + Fore.LIGHTBLUE_EX + "Save this image? (y/n/w): " + Style.RESET_ALL)

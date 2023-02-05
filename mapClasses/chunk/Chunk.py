@@ -1,7 +1,3 @@
-from typing import Iterator
-
-from generators.heightMapGenerator import get_height
-from mapClasses.tile import Tile
 from mapClasses.layer import *
 from buildings import Building
 

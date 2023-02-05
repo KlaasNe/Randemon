@@ -1,12 +1,12 @@
+import time
 from datetime import datetime
 
-from mapClasses.Map import Map
-from render import Render
 from colorama import Fore
 from colorama import Style
 
-import time
 import parser as inputs
+from mapClasses import Map
+from render import Render
 
 
 def main():
@@ -18,11 +18,14 @@ def main():
         args.chunks_vertical,
         args.chunk_size,
         max_buildings=args.max_buildings,
-        height_map=args.height_map_opt,
+        make_height_map=args.height_map_opt,
         island=not args.mainland_opt,
         themed_towns=args.themed_towns_opt,
-        seed=args.seed
+        seed=args.seed,
+        terrain_chaos=args.terrain_chaos,
+        max_height=args.max_height
     )
+    my_map.create()
     r = Render()
     r.render(my_map)
     print(Fore.LIGHTBLACK_EX + "Total generation time={}s".format(str(time.time() - t)) + Style.RESET_ALL)
