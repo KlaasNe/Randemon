@@ -1,15 +1,14 @@
 import random
 from math import sqrt
-
-# Spawns a house on the map with house_front_path_type as its front porch
-# Houses are spawned by choosing a random x and y coordinate, checking whether enough space is available for the given
-# house if not, choose a new position. There's an upper limit to try find a building spot.
 from buildings.Building import Building
 from buildings.BuildingTypes import BuildingTypes
 from mapClasses.chunk import Chunk
 from mapClasses.tile import Tile
 
 
+# Spawns a house on the map with house_front_path_type as its front porch
+# Houses are spawned by choosing a random x and y coordinate, checking whether enough space is available for the given
+# house if not, choose a new position. There's an upper limit to try find a building spot.
 def spawn_building(chunk: Chunk, building, path_type: int, fence_opt=True, mail_box_opt=True) -> bool:
     # checks if a chosen position has enough free space for the house + spacing, starting from the top left corner
     def is_available_spot(x1, y1, x2, y2):

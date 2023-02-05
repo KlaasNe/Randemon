@@ -84,6 +84,7 @@ class PathTiles(Enum):
     def specific_tile(tile: Tile, tile_type: int) -> Tile:
         return Tile("PATH", tile.x, tile.y + tile_type * 3)
 
+    O = "111\n111\n111", Tile("PATH", 0, 0)
     A = "111\n111\n011", Tile("PATH", 2, 2)
     B = "111\n111\n110", Tile("PATH", 1, 2)
     C = "110\n111\n111", Tile("PATH", 3, 2)
