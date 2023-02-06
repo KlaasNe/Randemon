@@ -47,14 +47,21 @@ def create_lakes_and_sea(rmap: Map, sea_threshold=0.20) -> None:
 
 # Creates rivers for a chunk
 def create_rivers(chunk: Chunk, lake_tiles: set[tuple[int, int]], threshold, no_sprite=False):
+    dark_water_height = 0.15
     for y in range(chunk.size):
         for x in range(chunk.size):
-            if chunk.get_height(x, y) <= 0:
+            h = chunk.get_height_exact(x, y)
+            if round(h) <= 0:
                 if no_sprite:
-                    specific_tile = Tile("WATER", 0, 3)
+                    specific_tile = Tile("WATER", 0, 3 if h > dark_water_height else 6)
                 else:
                     raw_pos = chunk.height_map_pos(x, y)
-                    water_type = 0 if raw_pos in lake_tiles else 1
+                    if raw_pos in lake_tiles:
+                        water_type = 0
+                    elif h > dark_water_height:
+                        water_type = 1
+                    else:
+                        water_type = 2
                     curr_surrounding = get_surrounding_tiles(chunk, x, y, threshold)
                     tile = get_tile_from_surrounding(curr_surrounding)
                     specific_tile = WaterTiles.specific_tile(tile, water_type)
