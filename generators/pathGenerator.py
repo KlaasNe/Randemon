@@ -2,6 +2,7 @@ from enum import Enum
 from random import shuffle
 
 from mapClasses import Map
+from mapClasses.Coordinate import Coordinate
 from mapClasses.chunk import Chunk
 from mapClasses.layer import Layer
 from mapClasses.tile import Tile
@@ -14,28 +15,47 @@ def get_path_type(layer: Layer, x: int, y: int) -> int:
     return tile.y // 3 if type(tile) == Tile and tile.type == "PATH" else None
 
 
-def create_path(rmap: Map) -> None:
-    for y in range(rmap.size_v):
-        for x in range(rmap.size_h):
-            chunk, cx, cy = rmap.parse_to_chunk_coordinate(x, y)
-            tile: Tile = chunk["GROUND0"][(cx, cy)]
-            if tile is not None and tile.type == "PATH":
-                path_type = tile.y // 3
-                prev_surrounding = get_surrounding_tiles(rmap, x, y)
-                tile = get_tile_from_surrounding(prev_surrounding)
-                if tile is None:
-                    chunk["GROUND0"].remove_tile(cx, cy)
-                else:
-                    chunk["GROUND0"][(cx, cy)] = PathTiles.specific_tile(tile, path_type)
+def draw_path_tile(rmap: Map, x: int, y: int, separated: bool) -> bool:
+    chunk, cx, cy = rmap.parse_to_coordinate_in_chunk(x, y)
+    if chunk is not None:
+        tile: Tile = chunk["GROUND0"][(cx, cy)]
+        if tile is not None and tile.type == "PATH":
+            path_type = tile.y // 3
+            prev_surrounding = get_surrounding_tiles(rmap, x, y, path_type, separated)
+            tile = get_tile_from_surrounding(prev_surrounding)
+            if tile is None:
+                chunk["GROUND0"].remove_tile(cx, cy)
+                return False
+            else:
+                chunk["GROUND0"][(cx, cy)] = PathTiles.specific_tile(tile, path_type)
+                return True
+    else:
+        return True
 
 
-def get_surrounding_tiles(rmap: Map, x: int, y: int) -> list[list]:
+def update_path(rmap: Map, coordinates: set[tuple[int, int]], separated):
+    for x, y in coordinates:
+        draw_path_tile(rmap, x, y, separated)
+
+
+def create_path(rmap: Map, separated: bool = True) -> None:
+    path_tiles = rmap.path_tiles.copy()
+    for coordinate in path_tiles:
+        if not draw_path_tile(rmap, coordinate.x, coordinate.y, separated):
+            update_path(rmap, set(coordinate.around()), separated)
+
+
+def get_surrounding_tiles(rmap: Map, x: int, y: int, path_type: int, separated: bool) -> list[list]:
     surrounding = []
     for py in range(y - 1, y + 2):
         row = []
         for px in range(x - 1, x + 2):
-            chunk, cx, cy = rmap.parse_to_chunk_coordinate(px, py)
-            row.append(1 if chunk is not None and chunk["GROUND0"].get_tile_type(cx, cy) in ["PATH", "ROAD"] else 0)
+            chunk, cx, cy = rmap.parse_to_coordinate_in_chunk(px, py)
+            if chunk is not None:
+                pt = get_path_type(chunk["GROUND0"], cx, cy)
+                valid = (pt == path_type or any(
+                    [path_type == 3 and pt == 9, path_type == 9 and pt == 3])) if separated else pt is not None
+                row.append(1 if valid or (path_type == 3 and chunk.get_height(cx, cy) == 0) else 0)
         surrounding.append(row)
     return surrounding
 
@@ -51,7 +71,10 @@ def equal_surrounding(template, arr):
     if arr is not None:
         for y in range(3):
             for x in range(3):
-                if template[y][x] != 'a' and template[y][x] != str(arr[y][x]):
+                try:
+                    if template[y][x] != 'a' and template[y][x] != str(arr[y][x]):
+                        return False
+                except IndexError:
                     return False
     return True
 
@@ -62,6 +85,7 @@ class PathTiles(Enum):
     def specific_tile(tile: Tile, tile_type: int) -> Tile:
         return Tile("PATH", tile.x, tile.y + tile_type * 3)
 
+    O = "111\n111\n111", Tile("PATH", 0, 0)
     A = "111\n111\n011", Tile("PATH", 2, 2)
     B = "111\n111\n110", Tile("PATH", 1, 2)
     C = "110\n111\n111", Tile("PATH", 3, 2)
@@ -79,10 +103,20 @@ class PathTiles(Enum):
 
 
 def is_actual_path(layer, x, y):
-    return get_path_type(layer, x, y) not in [None, 3]
+    return get_path_type(layer, x, y) not in [None, 3, 9]
 
 
-def draw_path2(chunk: Chunk, path_type: int):
+def place_path_tile(rmap: Map, chunk: Chunk, x: int, y: int, path_type: int) -> None:
+    if chunk.get_height(x, y) > 0:
+        if chunk.get_tile("GROUND0", x, y) is None:
+            chunk.set_tile("GROUND0", x, y, Tile("PATH", 0, path_type * 3))
+    elif chunk.get_tile_type("GROUND0", x, y) == "WATER":
+        chunk.set_tile("GROUND0", x, y, Tile("ROAD", -1, -1))
+    map_x, map_y = rmap.parse_to_coordinate_on_map(chunk, x, y)
+    rmap.path_tiles.add(Coordinate(map_x, map_y))
+
+
+def draw_path2(rmap: Map, chunk: Chunk, path_type: int):
     def init_weight_tiles():
         weights_array = []
         for wy in range(chunk.size):
@@ -117,7 +151,8 @@ def draw_path2(chunk: Chunk, path_type: int):
         for nx, ny in [(cx, cy - 1), (cx, cy + 1), (cx - 1, cy), (cx + 1, cy)]:
             if not chunk.out_of_bounds(nx, ny):
                 ntile = chunk_wght_tiles[ny][nx]
-                if not ntile.visited and not chunk.out_of_bounds(nx, ny) and ntile.weight < TileWeights.IMPASSABLE.value:
+                if not ntile.visited and not chunk.out_of_bounds(nx,
+                                                                 ny) and ntile.weight < TileWeights.IMPASSABLE.value:
                     new_dist = curr_tile.dist + chunk_wght_tiles[cy][cx].weight + (abs(tx - cx) + abs(ty - cy))
                     if new_dist < ntile.dist:
                         ntile.prev = curr_tile
@@ -134,11 +169,7 @@ def draw_path2(chunk: Chunk, path_type: int):
                     path_extention.add((x, y))
 
         for (x, y) in path_extention:
-            if chunk["GROUND0"][(x, y)] is None:
-                if chunk.get_height(x, y) > 0:
-                    chunk.set_tile("GROUND0", x, y, Tile("PATH", 0, path_type * 3))
-                elif chunk.get_tile_type("GROUND0", x, y) == "WATER":
-                    chunk.set_tile("GROUND0", x, y, Tile("ROAD", -1, -1))
+            place_path_tile(rmap, chunk, x, y, path_type)
 
     connected_buildings = set()
     chunk_wght_tiles = init_weight_tiles()
@@ -186,26 +217,30 @@ def draw_path2(chunk: Chunk, path_type: int):
 def determine_weight(chunk: Chunk, x, y, avoid_hill_corners=True):
     def is_2x2_tile_type(layer, x, y, tile_type):
         return any((chunk.get_tile_type(layer, x, y) == tile_type,
-                   chunk.get_tile_type(layer, x - 1, y) == tile_type,
-                   chunk.get_tile_type(layer, x, y - 1) == tile_type,
+                    chunk.get_tile_type(layer, x - 1, y) == tile_type,
+                    chunk.get_tile_type(layer, x, y - 1) == tile_type,
                     chunk.get_tile_type(layer, x - 1, y - 1) == tile_type))
 
     def is_corner(x, y):
         return chunk.has_tile_in_layer_at("HILLS", x, y) and chunk.get_tile("HILLS", x, y).y in [1, 3] or \
-               chunk.get_tile("HILLS", x, y) == Tile("HILLS", 0, 2) or \
-               chunk.get_tile("HILLS", x, y) == Tile("HILLS", 3, 0) and chunk.has_tile_in_layer_at("HILLS", x, y - 1)
+            chunk.get_tile("HILLS", x, y) == Tile("HILLS", 0, 2) or \
+            chunk.get_tile("HILLS", x, y) == Tile("HILLS", 3, 0) and chunk.has_tile_in_layer_at("HILLS", x, y - 1)
 
-    if is_2x2_tile_type("BUILDINGS", x, y, "BUILDINGS"): return TileWeights.IMPASSABLE.value
-    if is_2x2_tile_type("FENCE", x, y, "FENCE"): return TileWeights.IMPASSABLE.value
-    if avoid_hill_corners and any((is_corner(x, y), is_corner(x - 1, y), is_corner(x, y - 1), is_corner(x - 1, y - 1))): return TileWeights.IMPASSABLE.value
-    if is_2x2_tile_type("HILLS", x, y, "HILLS"): return TileWeights.HILL.value
-    if is_2x2_tile_type("GROUND0", x, y, "WATER"): return TileWeights.WATER.value
-    if is_actual_path(chunk.layers["GROUND0"], x - 1, y - 1) and\
-            is_actual_path(chunk.layers["GROUND0"], x - 1, y) and\
-            is_actual_path(chunk.layers["GROUND0"], x, y - 1) and\
-            is_actual_path(chunk.layers["GROUND0"], x, y):
-        return TileWeights.PATH.value
-    if is_2x2_tile_type("GROUND0", x, y, "PATH"): return TileWeights.GRASS.value
+    if chunk.out_of_bounds(x - 1, y) or chunk.out_of_bounds(x, y - 1): return TileWeights.IMPASSABLE.value
+    if any((chunk.has_tile_at(x, y), chunk.has_tile_at(x - 1, y), chunk.has_tile_at(x, y - 1),
+            chunk.has_tile_at(x - 1, y - 1))):
+        if is_2x2_tile_type("BUILDINGS", x, y, "BUILDINGS"): return TileWeights.IMPASSABLE.value
+        if is_2x2_tile_type("FENCE", x, y, "FENCE"): return TileWeights.IMPASSABLE.value
+        if avoid_hill_corners and any((is_corner(x, y), is_corner(x - 1, y), is_corner(x, y - 1),
+                                       is_corner(x - 1, y - 1))): return TileWeights.IMPASSABLE.value
+        if is_2x2_tile_type("HILLS", x, y, "HILLS"): return TileWeights.HILL.value
+        if is_2x2_tile_type("GROUND0", x, y, "WATER"): return TileWeights.WATER.value
+        if is_actual_path(chunk.layers["GROUND0"], x - 1, y - 1) and \
+                is_actual_path(chunk.layers["GROUND0"], x - 1, y) and \
+                is_actual_path(chunk.layers["GROUND0"], x, y - 1) and \
+                is_actual_path(chunk.layers["GROUND0"], x, y):
+            return TileWeights.PATH.value
+        if is_2x2_tile_type("GROUND0", x, y, "PATH"): return TileWeights.GRASS.value
     return TileWeights.GRASS.value if is_2x2_tile_type("GROUND0", x, y, None) else TileWeights.IMPASSABLE.value
 
 
@@ -233,7 +268,6 @@ def create_bridges(chunk, layer):
 
 
 def create_stairs(chunk, pl, bl):
-
     def path_above(x, y):
         return chunk.get_tile_type("GROUND0", x, y - 1) == "PATH"
 
@@ -251,21 +285,21 @@ def create_stairs(chunk, pl, bl):
             if chunk.get_height(px, py) > 1 and pl.get_tile_type(px, py) == "PATH" and bl.get_tile_type(px, py) is None:
                 if path_above(px, py) and path_under(px, py) and (path_left(px, py) or path_right(px, py)):
                     if chunk.get_height(px, py) > chunk.get_height(px, py - 1):
-                        bl.set_tile(px, py, Tile("ROAD", 3, 0))
-                        bl.set_tile(px + 1, py, Tile("ROAD", 3, 1))
+                        bl[px, py] = Tile("ROAD", 3, 0)
+                        bl[px + 1, py] = Tile("ROAD", 3, 1)
 
                     elif chunk.get_height(px, py) > chunk.get_height(px, py + 1):
-                        bl.set_tile(px, py, Tile("ROAD", 2, 0))
-                        bl.set_tile(px + 1, py, Tile("ROAD", 2, 1))
+                        bl[px, py] = Tile("ROAD", 2, 0)
+                        bl[px + 1, py] = Tile("ROAD", 2, 1)
 
                 elif path_left(px, py) and path_right(px, py) and path_under(px, py):
                     if chunk.get_height(px, py) > chunk.get_height(px - 1, py):
-                        bl.set_tile(px, py, Tile("ROAD", 4, 0))
-                        bl.set_tile(px, py + 1, Tile("ROAD", 4, 1))
+                        bl[px, py] = Tile("ROAD", 4, 0)
+                        bl[px, py + 1] = Tile("ROAD", 4, 1)
 
                     elif chunk.get_height(px, py) > chunk.get_height(px + 1, py):
-                        bl.set_tile(px, py, Tile("ROAD", 5, 0))
-                        bl.set_tile(px, py + 1, Tile("ROAD", 5, 1))
+                        bl[px, py] = Tile("ROAD", 5, 0)
+                        bl[px, py + 1] = Tile("ROAD", 5, 1)
 
 
 def create_lanterns(chunk: Chunk):
@@ -283,13 +317,17 @@ def create_lanterns(chunk: Chunk):
         for x in range(chunk.size):
             if random() < 0.08:
                 if chunk.get_tile_type("GROUND1", x, y) != "FENCES":
-                    if is_actual_path(chunk["GROUND0"], x - 1, y) and not chunk.has_tile_in_layer_at("BUILDINGS", x - 1, y) and not chunk.has_tile_in_layer_at("GROUND2", x - 1, y):
+                    if is_actual_path(chunk["GROUND0"], x - 1, y) and not chunk.has_tile_in_layer_at("BUILDINGS", x - 1,
+                                                                                                     y) and not chunk.has_tile_in_layer_at(
+                            "GROUND2", x - 1, y):
                         if check_availability_zone(x, y - 2, x + 2, y + 1):
                             chunk.set_tile("GROUND2", x, y, Tile("DECO", 4, 2))
                             chunk.set_tile("GROUND2", x, y - 1, Tile("DECO", 4, 1))
                             chunk.set_tile("GROUND2", x, y - 2, Tile("DECO", 4, 0))
                             chunk.set_tile("GROUND2", x + 1, y, Tile("DECO", 5, 2))
-                    if is_actual_path(chunk["GROUND0"], x + 1, y) and not chunk.has_tile_in_layer_at("BUILDINGS", x + 1, y) and not chunk.has_tile_in_layer_at("GROUND2", x + 1, y):
+                    if is_actual_path(chunk["GROUND0"], x + 1, y) and not chunk.has_tile_in_layer_at("BUILDINGS", x + 1,
+                                                                                                     y) and not chunk.has_tile_in_layer_at(
+                            "GROUND2", x + 1, y):
                         if check_availability_zone(x, y - 2, x, y + 1):
                             chunk.set_tile("GROUND2", x, y, Tile("DECO", 3, 2))
                             chunk.set_tile("GROUND2", x, y - 1, Tile("DECO", 3, 1))

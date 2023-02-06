@@ -37,27 +37,27 @@ def make_parser() -> ArgumentParser:
 
     parser.add_argument(
         '--seed',
-        dest='seed_opt',
+        dest='seed',
         type=int,
         default=random.randint(0, maxsize),
         help='The world generation seed')
 
     parser.add_argument(
-        '--maxheight',
+        '--max-height',
         dest='max_height',
         type=int,
-        default=5,
+        default=6,
         help='Maximal height of a hill')
 
     parser.add_argument(
-        '--height_map',
+        '--height-map',
         dest='height_map_opt',
         action='store_true',
         help='Generate a heightmap instead of a regular map.'
     )
 
     parser.add_argument(
-        '--mb',
+        '--max-buildings',
         dest='max_buildings',
         type=int,
         default=16,
@@ -84,6 +84,14 @@ def make_parser() -> ArgumentParser:
         dest='no_show_opt',
         action='store_true',
         help="Dont't show the generated image."
+    )
+
+    parser.add_argument(
+        '--terrain-chaos',
+        dest='terrain_chaos',
+        type=int,
+        default=4,
+        help='Determine the chaos in the terrain generation process. A higher value means more chaos. Default is 4.'
     )
 
     return parser

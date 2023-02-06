@@ -21,26 +21,29 @@ def create_trees(chunk: Chunk, spawn_rate):
     double = False
     for y in range(chunk.size):
         for x in range(chunk.size):
-            # if chunk.tile_heights.get((x, y), -1) <= chunk.highest_path:
-            if not chunk.has_tile_in_layer_at("GROUND0", x, y) and not chunk.has_tile_in_layer_at("BUILDINGS", x, y) and not chunk.has_tile_in_layer_at("HILLS", x, y) \
-                    and not chunk.has_tile_in_layer_at("GROUND1", x, y - 1) \
-                    and not chunk.has_tile_in_layer_at("GROUND2", x, y) and not chunk.has_tile_in_layer_at("GROUND2", x, y - 1) and not chunk.has_tile_in_layer_at("GROUND2", x, y - 2)\
-                    and not chunk.has_tile_in_layer_at("FENCE", x, y)\
-                    and not chunk.out_of_bounds(x, y) and not chunk.out_of_bounds(x, y - 1 and not chunk.out_of_bounds(x, y - 2)):
-                if random.random() > 0.3 and tree_formula(chunk, x, y) > 1 - spawn_rate:
-                    if double:
-                        chunk.set_tile("GROUND2", x - 1, y - 2, Tile("NATURE", 1, 5))
-                        chunk.set_tile("GROUND2", x, y - 2, Tile("NATURE", 2, 5))
-                        chunk.set_tile("GROUND1", x - 1, y - 1, Tile("NATURE", 1, 6))
-                        chunk.set_tile("GROUND1", x, y - 1, Tile("NATURE", 2, 6))
-                        chunk.set_tile("GROUND0", x - 1, y, Tile("NATURE", 1, 7))
-                        chunk.set_tile("GROUND0", x, y, Tile("NATURE", 2, 7))
-                        double = False
+            if chunk.get_height_exact(x, y) > 0.75:
+                # if chunk.tile_heights.get((x, y), -1) <= chunk.highest_path:
+                if not chunk.has_tile_in_layer_at("GROUND0", x, y) and not chunk.has_tile_in_layer_at("BUILDINGS", x, y) and not chunk.has_tile_in_layer_at("HILLS", x, y) \
+                        and not chunk.has_tile_in_layer_at("GROUND1", x, y - 1) \
+                        and not chunk.has_tile_in_layer_at("GROUND2", x, y) and not chunk.has_tile_in_layer_at("GROUND2", x, y - 1) and not chunk.has_tile_in_layer_at("GROUND2", x, y - 2)\
+                        and not chunk.has_tile_in_layer_at("FENCE", x, y)\
+                        and not chunk.out_of_bounds(x, y) and not chunk.out_of_bounds(x, y - 1 and not chunk.out_of_bounds(x, y - 2)):
+                    if random.random() > 0.3 and tree_formula(chunk, x, y) > 1 - spawn_rate:
+                        if double:
+                            chunk.set_tile("GROUND2", x - 1, y - 2, Tile("NATURE", 1, 5))
+                            chunk.set_tile("GROUND2", x, y - 2, Tile("NATURE", 2, 5))
+                            chunk.set_tile("GROUND1", x - 1, y - 1, Tile("NATURE", 1, 6))
+                            chunk.set_tile("GROUND1", x, y - 1, Tile("NATURE", 2, 6))
+                            chunk.set_tile("GROUND0", x - 1, y, Tile("NATURE", 1, 7))
+                            chunk.set_tile("GROUND0", x, y, Tile("NATURE", 2, 7))
+                            double = False
+                        else:
+                            chunk.set_tile("GROUND2", x, y - 2, Tile("NATURE", 2, 0))
+                            chunk.set_tile("GROUND1", x, y - 1, Tile("NATURE", 2, 1))
+                            chunk.set_tile("GROUND0", x, y, Tile("NATURE", 2, 2))
+                            double = True
                     else:
-                        chunk.set_tile("GROUND2", x, y - 2, Tile("NATURE", 2, 0))
-                        chunk.set_tile("GROUND1", x, y - 1, Tile("NATURE", 2, 1))
-                        chunk.set_tile("GROUND0", x, y, Tile("NATURE", 2, 2))
-                        double = True
+                        double = False
                 else:
                     double = False
             else:
@@ -85,66 +88,6 @@ def random_tall_grass():
     return Tile("NATURE", 1, sne_type)
 
 
-# def grow_snake_bushes(pmap, layer, spawnrate, growth):
-#     def create_snake_bush(pos):
-#         x, y = pos
-#         end2 = get_pos_around(((x, y), pos))
-#         if end2 is not None:
-#             end1 = (pos, end2[0])
-#             bush_ends = [end1, end2]
-#             while random.random() < growth:
-#                 new_end_data = grow_random_end(bush_ends)
-#                 if new_end_data is not None:
-#                     bush_ends[new_end_data[0]] = new_end_data[1]
-#                 else:
-#                     break
-#
-#     def get_pos_around(pos):
-#         x, y = pos[0]
-#         direction = random.randint(0, 3)
-#         new_pos_opt = ((x + 1, y), (x, y + 1), (x - 1, y), (x, y - 1))
-#         new_pos = new_pos_opt[direction]
-#         for tries in range(1, 5):
-#             if new_pos not in layer.get_ex_pos() and new_pos != pos[
-#                 1] and new_pos not in pmap.buildings.get_ex_pos() and new_pos not in pmap.ground2.get_ex_pos():
-#                 return new_pos, (x, y)
-#             else:
-#                 new_pos = new_pos_opt[(direction + tries) % 4]
-#         return None
-#
-#     def grow_random_end(ends):
-#         rel_sprites = {(1, 0): {(0, -1): ("na", 4, 3), (-1, 0): ("na", 5, 0), (0, 1): ("na", 4, 0)},
-#                        (0, -1): {(-1, 0): ("na", 4, 2), (0, 1): ("na", 5, 1)},
-#                        (-1, 0): {(0, 1): ("na", 4, 1)}}
-#         end_int = random.randint(0, 1)
-#         prev_end = ends[end_int]
-#         x, y = prev_end[0]
-#         old_x, old_y = prev_end[1]
-#         new_end = get_pos_around(prev_end)
-#         if new_end is not None:
-#             new_x, new_y = new_end[0]
-#             rel_pos1 = (new_x - x, new_y - y)
-#             rel_pos2 = (old_x - x, old_y - y)
-#             try:
-#                 sprite = rel_sprites[rel_pos1][rel_pos2]
-#             except KeyError:
-#                 try:
-#                     sprite = rel_sprites[rel_pos2][rel_pos1]
-#                 except KeyError as e:
-#                     print(e)
-#                     print(rel_pos1)
-#                     print(rel_pos2)
-#             layer.set_tile((x, y), sprite)
-#             return end_int, new_end
-#         else:
-#             return None
-#
-#     for y in range(layer.sy):
-#         for x in range(layer.sx):
-#             if random.random() < spawnrate / 100 and (x, y) not in layer.get_ex_pos():
-#                 create_snake_bush((x, y))
-#
-#
 # # Creates an overlay for the entire map showing rain
 # # The amount of rain is given with rain_rate
 # def create_rain(pmap, layer, odds, rain_rate):

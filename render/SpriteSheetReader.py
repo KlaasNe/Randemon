@@ -1,9 +1,8 @@
 import os
-import io
 
 from PIL import ImageOps, Image
 
-from mapClasses.tile import Tile
+from mapClasses import Tile
 
 TILE_SIZE = 16
 TILE_SHEET_DIRECTORY = os.path.join("render", "tileSheets")

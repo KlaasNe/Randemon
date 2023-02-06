@@ -1,7 +1,3 @@
-from typing import Iterator
-
-from generators.heightMapGenerator import get_height
-from mapClasses.tile import Tile
 from mapClasses.layer import *
 from buildings import Building
 
@@ -48,7 +44,7 @@ class Chunk:
         return False
 
     def has_tile_in_layer_at(self, layer: str, x: int, y: int) -> bool:
-        return self.get_tile(layer, x, y) is not None
+        return self[layer].has_tile_at(x, y)
 
     def height_map_pos(self, x: int, y: int) -> tuple[int, int]:
         """
@@ -60,12 +56,15 @@ class Chunk:
         """
         return self.chunk_x * self.size + x, self.chunk_y * self.size + y
 
-    def get_height(self, x: int, y: int) -> int:
+    def get_height_exact(self, x: int, y: int) -> int:
         hmx, hmy = self.height_map_pos(x, y)
         try:
             return self.height_map[hmy][hmx]
         except IndexError:
             return 0
+
+    def get_height(self, x: int, y: int) -> int:
+        return round(self.get_height_exact(x, y))
 
     def change_height(self, x: int, y: int, val: int) -> None:
         hmx, hmy = self.height_map_pos(x, y)
