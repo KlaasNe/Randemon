@@ -3,6 +3,7 @@ from enum import Enum
 from alive_progress import alive_bar
 
 from mapClasses import Map
+from mapClasses.Coordinate import Coordinate
 from mapClasses.chunk import Chunk
 from mapClasses.tile import Tile
 
@@ -122,6 +123,7 @@ def create_beach(rmap: Map, max_inland_size: int, threshold: int) -> None:
                 if chunk["GROUND0"][(cx, cy)] is None and check_for_water_around(x, y, 1):
                     if chunk.get_height_exact(cx, cy) < threshold:
                         chunk["GROUND0"][(cx, cy)] = Tile("PATH", 0, 27)
+                        rmap.path_tiles.add(Coordinate(x, y))
                         new_beach_tiles.update({(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1), (x - 1, y - 1), (x - 1, y + 1), (x + 1, y - 1), (x + 1, y + 1)})
 
     for i in range(max_inland_size - 1):
@@ -131,6 +133,7 @@ def create_beach(rmap: Map, max_inland_size: int, threshold: int) -> None:
                 chunk, cx, cy = rmap.parse_to_coordinate_in_chunk(x, y)
                 if chunk["GROUND0"][(cx, cy)] is None and (i == 0 or chunk.get_height_exact(cx, cy) < 0.75):  # i == 0 to prevent buggy path tiles so beach depth will always be at least 2
                     chunk["GROUND0"][(cx, cy)] = Tile("PATH", 0, 9)
+                    rmap.path_tiles.add(Coordinate(x, y))
                     i_distance_beach_tiles.update({(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1), (x - 1, y - 1), (x - 1, y + 1), (x + 1, y - 1), (x + 1, y + 1)})
         beach_tiles.update(new_beach_tiles)
         new_beach_tiles = i_distance_beach_tiles

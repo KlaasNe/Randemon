@@ -1,9 +1,10 @@
 from random import random, randint
 from generators.pathGenerator import get_path_type
+from colorama import Fore
+from colorama import Style
 
-
-# Spawns pokemon on the map most in the pmap.ground_layer
-# Returns true if all existing pokemon are present on the map
+# Spawns pokémon on the map most in the pmap.ground_layer
+# Returns true if all existing pokémon are present on the map
 from mapClasses.tile import Tile
 
 pokemon_data = {
@@ -32,7 +33,8 @@ def spawn_pokemons(chunk, shiny_detector=True):
     def is_enough_water_space(x1, y1, x2, y2):
         for check_y in range(y1, y2 + 1):
             for check_x in range(x1, x2 + 1):
-                if "WATER" != chunk.get_tile_type("GROUND0", check_x, check_y) or "POKEMON" == chunk.get_tile_type("GROUND0", check_x, check_y):
+                if "WATER" != chunk.get_tile_type("GROUND0", check_x, check_y) or "POKEMON" == chunk.get_tile_type(
+                        "GROUND0", check_x, check_y):
                     return False
         return True
 
@@ -44,7 +46,7 @@ def spawn_pokemons(chunk, shiny_detector=True):
                     if random() < SHINY_PROBABILITY:
                         shiny = 2
                         if shiny_detector:
-                            print(f"shiny lapras at ({x}, {y})")
+                            print(Fore.LIGHTMAGENTA_EX + f"shiny lapras at ({x}, {y})" + Style.RESET_ALL)
                     else:
                         shiny = 0
                     mirror = coinflip()
@@ -61,16 +63,19 @@ def spawn_pokemons(chunk, shiny_detector=True):
                     if random() < SHINY_PROBABILITY:
                         shiny = 2
                         if shiny_detector:
-                            print(f"shiny gyarados at ({x}, {y})")
+                            print(Fore.LIGHTMAGENTA_EX + f"shiny gyarados at ({x}, {y})" + Style.RESET_ALL)
                     else:
                         shiny = 0
                     mirror = coinflip()
                     if mirror:
                         for gyarados_tile in range(4):
-                            chunk.set_tile("GROUND2", x + gyarados_tile % 2, y + gyarados_tile // 2, Tile("POKEMON", 2 + 1 - gyarados_tile % 2, gyarados_tile // 2 + shiny, mirror))
+                            chunk.set_tile("GROUND2", x + gyarados_tile % 2, y + gyarados_tile // 2,
+                                           Tile("POKEMON", 2 + 1 - gyarados_tile % 2, gyarados_tile // 2 + shiny,
+                                                mirror))
                     else:
                         for gyarados_tile in range(4):
-                            chunk.set_tile("GROUND2", x + gyarados_tile % 2, y + gyarados_tile // 2, Tile("POKEMON", 2 + gyarados_tile % 2, gyarados_tile // 2 + shiny))
+                            chunk.set_tile("GROUND2", x + gyarados_tile % 2, y + gyarados_tile // 2,
+                                           Tile("POKEMON", 2 + gyarados_tile % 2, gyarados_tile // 2 + shiny))
                     gyarados = True
         return gyarados
 
@@ -78,11 +83,14 @@ def spawn_pokemons(chunk, shiny_detector=True):
         diglett = False
         for y in range(0, chunk.size):
             for x in range(0, chunk.size):
-                if good_odds(odds) and not chunk.has_tile_in_layer_at("GROUND0", x, y) and not chunk.has_tile_in_layer_at("BUILDINGS", x, y) and chunk["HILLS"][(x, y)] == None:
+                if good_odds(odds) and not chunk.has_tile_in_layer_at("GROUND0", x,
+                                                                      y) and not chunk.has_tile_in_layer_at("BUILDINGS",
+                                                                                                            x, y) and \
+                        chunk["HILLS"][(x, y)] == None:
                     if random() < SHINY_PROBABILITY:
                         shiny = 2
                         if shiny_detector:
-                            print(f"shiny diglett at ({x}, {y})")
+                            print(Fore.LIGHTMAGENTA_EX + f"shiny diglett at ({x}, {y})" + Style.RESET_ALL)
                     else:
                         shiny = 0
                     mirror = coinflip()
@@ -104,15 +112,18 @@ def spawn_pokemons(chunk, shiny_detector=True):
         shiny = 0
         for y in range(0, chunk.size):
             for x in range(0, chunk.size):
-                if good_odds(odds) and "ROAD" == chunk.get_tile_type("GROUND0", x, y) and check_bridge_space(x, y, x + 1, y + 1):
+                if good_odds(odds) and "ROAD" == chunk.get_tile_type("GROUND0", x, y) and check_bridge_space(x, y,
+                                                                                                             x + 1,
+                                                                                                             y + 1):
                     if random() < SHINY_PROBABILITY:
                         shiny = 2
                         if shiny_detector:
-                            print(f"shiny snorlax at ({x}, {y})")
+                            print(Fore.LIGHTMAGENTA_EX + f"shiny snorlax at ({x}, {y})" + Style.RESET_ALL)
                     else:
                         shiny = 0
                     for snorlax_tile in range(4):
-                        chunk.set_tile("GROUND2", x + snorlax_tile % 2, y + snorlax_tile // 2, Tile("POKEMON", 4 + snorlax_tile % 2, snorlax_tile // 2 + shiny))
+                        chunk.set_tile("GROUND2", x + snorlax_tile % 2, y + snorlax_tile // 2,
+                                       Tile("POKEMON", 4 + snorlax_tile % 2, snorlax_tile // 2 + shiny))
                     snorlax = True
         return snorlax
 
@@ -124,7 +135,7 @@ def spawn_pokemons(chunk, shiny_detector=True):
                     if random() < SHINY_PROBABILITY:
                         shiny = 2
                         if shiny_detector:
-                            print(f"shiny exceguttor at ({x}, {y})")
+                            print(Fore.LIGHTMAGENTA_EX + f"shiny exceguttor at ({x}, {y})" + Style.RESET_ALL)
                     else:
                         shiny = 0
                     mirror = coinflip()
@@ -141,7 +152,7 @@ def spawn_pokemons(chunk, shiny_detector=True):
                     if random() < SHINY_PROBABILITY:
                         shiny = 2
                         if shiny_detector:
-                            print(f"shiny togetic at ({x}, {y})")
+                            print(Fore.LIGHTMAGENTA_EX + f"shiny togetic at ({x}, {y})" + Style.RESET_ALL)
                     else:
                         shiny = 0
                     mirror = coinflip()

@@ -32,6 +32,7 @@ class Map:
                  themed_towns: bool = True,
                  terrain_chaos: int = 4,
                  max_height: int = 6) -> None:
+
         self.chunk_size: int = chunk_size
         self.chunk_nb_h: int = chunk_nb_h
         self.chunk_nb_v: int = chunk_nb_v
@@ -45,7 +46,7 @@ class Map:
         random.seed(self.seed)
         print(Fore.LIGHTBLUE_EX + "seed = " + Fore.LIGHTYELLOW_EX + str(self.seed) + Style.RESET_ALL)
         print("Creating terrain...")
-        off_x, off_y = random.randint(0, 1000000), random.randint(0, 1000000)
+        off_x, off_y = random.randint(0, 10000000), random.randint(0, 10000000)
         self.height_map: list[list[int]] = generate_height_map(self.chunk_size * self.chunk_nb_h,
                                                                self.chunk_size * self.chunk_nb_v, self.max_height,
                                                                off_x, off_y,
@@ -59,6 +60,7 @@ class Map:
         self.water_tiles: set[tuple[int, int]] = set()
         self.lake_tiles: set[tuple[int, int]] = set()
         self.sea_tiles: set[tuple[int, int]] = set()
+        self.path_tiles: set[Coordinate] = set()
 
     def __iter__(self) -> Iterator[Chunk]:
         for chunk_row in self.chunks:
@@ -87,18 +89,18 @@ class Map:
                         if self.max_buildings > 0 and random.randint(0, 2) <= 1:
                             path_type = random.randint(0, 7)
                             current_chunk.has_town = True
-                            valid_town = spawn_functional_buildings(current_chunk, path_type)
+                            valid_town = spawn_functional_buildings(self, current_chunk, path_type)
                             if valid_town:
                                 if self.themed_towns:
                                     building_theme: BuildingTheme = BuildingThemes.get_random_theme().value
                                 for b in range(random.randint(1, self.max_buildings)):
                                     if self.themed_towns:
-                                        spawn_building(current_chunk, building_theme.get_random_building_type().value,
-                                                       path_type)
+                                        spawn_building(self, current_chunk,
+                                                       building_theme.get_random_building_type().value, path_type)
                                     else:
-                                        spawn_building(current_chunk,
+                                        spawn_building(self, current_chunk,
                                                        BuildingTypes["H" + str(random.randint(0, 21))].value, path_type)
-                                draw_path2(current_chunk, path_type)
+                                draw_path2(self, current_chunk, path_type)
                             else:
                                 current_chunk.has_town = False
                                 current_chunk.clear_layer("BUILDINGS")
