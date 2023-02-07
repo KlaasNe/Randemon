@@ -9,7 +9,7 @@ def make_parser() -> ArgumentParser:
         description='Landscape generator using the tileset of pokemon fire red')
 
     parser.add_argument(
-        '--cs',
+        '--chunk-size',
         dest='chunk_size',
         type=int,
         default=50,
@@ -66,7 +66,7 @@ def make_parser() -> ArgumentParser:
     )
 
     parser.add_argument(
-        '--tt',
+        '--themed-towns',
         dest='themed_towns_opt',
         action='store_true',
         help='Have towns generated in predefined themes instead of picking random houses.'
@@ -80,10 +80,10 @@ def make_parser() -> ArgumentParser:
     )
 
     parser.add_argument(
-        '--ns',
+        '--no-show',
         dest='no_show_opt',
         action='store_true',
-        help="Dont't show the generated image."
+        help="Don't show the generated image."
     )
 
     parser.add_argument(
@@ -92,6 +92,14 @@ def make_parser() -> ArgumentParser:
         type=int,
         default=4,
         help='Determine the chaos in the terrain generation process. A higher value means more chaos. Default is 4.'
+    )
+
+    parser.add_argument(
+        '--save-directory',
+        dest='save_directory',
+        type=str,
+        default="saved_images",
+        help='Choose a directory where the generated image should be saved. Has to be an existing directory.'
     )
 
     return parser
