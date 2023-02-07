@@ -1,3 +1,4 @@
+import os
 import time
 from datetime import datetime
 
@@ -12,8 +13,11 @@ from render import Render
 def main():
     parser = inputs.make_parser()
     args = parser.parse_args()
+    if not os.path.isdir(args.save_directory) and not args.save_directory == "saved_images":
+        print(Fore.RED + "[Error] The given directory doesn't exist" + Style.RESET_ALL)
+        exit(-1)
     t = time.time()
-    my_map: Map = Map(
+    my_map = Map(
         args.chunks_horizontal,
         args.chunks_vertical,
         args.chunk_size,
@@ -32,9 +36,10 @@ def main():
     if not args.no_show_opt:
         r.show()
     if args.save_opt:
-        r.save("{} {}".format(datetime.now().strftime("%G-%m-%d %H-%M-%S"), str(my_map.seed)))
+        r.save("{} {}".format(datetime.now().strftime("%G-%m-%d %H-%M-%S"), str(my_map.seed)),
+               directory=args.save_directory)
     else:
-        r.save_prompt(my_map.seed)
+        r.save_prompt(my_map.seed, directory=args.save_directory)
     return r
 
 
