@@ -1,0 +1,4 @@
+alive_progress==2.4.1
+colorama==0.4.4
+noise==1.2.2
+Pillow==9.4.0
