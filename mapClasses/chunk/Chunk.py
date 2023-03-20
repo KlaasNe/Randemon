@@ -54,7 +54,10 @@ class Chunk:
         :param y: position of the tile
         :return: position of a tile in the height map based on it's chunk
         """
-        return self.chunk_x * self.size + x, self.chunk_y * self.size + y
+        try:
+            return self.chunk_x * self.size + x, self.chunk_y * self.size + y
+        except TypeError as e:
+            print(self.chunk_x, self.chunk_y, x, y)
 
     def get_height_exact(self, x: int, y: int) -> int:
         hmx, hmy = self.height_map_pos(x, y)
