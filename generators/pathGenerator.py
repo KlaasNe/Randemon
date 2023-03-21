@@ -1,6 +1,8 @@
 from enum import Enum
 from random import shuffle
 
+from alive_progress import alive_bar
+
 from mapClasses import Map
 from mapClasses.Coordinate import Coordinate
 from mapClasses.chunk import Chunk
@@ -39,10 +41,12 @@ def update_path(rmap: Map, coordinates: set[tuple[int, int]], separated):
 
 
 def create_path(rmap: Map, separated: bool = True) -> None:
-    path_tiles = rmap.path_tiles.copy()
-    for coordinate in path_tiles:
-        if not draw_path_tile(rmap, coordinate.x, coordinate.y, separated):
-            update_path(rmap, set(coordinate.around()), separated)
+    with alive_bar(len(rmap.path_tiles), title="Creating path", theme="classic") as path_bar:
+        path_tiles = rmap.path_tiles.copy()
+        for coordinate in path_tiles:
+            if not draw_path_tile(rmap, coordinate.x, coordinate.y, separated):
+                update_path(rmap, set(coordinate.around()), separated)
+            path_bar()
 
 
 def get_surrounding_tiles(rmap: Map, x: int, y: int, path_type: int, separated: bool) -> list[list]:
@@ -335,11 +339,6 @@ def create_lanterns(chunk: Chunk):
 
 
 def remove_path(chunk: Chunk):
-    delete_pos = set[tuple[int, int]]()
-
-    for x, y in chunk["GROUND0"].get_ex_pos():
-        if chunk.get_tile_type("GROUND0", x, y) == "PATH":
-            delete_pos.add((x, y))
-
-    for x, y in delete_pos:
-        chunk.remove_tile("GROUND0", x, y)
+    for path_x, path_y in chunk.path_tiles:
+        chunk["GROUND0"].remove_tile(path_x, path_y)
+    chunk.path_tiles.clear()

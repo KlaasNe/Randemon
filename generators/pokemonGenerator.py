@@ -123,25 +123,24 @@ def spawn_pokemons(chunk, shiny_detector=True):
                         shiny = 0
                     for snorlax_tile in range(4):
                         chunk.set_tile("GROUND2", x + snorlax_tile % 2, y + snorlax_tile // 2,
-                                       Tile("POKEMON", 4 + snorlax_tile % 2, snorlax_tile // 2 + shiny))
+                                       Tile("GROUND2", 4 + snorlax_tile % 2, snorlax_tile // 2 + shiny))
                     snorlax = True
         return snorlax
 
     def spawn_exceguttor(odds):
         exceguttor = False
-        for y in range(0, chunk.height):
-            for x in range(0, chunk.width):
-                if good_odds(odds) and get_path_type(chunk.ground, x, y) == 3:
-                    if random() < SHINY_PROBABILITY:
-                        shiny = 2
-                        if shiny_detector:
-                            print(Fore.LIGHTMAGENTA_EX + f"shiny exceguttor at ({x}, {y})" + Style.RESET_ALL)
-                    else:
-                        shiny = 0
-                    mirror = coinflip()
-                    chunk.ground2.set_tile((x, y), ("po", 6, 1 + shiny, mirror))
-                    chunk.ground2.set_tile((x, y - 1), ("po", 6, shiny, mirror))
-                exceguttor = True
+        for (x, y), tile in chunk["GROUND0"]:
+            if good_odds(odds) and get_path_type(chunk["GROUND0"], x, y) == 3:
+                if random() < SHINY_PROBABILITY:
+                    shiny = 2
+                    if shiny_detector:
+                        print(Fore.LIGHTMAGENTA_EX + f"shiny exceguttor at ({x}, {y})" + Style.RESET_ALL)
+                else:
+                    shiny = 0
+                mirror = coinflip()
+                chunk["GROUND2"][(x, y)] = Tile("POKEMON", 6, 1 + shiny, mirror)
+                chunk["GROUND2"][(x, y - 1)] = Tile("POKEMON", 6, shiny, mirror)
+            exceguttor = True
         return exceguttor
 
     def spawn_togetic(odds):
@@ -161,11 +160,27 @@ def spawn_pokemons(chunk, shiny_detector=True):
                     togetic = True
         return togetic
 
-    lapras = spawn_lapras(0.000125)
-    gyarados = spawn_gyarados(0.000125)
+    def spawn_cleffa(odds: float) -> bool:
+        cleffa = False
+        for (x, y), tile in chunk["HILLS"]:
+            if (tile == Tile("HILLS", 0, 4) or tile == Tile("HILLS", 5, 4)) and good_odds(odds):
+                if random() < SHINY_PROBABILITY:
+                    shiny = 2
+                    if shiny_detector:
+                        print(Fore.LIGHTMAGENTA_EX + f"shiny cleffa at ({x}, {y})" + Style.RESET_ALL)
+                else:
+                    shiny = 0
+                mirror = coinflip()
+                chunk["GROUND2"][(x, y + 1)] = Tile("POKEMON", 9, shiny, mirror)
+                cleffa = True
+        return cleffa
+
+    lapras = spawn_lapras(0.00005)
+    gyarados = spawn_gyarados(0.00005)
     diglett = spawn_diglett(0.0005)
     snorlax = spawn_snorlax(0.025)
-    # exceguttor = spawn_exceguttor(0.0025)
+    exceguttor = spawn_exceguttor(0.0005)
     # togetic = spawn_togetic(0.0001)
+    cleffa = spawn_cleffa(0.2)
 
     # return lapras and diglett and snorlax and exceguttor and gyarados and togetic

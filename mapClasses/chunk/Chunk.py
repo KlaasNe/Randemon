@@ -18,6 +18,7 @@ class Chunk:
             self.layers[layer.name] = Layer()
         self.buildings: list[Building] = []
         self.has_town: bool = False
+        self.path_tiles: set[tuple[int, int]] = set()
 
     def __getitem__(self, layer: str) -> Layer:
         return self.layers[layer]
@@ -54,7 +55,10 @@ class Chunk:
         :param y: position of the tile
         :return: position of a tile in the height map based on it's chunk
         """
-        return self.chunk_x * self.size + x, self.chunk_y * self.size + y
+        try:
+            return self.chunk_x * self.size + x, self.chunk_y * self.size + y
+        except TypeError as e:
+            print(self.chunk_x, self.chunk_y, x, y)
 
     def get_height_exact(self, x: int, y: int) -> int:
         hmx, hmy = self.height_map_pos(x, y)

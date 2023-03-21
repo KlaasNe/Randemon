@@ -14,7 +14,7 @@ class Layer:
     def __setitem__(self, pos: tuple[int, int], tile: Tile) -> None:
         self.tiles[pos] = tile
 
-    def __iter__(self):
+    def __iter__(self) -> tuple[tuple[int, int], Tile]:
         for item in self.tiles.items():
             yield item
 

@@ -76,6 +76,7 @@ def build_building(rmap: Map, chunk: Chunk, building, build_spot, path_type, fen
     for front_y in range(house_y + size_y, house_y + size_y + 2):
         for front_x in range(house_x, house_x + size_x):
             place_path_tile(rmap, chunk, front_x, front_y, path_type)
+            chunk.path_tiles.add((front_x, front_y))
     if mail_box_opt:
         if random.randint(0, 1) == 1 and \
                 not chunk.has_tile_in_layer_at("BUILDINGS", house_x - 1, house_y + size_y - 2) and \
