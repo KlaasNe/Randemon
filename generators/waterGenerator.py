@@ -112,7 +112,7 @@ class WaterTiles(Enum):
 
 
 # Creates sandy path around rivers; inside a perlin noise field
-def create_beach(rmap: Map, max_inland_size: int, threshold: int) -> None:
+def create_beach(rmap: Map, max_inland_size: int, threshold: int) -> set[tuple[int, int]]:
     def check_for_water_around(x0: int, y0: int, radius: int) -> bool:
         for check_y in range(y0 - radius, y0 + radius + 1):
             for check_x in range(x0 - radius, x0 + radius + 1):
@@ -144,3 +144,5 @@ def create_beach(rmap: Map, max_inland_size: int, threshold: int) -> None:
                     i_distance_beach_tiles.update({(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1), (x - 1, y - 1), (x - 1, y + 1), (x + 1, y - 1), (x + 1, y + 1)})
         beach_tiles.update(new_beach_tiles)
         new_beach_tiles = i_distance_beach_tiles
+
+    return beach_tiles

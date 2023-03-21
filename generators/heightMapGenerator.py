@@ -90,7 +90,7 @@ def smooth_height(rmap: Map) -> None:
                     smooth_bar()
 
 
-def smooth_down(rmap: Map, x: int, y: int) -> None:
+def smooth_down(rmap: Map, x: int, y: int) -> bool:
     def check_and_update_height(u_x, u_y):
         if rmap.in_bounds(u_x, u_y) and height_diff > 1:
             rmap.height_map[u_y][u_x] = center_height + 1

@@ -18,6 +18,7 @@ class Chunk:
             self.layers[layer.name] = Layer()
         self.buildings: list[Building] = []
         self.has_town: bool = False
+        self.path_tiles: set[tuple[int, int]] = set()
 
     def __getitem__(self, layer: str) -> Layer:
         return self.layers[layer]
