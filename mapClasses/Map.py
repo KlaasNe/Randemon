@@ -1,4 +1,3 @@
-import sys
 from random import random
 
 from colorama import Fore

@@ -1,3 +1,4 @@
+import io
 import os
 import random
 import time
@@ -6,23 +7,22 @@ from sys import maxsize
 
 from colorama import Fore
 from colorama import Style
+from starlette.responses import Response
 
 import parser as inputs
 from mapClasses import Map
 from render import Render
 from fastapi import FastAPI
-from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
-
 
 app = FastAPI(
     title="RandemonAPI"
 )
 
 origins = [
-    "http://localhost:8000",
+    "http://localhost:63342",
     "http://localhost:63343",
-    "https://klaasne.github.io/randemonMaps"
+    "https://klaasne.github.io"
 ]
 
 app.add_middleware(
@@ -37,13 +37,13 @@ app.add_middleware(
 def main(api_request=False, **kwargs):
     if api_request:
         my_map = Map(
-            4,
-            4,
-            50,
-            max_buildings=16,
-            make_height_map=False,
-            island=True,
-            themed_towns=True,
+            kwargs.get("nb_chunks_horizontal"),
+            kwargs.get("nb_chunks_vertical"),
+            kwargs.get("chunk_size"),
+            max_buildings=kwargs.get("max_buildings"),
+            make_height_map=kwargs.get("height_map"),
+            island=kwargs.get("island"),
+            themed_towns=kwargs.get("themed_towns"),
             seed=kwargs.get("seed"),
             terrain_chaos=4,
             max_height=6
@@ -71,9 +71,7 @@ def main(api_request=False, **kwargs):
     r = Render()
     r.render(my_map)
     if api_request:
-        if not os.path.isdir("temp"):
-            os.mkdir("temp")
-        r.save("temp", directory="temp")
+        return r.visual
     else:
         if not args.no_show_opt:
             r.show()
@@ -85,12 +83,31 @@ def main(api_request=False, **kwargs):
 
 
 @app.get("/")
-async def root(seed: int = None):
+async def root(seed: int = None,
+               height_map: bool = False,
+               island: bool = True,
+               nb_chunks_horizontal: int = 4,
+               nb_chunks_vertical: int = 4,
+               chunk_size: int = 50,
+               max_buildings: int = 16,
+               themed_towns: bool = True):
     if seed is None:
         seed = random.randint(0, maxsize)
-    main(api_request=True, seed=seed)
-    print(seed)
-    return FileResponse("temp/temp.png")
+    img = main(
+        api_request=True,
+        seed=seed,
+        height_map=height_map,
+        island=island,
+        nb_chunks_horizontal=nb_chunks_horizontal,
+        nb_chunks_vertical=nb_chunks_vertical,
+        chunk_size=chunk_size,
+        max_buildings=max_buildings,
+        themed_towns=themed_towns
+    )
+    img_io = io.BytesIO()
+    img.save(img_io, 'PNG')
+    img_io.seek(0)
+    return Response(content=img_io.getvalue(), media_type="image/png")
 
 
 if __name__ == "__main__":

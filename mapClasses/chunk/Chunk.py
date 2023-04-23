@@ -73,6 +73,7 @@ class Chunk:
     def change_height(self, x: int, y: int, val: int) -> None:
         hmx, hmy = self.height_map_pos(x, y)
         self.height_map[hmy][hmx] += val
+        self.height_map[hmy][hmx] = max(self.height_map[hmy][hmx], .16)  # TODO hardcoded based on .15 dark water
 
     def get_tile_type(self, layer: str, x: int, y: int) -> Optional[str]:
         return self[layer].get_tile_type(x, y)
