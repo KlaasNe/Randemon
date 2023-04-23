@@ -43,9 +43,10 @@ def get_height(max_height, x, y, static_offset_array, size_h, size_v, octaves=4,
         ny = 2 * y / size_v - 1
         d = 1 - (1 - nx ** 2) * (1 - ny ** 2)
         elevation = (noise + (1 - d)) / flattening
+        return pow(elevation, 3) * max_height * 2
     else:
         elevation = noise + 0.45
-    return pow(elevation, 3) * max_height * 2
+        return elevation * max_height
 
 
 def generate_height_map_from_image(img_path):

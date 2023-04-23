@@ -17,8 +17,8 @@ class Render:
     TNF = Tile("TNF", 0, 0)
 
     def __init__(self):
-        self.readers = dict()
-        self.visual = None
+        self.readers: dict = dict()
+        self.visual: Image = None
         for reader in SpriteSheetReaders:
             self.readers[reader.name] = reader.value
 

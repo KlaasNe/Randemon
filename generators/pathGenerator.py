@@ -340,5 +340,8 @@ def create_lanterns(chunk: Chunk):
 
 def remove_path(chunk: Chunk):
     for path_x, path_y in chunk.path_tiles:
-        chunk["GROUND0"].remove_tile(path_x, path_y)
+        try:
+            chunk["GROUND0"].remove_tile(path_x, path_y)
+        except KeyError:
+            pass
     chunk.path_tiles.clear()

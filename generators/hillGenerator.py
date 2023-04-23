@@ -14,8 +14,8 @@ def remove_faulty_heights(chunk, force=False):
     ignore_list = set()
     while not smooth:
         smooth = True
-        for y in range(0, chunk.size):
-            for x in range(0, chunk.size):
+        for y in range(chunk.size):
+            for x in range(chunk.size):
                 curr_surrounding = get_surrounding_tiles(chunk, x, y)
                 height_change = get_tile_from_surrounding(curr_surrounding, FaultyHillTiles)
                 if height_change is not None and (x, y) not in ignore_list:
