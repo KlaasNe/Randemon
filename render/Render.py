@@ -17,8 +17,8 @@ class Render:
     TNF = Tile("TNF", 0, 0)
 
     def __init__(self):
-        self.readers = dict()
-        self.visual = None
+        self.readers: dict = dict()
+        self.visual: Image = None
         for reader in SpriteSheetReaders:
             self.readers[reader.name] = reader.value
 
@@ -65,22 +65,26 @@ class Render:
     def show(self) -> None:
         self.visual.show()
 
-    def save(self, name: str) -> None:
+    def save(self, name: str, directory: str) -> None:
         img_name = name + ".png"
         with alive_bar(1, title="Saving image", theme="classic") as save_bar:
-            self.visual.save(os.path.join("saved_images", img_name), "png")
+            self.visual.save(os.path.join(directory, img_name), "png")
             save_bar()
         print("Image saved successfully")
-        print(os.path.join(Fore.LIGHTBLUE_EX + os.path.abspath("saved_images"),
+        print(os.path.join(Fore.LIGHTBLUE_EX + os.path.abspath(directory),
                            Fore.LIGHTYELLOW_EX + img_name + Style.RESET_ALL))
 
-    def save_prompt(self, seed: Union[int, str] = "") -> None:
+    def save_prompt(self, seed: Union[int, str] = "", directory: str = "saved_images") -> None:
         save = input('\n' + Fore.LIGHTBLUE_EX + "Save this image? (y/n/w): " + Style.RESET_ALL)
         file_n = "{}_{}".format(datetime.now().strftime("%G-%m-%d_%H-%M-%S"), str(seed))
         if save == "y" or save == "w":
-            if not os.path.isdir("saved_images"):
-                os.mkdir("saved_images")
-            self.save(file_n)
+            if not os.path.isdir(directory):
+                if directory == "saved_images":
+                    os.mkdir(directory)
+                else:
+                    print(Fore.RED + "The given directory doesn't exist" + Style.RESET_ALL)
+                    exit(-1)
+            self.save(file_n, directory)
             if save == "w":
                 cwd = os.getcwd()
                 file_path = os.path.join(cwd, "saved_images", file_n + ".png")

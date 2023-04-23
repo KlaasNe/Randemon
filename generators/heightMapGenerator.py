@@ -43,9 +43,10 @@ def get_height(max_height, x, y, static_offset_array, size_h, size_v, octaves=4,
         ny = 2 * y / size_v - 1
         d = 1 - (1 - nx ** 2) * (1 - ny ** 2)
         elevation = (noise + (1 - d)) / flattening
+        return pow(elevation, 3) * max_height * 2
     else:
         elevation = noise + 0.45
-    return max(0, pow(elevation, 3) * max_height * 2 + 0.05)
+        return elevation * max_height
 
 
 def generate_height_map_from_image(img_path):
@@ -90,7 +91,7 @@ def smooth_height(rmap: Map) -> None:
                     smooth_bar()
 
 
-def smooth_down(rmap: Map, x: int, y: int) -> None:
+def smooth_down(rmap: Map, x: int, y: int) -> bool:
     def check_and_update_height(u_x, u_y):
         if rmap.in_bounds(u_x, u_y) and height_diff > 1:
             rmap.height_map[u_y][u_x] = center_height + 1

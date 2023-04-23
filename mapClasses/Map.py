@@ -1,4 +1,3 @@
-import sys
 from random import random
 
 from colorama import Fore
@@ -25,9 +24,9 @@ class Map:
                  chunk_nb_h: int,
                  chunk_nb_v: int,
                  chunk_size: int,
+                 seed: int,
                  max_buildings: int = 16,
                  island: bool = False,
-                 seed: int = random.randint(0, sys.maxsize),
                  make_height_map: bool = False,
                  themed_towns: bool = True,
                  terrain_chaos: int = 4,
@@ -61,6 +60,7 @@ class Map:
         self.lake_tiles: set[tuple[int, int]] = set()
         self.sea_tiles: set[tuple[int, int]] = set()
         self.path_tiles: set[Coordinate] = set()
+        self.beach_tiles: set[tuple[int, int]] = set()
 
     def __iter__(self) -> Iterator[Chunk]:
         for chunk_row in self.chunks:
@@ -78,7 +78,7 @@ class Map:
                     remove_faulty_heights(current_chunk, force=True)
                     faulty_heights_bar()
         # create_lakes_and_sea(self) TODO fix this
-        create_beach(self, max_beach_inland_depth, water_threshold)  # TODO dont do create beach twice
+        self.beach_tiles = create_beach(self, max_beach_inland_depth, water_threshold)
         with alive_bar(self.chunk_nb_v * self.chunk_nb_h, title="Generating chunks", theme="classic") as chunk_bar:
             for y in range(self.chunk_nb_v):
                 for x in range(self.chunk_nb_h):
@@ -110,11 +110,7 @@ class Map:
                     chunk_bar()
 
         if not self.draw_height_map:
-            with alive_bar(2, title="Creating beach and path", theme="classic") as beach_path_bar:
-                create_beach(self, max_beach_inland_depth, water_threshold)
-                beach_path_bar()
-                create_path(self)
-                beach_path_bar()
+            create_path(self)
 
             with alive_bar(self.chunk_nb_v * self.chunk_nb_h,
                            title="Updating chunks (nature, sea and plants and stuff)", theme="classic") as chunk_bar:

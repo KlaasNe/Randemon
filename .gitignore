@@ -220,3 +220,5 @@ fabric.properties
 /heightMaps/
 
 .idea/
+
+temp/
