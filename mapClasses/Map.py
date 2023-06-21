@@ -12,7 +12,7 @@ from generators.buildingGenerator import *
 from generators.hillGenerator import *
 from generators.pathGenerator import *
 from generators.plantGenerator import *
-from generators.townMapGenerator import draw_town_map
+from generators.townMapGenerator import draw_town_map, generate_town_map
 from generators.waterGenerator import *
 from mapClasses import Chunk
 
@@ -62,6 +62,8 @@ class Map:
         self.sea_tiles: set[tuple[int, int]] = set()
         self.path_tiles: set[Coordinate] = set()
         self.beach_tiles: set[tuple[int, int]] = set()
+        self.towns: set[Coordinate] = set()
+        self.route_chunks: set[Coordinate] = set()
 
     def __iter__(self) -> Iterator[Chunk]:
         for chunk_row in self.chunks:
@@ -87,11 +89,17 @@ class Map:
                     if not self.draw_height_map:
                         create_edges(current_chunk, hill_type=0)
                         # create_rivers(current_chunk, self.lake_tiles)
-                        if self.max_buildings > 0 and random.randint(0, 2) <= 1:
+                        if self.max_buildings > 0 and current_chunk.can_have_town and random.randint(0, 3) <= 2:
                             path_type = random.randint(0, 7)
                             current_chunk.has_town = True
                             valid_town = spawn_functional_buildings(self, current_chunk, path_type)
                             if valid_town:
+                                self.towns.add(Coordinate(x, y))
+                                for (cx, cy) in Coordinate(x, y).around():
+                                    try:
+                                        self.chunks[cy][cx].can_have_town = False
+                                    except IndexError:
+                                        pass
                                 if self.themed_towns:
                                     building_theme: BuildingTheme = BuildingThemes.get_random_theme().value
                                 for b in range(random.randint(1, self.max_buildings)):
@@ -124,7 +132,7 @@ class Map:
                         grow_grass(current_chunk, 0.6)
                         chunk_bar()
 
-        draw_town_map(self, 8)
+        generate_town_map(self, 8)
 
     def get_chunk(self, x: int, y: int) -> Optional[Chunk]:
         try:

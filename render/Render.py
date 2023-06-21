@@ -25,10 +25,8 @@ class Render:
     def render(self, map_obj: Map):
         chunk_size = map_obj.chunk_size
         chunk_nb_h, chunk_nb_v = map_obj.chunk_nb_h, map_obj.chunk_nb_v
-        self.visual = Image.new("RGBA",
-                                (chunk_size * Render.TILE_SIZE * chunk_nb_h,
-                                 chunk_size * Render.TILE_SIZE * chunk_nb_v),
-                                (0, 0, 0, 0))
+        size = (chunk_size * Render.TILE_SIZE * chunk_nb_h, chunk_size * Render.TILE_SIZE * chunk_nb_v)
+        self.visual = Image.new("RGBA", size, (0, 0, 0, 0))
         with alive_bar(chunk_nb_h * chunk_nb_v, title="rendering chunks", theme="classic") as render_bar:
             for chunk in map_obj:
                 self.render_chunk(chunk)
