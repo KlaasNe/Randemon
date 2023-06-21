@@ -27,7 +27,7 @@ class TMC:  # Town Map Colors
         return tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))
 
 
-def generate_town_map(pmap: Map, tiles_per_pixel: int):
+def draw_town_map(pmap: Map, tiles_per_pixel: int):
     town_map: Image = Image.new("RGBA", (ceil(pmap.size_h / tiles_per_pixel), ceil(pmap.size_v / tiles_per_pixel)), TMC.water_0)
 
     image_y = 0
@@ -52,11 +52,16 @@ def generate_town_map(pmap: Map, tiles_per_pixel: int):
                 elif avg_height >= 5:
                     color = TMC.land_5
             else:
-                if y % 2 == 0:
+                if image_y % 2 == 0:
                     color = TMC.water_1
+
             if color:
                 town_map.putpixel((image_x, image_y), TMC.rgb_from_hex(color))
             image_x += 1
         image_y += 1
 
     town_map.show()
+
+
+def generate_routes(pmap: Map, looping_chance: float):
+    ...
