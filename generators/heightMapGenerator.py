@@ -1,5 +1,4 @@
 import random
-import time
 from math import pow
 from PIL import Image
 

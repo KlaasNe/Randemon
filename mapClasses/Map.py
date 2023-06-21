@@ -12,6 +12,7 @@ from generators.buildingGenerator import *
 from generators.hillGenerator import *
 from generators.pathGenerator import *
 from generators.plantGenerator import *
+from generators.townMapGenerator import generate_town_map
 from generators.waterGenerator import *
 from mapClasses import Chunk
 
@@ -122,6 +123,8 @@ class Map:
                         create_trees(current_chunk, 0.55)
                         grow_grass(current_chunk, 0.6)
                         chunk_bar()
+
+        generate_town_map(self, 5)
 
     def get_chunk(self, x: int, y: int) -> Optional[Chunk]:
         try:
