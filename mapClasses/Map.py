@@ -49,8 +49,8 @@ class Map:
         off_x, off_y = random.randint(0, 10000000), random.randint(0, 10000000)
         self.height_map: list[list[int]] = generate_height_map(self.chunk_size * self.chunk_nb_h,
                                                                self.chunk_size * self.chunk_nb_v, self.max_height,
-                                                               off_x, off_y,
-                                                               additional_noise_maps=0, island=island,
+                                                               off_x, off_y, self.chunk_size,
+                                                               additional_noise_maps=1, island=island,
                                                                terrain_chaos=terrain_chaos)
         # self.height_map = generate_height_map_from_image("heightMaps/earthLandMassHeight.png")
         smooth_height(self)
@@ -78,7 +78,7 @@ class Map:
             for y in range(self.chunk_nb_v):
                 for x in range(self.chunk_nb_h):
                     current_chunk = self.chunks[y][x]
-                    remove_faulty_heights(current_chunk, force=True)
+                    remove_faulty_heights(current_chunk, force=False)  # TODO fix this function
                     faulty_heights_bar()
         # create_lakes_and_sea(self) TODO fix this
         self.beach_tiles = create_beach(self, max_beach_inland_depth, water_threshold)
@@ -89,7 +89,7 @@ class Map:
                     if not self.draw_height_map:
                         create_edges(current_chunk, hill_type=0)
                         # create_rivers(current_chunk, self.lake_tiles)
-                        if self.max_buildings > 0 and current_chunk.can_have_town and random.randint(0, 3) <= 2:
+                        if self.max_buildings > 0 and current_chunk.can_have_town and random.randint(0, 1) <= 2:
                             path_type = random.randint(0, 7)
                             current_chunk.has_town = True
                             valid_town = spawn_functional_buildings(self, current_chunk, path_type)
@@ -132,7 +132,7 @@ class Map:
                         grow_grass(current_chunk, 0.6)
                         chunk_bar()
 
-        generate_town_map(self, 8)
+        generate_town_map(self, 5)
 
     def get_chunk(self, x: int, y: int) -> Optional[Chunk]:
         try:

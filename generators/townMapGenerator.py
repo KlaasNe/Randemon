@@ -1,6 +1,13 @@
+import os
+from datetime import datetime
+
 from mapClasses import Map, Coordinate
 from PIL import Image
 from math import ceil
+
+
+TILE_SIZE = 8
+TILE_SHEET_DIRECTORY = os.path.join("render", "tileSheets")
 
 
 class TMC:  # Town Map Colors
@@ -111,7 +118,7 @@ def draw_town_map(pmap: Map, tiles_per_pixel: int):
             chunk_on_route = c.route is not None
             for j in range(min(tiles_per_pixel, pmap.size_v - y)):
                 for i in range(min(tiles_per_pixel, pmap.size_h - x)):
-                    height_sum += round(pmap.get_height_map_pos(x + i, y + j) + 0.05)
+                    height_sum += round(pmap.get_height_map_pos(x + i, y + j))
             avg_height = height_sum // (tiles_per_pixel ** 2)
             color = None
             if avg_height > 0:
@@ -136,4 +143,11 @@ def draw_town_map(pmap: Map, tiles_per_pixel: int):
             image_x += 1
         image_y += 1
 
-    town_map.show()
+    with Image.open(os.path.join(TILE_SHEET_DIRECTORY, "townMap.png")).convert("RGBA") as marker:
+        marker.load()
+        for town in pmap.towns:
+            dest_box = (town.x * 8, town.y * 8, town.x * 8 + TILE_SIZE, town.y * 8 + TILE_SIZE)
+            town_map.paste(marker, dest_box)
+
+    # town_map.save(os.path.join("saved_images", "{} {}__townMap.png".format(datetime.now().strftime("%G-%m-%d %H-%M-%S"), str(pmap.seed))), "png")
+    # town_map.show()

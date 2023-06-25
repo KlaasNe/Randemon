@@ -12,7 +12,7 @@ def make_parser() -> ArgumentParser:
         '--chunk-size',
         dest='chunk_size',
         type=int,
-        default=64,
+        default=40,
         help='The number of tiles a chunk consists of.')
 
     parser.add_argument(

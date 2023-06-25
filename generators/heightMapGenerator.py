@@ -10,39 +10,52 @@ from mapClasses.Coordinate import Coordinate
 from mapClasses.tile.Tile import Tile
 
 
-def generate_height_map(size_h, size_v, max_height, off_x, off_y, terrain_chaos=4, additional_noise_maps=0,
+def generate_height_map(size_h, size_v, max_height, off_x, off_y, chunk_size, terrain_chaos=4, additional_noise_maps=0,
                         island=False):
     static_offset_array = [(off_x, off_y)]
     for i in range(additional_noise_maps):
         static_offset_array.append((random.randint(0, 1000000), random.randint(0, 1000000)))
     return [
-        [(get_height(max_height, x, y, static_offset_array, size_h, size_v, octaves=terrain_chaos, island=island,
-                     flattening=2)) for x in range(size_h)]
+        [(get_height(max_height, x, y, static_offset_array, size_h, size_v, chunk_size, octaves=terrain_chaos,
+                     island=island)) for x in range(size_h)]
         for y in range(size_v)
     ]
 
 
-def get_height(max_height, x, y, static_offset_array, size_h, size_v, octaves=4, freq=150, island=False, flattening=2):
+def get_height(max_height: int, x: int, y: int, static_offset_array, size_h: int, size_v: int, chunk_size,
+               octaves: int = 4, freq: int = 100, island=False):
+
+    def plateau(px: float, py: float, tau: float, height: int, n: float):
+        """
+        MADE BY HELENA
+
+        geeft de hoogte van een cirkel vormig plateau op (x,y)
+        het plateau is van hoogte hoogte
+        is nul op r = sqrt(x²+y²) = nulpunt
+        tau bepaald hoe scherp de randen van het plateau zijn: hoe kleiner tau hoe scherper
+        tau en nulpunt horen altijd groter dan 0 te zijn
+        het centrum licht op (0,0)
+        """
+        r = max(abs(px), abs(py))
+        return height * (1 - pow(2.71, -(r + n) / tau)) * (1 - pow(2.71, (r - n) / tau))
+
     if island and (x == 0 or y == 0 or x == size_h - 1 or y == size_v - 1):
-        return 0
+        return -1
     noise = 0
     total_noise_maps = len(static_offset_array)
     tuple_count = 1
     for offset_tuple in static_offset_array:
         off_x, off_y = offset_tuple
-        noise += (1 / tuple_count) * snoise2(
-            (off_x + x) / freq,
-            (off_y + y) / freq,
+        noise += snoise2(
+            (off_x + x) / (freq * tuple_count * 2),
+            (off_y + y) / (freq * tuple_count * 2),
             octaves)
         tuple_count += 1
-    if total_noise_maps > 1:
-        noise /= sum(1 / i for i in range(1, total_noise_maps + 1))
+    # if total_noise_maps > 1:n
+    #     noise /= sum(1 / i for i in range(1, total_noise_maps + 1))
     if island:
-        nx = 2 * x / size_h - 1
-        ny = 2 * y / size_v - 1
-        d = 1 - (1 - nx ** 2) * (1 - ny ** 2)
-        elevation = (noise + (1 - d)) / flattening
-        return pow(elevation, 3) * max_height * 2
+        # print(noise*max_height)
+        return (noise * max_height) + plateau((x - (size_h // 2)) / (size_h / 2), (y - (size_v // 2)) / (size_v / 2), 0.15, 1, 0.6) - 0.5  # GEEN 0 invullen op height plateau!!!
     else:
         elevation = noise + 0.45
         return elevation * max_height
