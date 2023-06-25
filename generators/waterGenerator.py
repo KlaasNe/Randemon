@@ -47,7 +47,7 @@ def create_lakes_and_sea(rmap: Map, sea_threshold=0.20) -> None:
 
 # Creates rivers for a chunk
 def create_rivers(chunk: Chunk, lake_tiles: set[tuple[int, int]], threshold, no_sprite=False):
-    dark_water_height = 0.15
+    dark_water_height = -0.5
     for y in range(chunk.size):
         for x in range(chunk.size):
             h = chunk.get_height_exact(x, y)

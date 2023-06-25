@@ -1,5 +1,6 @@
 import io
 import os
+import io
 import random
 import time
 from datetime import datetime
@@ -20,6 +21,7 @@ app = FastAPI(
 )
 
 origins = [
+    "http://localhost:8000",
     "http://localhost:63342",
     "http://localhost:63343",
     "https://klaasne.github.io"
@@ -73,6 +75,7 @@ def main(api_request=False, **kwargs):
     if api_request:
         return r.visual
     else:
+        print(Fore.LIGHTBLACK_EX + f"Total generation time={str(time.time() - t)}s" + Style.RESET_ALL)
         if not args.no_show_opt:
             r.show()
         if args.save_opt:

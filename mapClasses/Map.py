@@ -12,6 +12,7 @@ from generators.buildingGenerator import *
 from generators.hillGenerator import *
 from generators.pathGenerator import *
 from generators.plantGenerator import *
+from generators.townMapGenerator import draw_town_map, generate_town_map
 from generators.waterGenerator import *
 from mapClasses import Chunk
 
@@ -48,8 +49,8 @@ class Map:
         off_x, off_y = random.randint(0, 10000000), random.randint(0, 10000000)
         self.height_map: list[list[int]] = generate_height_map(self.chunk_size * self.chunk_nb_h,
                                                                self.chunk_size * self.chunk_nb_v, self.max_height,
-                                                               off_x, off_y,
-                                                               additional_noise_maps=0, island=island,
+                                                               off_x, off_y, self.chunk_size,
+                                                               additional_noise_maps=1, island=island,
                                                                terrain_chaos=terrain_chaos)
         # self.height_map = generate_height_map_from_image("heightMaps/earthLandMassHeight.png")
         smooth_height(self)
@@ -61,6 +62,8 @@ class Map:
         self.sea_tiles: set[tuple[int, int]] = set()
         self.path_tiles: set[Coordinate] = set()
         self.beach_tiles: set[tuple[int, int]] = set()
+        self.towns: set[Coordinate] = set()
+        self.route_chunks: set[Coordinate] = set()
 
     def __iter__(self) -> Iterator[Chunk]:
         for chunk_row in self.chunks:
@@ -75,7 +78,7 @@ class Map:
             for y in range(self.chunk_nb_v):
                 for x in range(self.chunk_nb_h):
                     current_chunk = self.chunks[y][x]
-                    remove_faulty_heights(current_chunk, force=True)
+                    remove_faulty_heights(current_chunk, force=False)  # TODO fix this function
                     faulty_heights_bar()
         # create_lakes_and_sea(self) TODO fix this
         self.beach_tiles = create_beach(self, max_beach_inland_depth, water_threshold)
@@ -86,11 +89,17 @@ class Map:
                     if not self.draw_height_map:
                         create_edges(current_chunk, hill_type=0)
                         # create_rivers(current_chunk, self.lake_tiles)
-                        if self.max_buildings > 0 and random.randint(0, 2) <= 1:
+                        if self.max_buildings > 0 and current_chunk.can_have_town and random.randint(0, 1) <= 2:
                             path_type = random.randint(0, 7)
                             current_chunk.has_town = True
                             valid_town = spawn_functional_buildings(self, current_chunk, path_type)
                             if valid_town:
+                                self.towns.add(Coordinate(x, y))
+                                for (cx, cy) in Coordinate(x, y).around():
+                                    try:
+                                        self.chunks[cy][cx].can_have_town = False
+                                    except IndexError:
+                                        pass
                                 if self.themed_towns:
                                     building_theme: BuildingTheme = BuildingThemes.get_random_theme().value
                                 for b in range(random.randint(1, self.max_buildings)):
@@ -122,6 +131,8 @@ class Map:
                         create_trees(current_chunk, 0.55)
                         grow_grass(current_chunk, 0.6)
                         chunk_bar()
+
+        generate_town_map(self, 5)
 
     def get_chunk(self, x: int, y: int) -> Optional[Chunk]:
         try:
