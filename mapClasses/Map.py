@@ -78,7 +78,7 @@ class Map:
             for y in range(self.chunk_nb_v):
                 for x in range(self.chunk_nb_h):
                     current_chunk = self.chunks[y][x]
-                    remove_faulty_heights(current_chunk, force=False)  # TODO fix this function
+                    remove_faulty_heights(current_chunk, force=True)  # TODO fix this function
                     faulty_heights_bar()
         # create_lakes_and_sea(self) TODO fix this
         self.beach_tiles = create_beach(self, max_beach_inland_depth, water_threshold)
@@ -132,7 +132,7 @@ class Map:
                         grow_grass(current_chunk, 0.6)
                         chunk_bar()
 
-        generate_town_map(self, 5)
+        generate_town_map(self, self.chunk_size // 8)
 
     def get_chunk(self, x: int, y: int) -> Optional[Chunk]:
         try:

@@ -56,7 +56,7 @@ def spawn_building(rmap: Map, chunk: Chunk, building, path_type: int, fence_opt=
 
     size_x, size_y = building.size
     map_size_factor = max(chunk.size * chunk.size // 2500, 1) ** 2
-    max_attempts = size_x * size_y * 100 * map_size_factor + 10000
+    max_attempts = size_x * size_y * 100 * map_size_factor + 1000
     build_spot = search_available_spot(building, 25, max_attempts)
     if build_spot:
         build_building(rmap, chunk, building, build_spot, path_type, fence_opt=fence_opt, mail_box_opt=mail_box_opt)

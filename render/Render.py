@@ -73,7 +73,7 @@ class Render:
                            Fore.LIGHTYELLOW_EX + img_name + Style.RESET_ALL))
 
     def save_prompt(self, seed: Union[int, str] = "", directory: str = "saved_images") -> None:
-        save = input('\n' + Fore.LIGHTBLUE_EX + "Save this image? (y/n/w): " + Style.RESET_ALL)
+        save = input('\n' + Fore.LIGHTBLUE_EX + "Save this image? (y/[n]/w): " + Style.RESET_ALL)
         file_n = "{}_{}".format(datetime.now().strftime("%G-%m-%d_%H-%M-%S"), str(seed))
         if save == "y" or save == "w":
             if not os.path.isdir(directory):

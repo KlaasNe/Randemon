@@ -1,6 +1,8 @@
 import os
 from datetime import datetime
 
+from alive_progress import alive_bar
+
 from mapClasses import Map, Coordinate
 from PIL import Image
 from math import ceil
@@ -106,48 +108,49 @@ def generate_routes(pmap: Map, looping_chance: float = 0):
 
 
 def draw_town_map(pmap: Map, tiles_per_pixel: int):
-    town_map: Image = Image.new("RGBA", (ceil(pmap.size_h / tiles_per_pixel), ceil(pmap.size_v / tiles_per_pixel)),
-                                TMC.water_0)
+    with alive_bar((ceil(pmap.size_h / tiles_per_pixel) * ceil(pmap.size_v / tiles_per_pixel)) + 1, title="Drawing a town map", theme="classic") as town_map_bar:
+        town_map: Image = Image.new("RGBA", (ceil(pmap.size_h / tiles_per_pixel), ceil(pmap.size_v / tiles_per_pixel)), TMC.water_0)
+        town_map_bar()
+        image_y = 0
+        for y in range(0, pmap.size_v, tiles_per_pixel):
+            image_x = 0
+            for x in range(0, pmap.size_h, tiles_per_pixel):
+                height_sum = 0
+                c, _, _ = pmap.parse_to_coordinate_in_chunk(x, y)
+                chunk_on_route = c.route is not None
+                for j in range(min(tiles_per_pixel, pmap.size_v - y)):
+                    for i in range(min(tiles_per_pixel, pmap.size_h - x)):
+                        height_sum += round(pmap.get_height_map_pos(x + i, y + j))
+                avg_height = height_sum // (tiles_per_pixel ** 2)
+                color = None
+                if avg_height > 0:
+                    if avg_height == 1:
+                        color = TMC.land_1 if not chunk_on_route else TMC.land_1_route
+                    elif avg_height == 2:
+                        color = TMC.land_2 if not chunk_on_route else TMC.land_2_route
+                    elif avg_height == 3:
+                        color = TMC.land_3 if not chunk_on_route else TMC.land_3_route
+                    elif avg_height == 4:
+                        color = TMC.land_4 if not chunk_on_route else TMC.land_4_route
+                    elif avg_height >= 5:
+                        color = TMC.land_5 if not chunk_on_route else TMC.land_5_route
+                else:
+                    if image_y % 2 == 0:
+                        color = TMC.water_1 if not chunk_on_route else TMC.water_1_route
+                    elif chunk_on_route:
+                        color = TMC.water_0_route
 
-    image_y = 0
-    for y in range(0, pmap.size_v, tiles_per_pixel):
-        image_x = 0
-        for x in range(0, pmap.size_h, tiles_per_pixel):
-            height_sum = 0
-            c, _, _ = pmap.parse_to_coordinate_in_chunk(x, y)
-            chunk_on_route = c.route is not None
-            for j in range(min(tiles_per_pixel, pmap.size_v - y)):
-                for i in range(min(tiles_per_pixel, pmap.size_h - x)):
-                    height_sum += round(pmap.get_height_map_pos(x + i, y + j))
-            avg_height = height_sum // (tiles_per_pixel ** 2)
-            color = None
-            if avg_height > 0:
-                if avg_height == 1:
-                    color = TMC.land_1 if not chunk_on_route else TMC.land_1_route
-                elif avg_height == 2:
-                    color = TMC.land_2 if not chunk_on_route else TMC.land_2_route
-                elif avg_height == 3:
-                    color = TMC.land_3 if not chunk_on_route else TMC.land_3_route
-                elif avg_height == 4:
-                    color = TMC.land_4 if not chunk_on_route else TMC.land_4_route
-                elif avg_height >= 5:
-                    color = TMC.land_5 if not chunk_on_route else TMC.land_5_route
-            else:
-                if image_y % 2 == 0:
-                    color = TMC.water_1 if not chunk_on_route else TMC.water_1_route
-                elif chunk_on_route:
-                    color = TMC.water_0_route
+                if color:
+                    town_map.putpixel((image_x, image_y), TMC.rgb_from_hex(color))
+                town_map_bar()
+                image_x += 1
+            image_y += 1
 
-            if color:
-                town_map.putpixel((image_x, image_y), TMC.rgb_from_hex(color))
-            image_x += 1
-        image_y += 1
-
-    with Image.open(os.path.join(TILE_SHEET_DIRECTORY, "townMap.png")).convert("RGBA") as marker:
-        marker.load()
-        for town in pmap.towns:
-            dest_box = (town.x * 8, town.y * 8, town.x * 8 + TILE_SIZE, town.y * 8 + TILE_SIZE)
-            town_map.paste(marker, dest_box)
+        with Image.open(os.path.join(TILE_SHEET_DIRECTORY, "townMap.png")).convert("RGBA") as marker:
+            marker.load()
+            for town in pmap.towns:
+                dest_box = (town.x * 8, town.y * 8, town.x * 8 + TILE_SIZE, town.y * 8 + TILE_SIZE)
+                town_map.paste(marker, dest_box)
 
     # town_map.save(os.path.join("saved_images", "{} {}__townMap.png".format(datetime.now().strftime("%G-%m-%d %H-%M-%S"), str(pmap.seed))), "png")
-    # town_map.show()
+    town_map.show()
