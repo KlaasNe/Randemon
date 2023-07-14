@@ -102,4 +102,11 @@ def make_parser() -> ArgumentParser:
         help='Choose a directory where the generated image should be saved. Has to be an existing directory.'
     )
 
+    parser.add_argument(
+        '--town-map',
+        dest='town_map',
+        action='store_true',
+        help='Render the town map on top of the regular map.'
+    )
+
     return parser

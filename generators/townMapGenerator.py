@@ -38,7 +38,7 @@ class TMC:  # Town Map Colors
 
 def generate_town_map(pmap: Map, tiles_per_pixel: int):
     generate_routes(pmap)
-    draw_town_map(pmap, tiles_per_pixel)
+    return draw_town_map(pmap, tiles_per_pixel)
 
 
 def generate_routes(pmap: Map, looping_chance: float = 0):
@@ -153,4 +153,4 @@ def draw_town_map(pmap: Map, tiles_per_pixel: int):
                 town_map.paste(marker, dest_box)
 
     # town_map.save(os.path.join("saved_images", "{} {}__townMap.png".format(datetime.now().strftime("%G-%m-%d %H-%M-%S"), str(pmap.seed))), "png")
-    town_map.show()
+    return town_map

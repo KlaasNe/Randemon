@@ -32,6 +32,10 @@ class Render:
                 self.render_chunk(chunk)
                 render_bar()
 
+        if True:
+            print("hoi")
+            self.paste_town_map(map_obj)
+
     def get_tile_img(self, tile: Tile) -> Image:
         try:
             return self.readers[tile.type].get_tile(tile)
@@ -50,6 +54,13 @@ class Render:
                 x *= Render.TILE_SIZE
                 y *= Render.TILE_SIZE
                 self.draw_tile(tile, x, y)
+
+    def paste_town_map(self, map_obj: Map, scale: int = 32):
+        town_map: Image = map_obj.town_map_img
+        w, h = town_map.size
+        nw, nh = w * scale, h * scale
+        town_map = town_map.resize((nw, nh), 0)
+        self.visual.paste(town_map, (0, 0, nh, nw))
 
     # def render_npc(self, layer):
     #     sheet_writer = SpriteSheetWriter(Image.open(os.path.join("resources", "npc.png")), 20, 23)

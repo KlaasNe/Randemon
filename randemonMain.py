@@ -48,7 +48,8 @@ def main(api_request=False, **kwargs):
             themed_towns=kwargs.get("themed_towns"),
             seed=kwargs.get("seed"),
             terrain_chaos=4,
-            max_height=6
+            max_height=6,
+            town_map=kwargs.get("town_map"),
         )
     else:
         parser = inputs.make_parser()
@@ -67,7 +68,8 @@ def main(api_request=False, **kwargs):
             themed_towns=args.themed_towns_opt,
             seed=args.seed,
             terrain_chaos=args.terrain_chaos,
-            max_height=args.max_height
+            max_height=args.max_height,
+            town_map=args.town_map,
         )
     my_map.create()
     r = Render()
@@ -93,7 +95,8 @@ async def root(seed: int = None,
                nb_chunks_vertical: int = 4,
                chunk_size: int = 50,
                max_buildings: int = 16,
-               themed_towns: bool = True):
+               themed_towns: bool = True,
+               town_map: bool = True):
     if seed is None:
         seed = random.randint(0, maxsize)
     img = main(
