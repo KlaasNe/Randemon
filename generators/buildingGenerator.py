@@ -18,7 +18,8 @@ def spawn_building(rmap: Map, chunk: Chunk, building, path_type: int, fence_opt=
             return False
         for y in range(y1, y2 + 1):
             for x in range(x1 - 2, x2 + 1 + 2):
-                if chunk.get_height(x, y) <= 0.4:
+                ch = chunk.get_height(x, y)
+                if ch <= 0.4 or ch > rmap.max_height:
                     return False
 
                 if x1 <= x < x2 + 2 and y1 <= y < y2 + 1:

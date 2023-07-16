@@ -131,11 +131,12 @@ class Map:
                         current_chunk = self.chunks[y][x]
                         create_rivers(current_chunk, self.lake_tiles, water_threshold, no_sprite=True)
                         spawn_pokemons(current_chunk)
-                        create_trees(current_chunk, 0.55)
-                        grow_grass(current_chunk, 0.6)
+                        create_trees(current_chunk, 0.55, self.max_height)
+                        grow_grass(current_chunk, 0.6, self.max_height)
                         chunk_bar()
 
-        self.town_map_img = generate_town_map(self, self.chunk_size // 8)
+        if self.town_map:
+            self.town_map_img = generate_town_map(self)
 
     def get_chunk(self, x: int, y: int) -> Optional[Chunk]:
         try:

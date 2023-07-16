@@ -32,8 +32,7 @@ class Render:
                 self.render_chunk(chunk)
                 render_bar()
 
-        if True:
-            print("hoi")
+        if map_obj.town_map:
             self.paste_town_map(map_obj)
 
     def get_tile_img(self, tile: Tile) -> Image:
@@ -55,7 +54,7 @@ class Render:
                 y *= Render.TILE_SIZE
                 self.draw_tile(tile, x, y)
 
-    def paste_town_map(self, map_obj: Map, scale: int = 32):
+    def paste_town_map(self, map_obj: Map, scale: int = 8):
         town_map: Image = map_obj.town_map_img
         w, h = town_map.size
         nw, nh = w * scale, h * scale

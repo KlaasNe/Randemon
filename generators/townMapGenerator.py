@@ -36,7 +36,8 @@ class TMC:  # Town Map Colors
         return tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))
 
 
-def generate_town_map(pmap: Map, tiles_per_pixel: int):
+def generate_town_map(pmap: Map):
+    tiles_per_pixel = pmap.chunk_size // 8
     generate_routes(pmap)
     return draw_town_map(pmap, tiles_per_pixel)
 
