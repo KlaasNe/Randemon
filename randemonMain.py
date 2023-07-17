@@ -1,4 +1,3 @@
-import io
 import os
 import io
 import random
@@ -37,6 +36,7 @@ app.add_middleware(
 
 
 def main(api_request=False, **kwargs):
+    town_map_scale = 8
     if api_request:
         my_map = Map(
             kwargs.get("nb_chunks_horizontal"),
@@ -51,6 +51,7 @@ def main(api_request=False, **kwargs):
             max_height=6,
             town_map=kwargs.get("town_map"),
         )
+        town_map_scale = kwargs.get("scale")
     else:
         parser = inputs.make_parser()
         args = parser.parse_args()
@@ -71,9 +72,14 @@ def main(api_request=False, **kwargs):
             max_height=args.max_height,
             town_map=args.town_map,
         )
+        if args.scale:
+            town_map_scale = args.scale
     my_map.create()
     r = Render()
     r.render(my_map)
+    if my_map.town_map:
+        r.paste_town_map(my_map, scale=town_map_scale)
+
     if api_request:
         return r.visual
     else:
@@ -96,7 +102,7 @@ async def root(seed: int = None,
                chunk_size: int = 50,
                max_buildings: int = 16,
                themed_towns: bool = True,
-               town_map: bool = True):
+               town_map: str = None):
     if seed is None:
         seed = random.randint(0, maxsize)
     img = main(

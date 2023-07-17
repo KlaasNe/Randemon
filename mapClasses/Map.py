@@ -32,7 +32,7 @@ class Map:
                  themed_towns: bool = True,
                  terrain_chaos: int = 4,
                  max_height: int = 6,
-                 town_map: bool = False) -> None:
+                 town_map: str = None) -> None:
 
         self.chunk_size: int = chunk_size
         self.chunk_nb_h: int = chunk_nb_h
@@ -65,7 +65,7 @@ class Map:
         self.beach_tiles: set[tuple[int, int]] = set()
         self.towns: set[Coordinate] = set()
         self.route_chunks: set[Coordinate] = set()
-        self.town_map: bool = town_map
+        self.town_map: str = town_map
         self.town_map_img: Image = None
 
     def __iter__(self) -> Iterator[Chunk]:

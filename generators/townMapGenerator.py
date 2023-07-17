@@ -151,7 +151,7 @@ def draw_town_map(pmap: Map, tiles_per_pixel: int):
             marker.load()
             for town in pmap.towns:
                 dest_box = (town.x * 8, town.y * 8, town.x * 8 + TILE_SIZE, town.y * 8 + TILE_SIZE)
-                town_map.paste(marker, dest_box)
+                town_map.paste(marker, dest_box, marker)
 
     # town_map.save(os.path.join("saved_images", "{} {}__townMap.png".format(datetime.now().strftime("%G-%m-%d %H-%M-%S"), str(pmap.seed))), "png")
     return town_map

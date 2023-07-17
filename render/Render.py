@@ -32,9 +32,6 @@ class Render:
                 self.render_chunk(chunk)
                 render_bar()
 
-        if map_obj.town_map:
-            self.paste_town_map(map_obj)
-
     def get_tile_img(self, tile: Tile) -> Image:
         try:
             return self.readers[tile.type].get_tile(tile)
@@ -59,7 +56,18 @@ class Render:
         w, h = town_map.size
         nw, nh = w * scale, h * scale
         town_map = town_map.resize((nw, nh), 0)
-        self.visual.paste(town_map, (0, 0, nh, nw))
+
+        self_img_w, self_img_h = self.visual.size
+        pos = map_obj.town_map
+        if pos == 'TOPLEFT':
+            self.visual.paste(town_map, (0, 0, nw, nh))
+        elif pos == 'TOPRIGHT':
+            self.visual.paste(town_map, (self_img_w - nw, 0, self_img_w, nh))
+        elif pos == 'BOTTOMLEFT':
+            self.visual.paste(town_map, (0, self_img_h - nh, nw, self_img_h))
+        elif pos == 'BOTTOMRIGHT':
+            self.visual.paste(town_map, (self_img_w - nw, self_img_h - nh, self_img_w, self_img_h))
+
 
     # def render_npc(self, layer):
     #     sheet_writer = SpriteSheetWriter(Image.open(os.path.join("resources", "npc.png")), 20, 23)
