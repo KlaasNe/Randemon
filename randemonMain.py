@@ -102,24 +102,30 @@ async def root(seed: int = None,
                chunk_size: int = 50,
                max_buildings: int = 16,
                themed_towns: bool = True,
-               town_map: str = None):
-    if seed is None:
-        seed = random.randint(0, maxsize)
-    img = main(
-        api_request=True,
-        seed=seed,
-        height_map=height_map,
-        island=island,
-        nb_chunks_horizontal=nb_chunks_horizontal,
-        nb_chunks_vertical=nb_chunks_vertical,
-        chunk_size=chunk_size,
-        max_buildings=max_buildings,
-        themed_towns=themed_towns
-    )
-    img_io = io.BytesIO()
-    img.save(img_io, 'PNG')
-    img_io.seek(0)
-    return Response(content=img_io.getvalue(), media_type="image/png")
+               town_map: str = None,
+               scale: int = 8):
+    if 0 < nb_chunks_vertical <= 16 and 0 < nb_chunks_horizontal <= 16 and 15 < chunk_size <= 256:
+        if seed is None:
+            seed = random.randint(0, maxsize)
+        img = main(
+            api_request=True,
+            seed=seed,
+            height_map=height_map,
+            island=island,
+            nb_chunks_horizontal=nb_chunks_horizontal,
+            nb_chunks_vertical=nb_chunks_vertical,
+            chunk_size=chunk_size,
+            max_buildings=max_buildings,
+            themed_towns=themed_towns,
+            town_map=town_map,
+            scale=scale,
+        )
+        img_io = io.BytesIO()
+        img.save(img_io, 'PNG')
+        img_io.seek(0)
+        return Response(content=img_io.getvalue(), media_type="image/png")
+    else:
+        return Response(content="{type: error, message:'oh hell nah'")
 
 
 if __name__ == "__main__":
