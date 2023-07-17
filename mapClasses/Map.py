@@ -12,6 +12,7 @@ from generators.buildingGenerator import *
 from generators.hillGenerator import *
 from generators.pathGenerator import *
 from generators.plantGenerator import *
+from generators.townMapGenerator import draw_town_map, generate_town_map
 from generators.waterGenerator import *
 from mapClasses import Chunk
 
@@ -30,7 +31,8 @@ class Map:
                  make_height_map: bool = False,
                  themed_towns: bool = True,
                  terrain_chaos: int = 4,
-                 max_height: int = 6) -> None:
+                 max_height: int = 6,
+                 town_map: str = None) -> None:
 
         self.chunk_size: int = chunk_size
         self.chunk_nb_h: int = chunk_nb_h
@@ -48,8 +50,8 @@ class Map:
         off_x, off_y = random.randint(0, 10000000), random.randint(0, 10000000)
         self.height_map: list[list[int]] = generate_height_map(self.chunk_size * self.chunk_nb_h,
                                                                self.chunk_size * self.chunk_nb_v, self.max_height,
-                                                               off_x, off_y,
-                                                               additional_noise_maps=0, island=island,
+                                                               off_x, off_y, self.chunk_size,
+                                                               additional_noise_maps=1, island=island,
                                                                terrain_chaos=terrain_chaos)
         # self.height_map = generate_height_map_from_image("heightMaps/earthLandMassHeight.png")
         smooth_height(self)
@@ -61,6 +63,10 @@ class Map:
         self.sea_tiles: set[tuple[int, int]] = set()
         self.path_tiles: set[Coordinate] = set()
         self.beach_tiles: set[tuple[int, int]] = set()
+        self.towns: set[Coordinate] = set()
+        self.route_chunks: set[Coordinate] = set()
+        self.town_map: str = town_map
+        self.town_map_img: Image = None
 
     def __iter__(self) -> Iterator[Chunk]:
         for chunk_row in self.chunks:
@@ -86,11 +92,17 @@ class Map:
                     if not self.draw_height_map:
                         create_edges(current_chunk, hill_type=0)
                         # create_rivers(current_chunk, self.lake_tiles)
-                        if self.max_buildings > 0 and random.randint(0, 2) <= 1:
+                        if self.max_buildings > 0 and current_chunk.can_have_town and random.randint(0, 1) <= 2:
                             path_type = random.randint(0, 7)
                             current_chunk.has_town = True
                             valid_town = spawn_functional_buildings(self, current_chunk, path_type)
                             if valid_town:
+                                self.towns.add(Coordinate(x, y))
+                                for (cx, cy) in Coordinate(x, y).around():
+                                    try:
+                                        self.chunks[cy][cx].can_have_town = False
+                                    except IndexError:
+                                        pass
                                 if self.themed_towns:
                                     building_theme: BuildingTheme = BuildingThemes.get_random_theme().value
                                 for b in range(random.randint(1, self.max_buildings)):
@@ -119,9 +131,12 @@ class Map:
                         current_chunk = self.chunks[y][x]
                         create_rivers(current_chunk, self.lake_tiles, water_threshold, no_sprite=True)
                         spawn_pokemons(current_chunk)
-                        create_trees(current_chunk, 0.55)
-                        grow_grass(current_chunk, 0.6)
+                        create_trees(current_chunk, 0.55, self.max_height)
+                        grow_grass(current_chunk, 0.6, self.max_height)
                         chunk_bar()
+
+        if self.town_map:
+            self.town_map_img = generate_town_map(self)
 
     def get_chunk(self, x: int, y: int) -> Optional[Chunk]:
         try:

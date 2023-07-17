@@ -6,13 +6,15 @@ from sys import maxsize
 def make_parser() -> ArgumentParser:
     """Make the ArgParser object."""
     parser = ArgumentParser(
-        description='Landscape generator using the tileset of pokemon fire red')
+        prog='randemonMain.py',
+        description='Landscape generator using the tile set of pokemon fire red'
+    )
 
     parser.add_argument(
         '--chunk-size',
         dest='chunk_size',
         type=int,
-        default=50,
+        default=40,
         help='The number of tiles a chunk consists of.')
 
     parser.add_argument(
@@ -30,13 +32,13 @@ def make_parser() -> ArgumentParser:
         help='The number of chunks vertically.')
 
     parser.add_argument(
-        '--s',
+        '--save',
         dest='save_opt',
         action='store_true',
         help='Save generated image.')
 
     parser.add_argument(
-        '--seed',
+        '-s', '--seed',
         dest='seed',
         type=int,
         default=random.randint(0, maxsize),
@@ -46,7 +48,7 @@ def make_parser() -> ArgumentParser:
         '--max-height',
         dest='max_height',
         type=int,
-        default=6,
+        default=4,
         help='Maximal height of a hill')
 
     parser.add_argument(
@@ -100,6 +102,24 @@ def make_parser() -> ArgumentParser:
         type=str,
         default="saved_images",
         help='Choose a directory where the generated image should be saved. Has to be an existing directory.'
+    )
+
+    parser.add_argument(
+        '-t', '--town-map',
+        dest='town_map',
+        choices=['TOPLEFT', 'TOPRIGHT', 'BOTTOMLEFT', 'BOTTOMRIGHT'],
+        nargs='?',
+        const='TOPLEFT',
+        help='Render the town map on top of the regular map.'
+    )
+
+    parser.add_argument(
+        '--scale',
+        dest='scale',
+        choices=[1, 2, 4, 8, 16],
+        nargs='+',
+        help='Choose the scale at which the town map is shown on top of the regular map. Only useful when the -t '
+             'argument is set.'
     )
 
     return parser

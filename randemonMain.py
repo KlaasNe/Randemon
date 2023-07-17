@@ -1,5 +1,5 @@
-import io
 import os
+import io
 import random
 import time
 from datetime import datetime
@@ -20,6 +20,7 @@ app = FastAPI(
 )
 
 origins = [
+    "http://localhost:8000",
     "http://localhost:63342",
     "http://localhost:63343",
     "https://klaasne.github.io"
@@ -35,6 +36,7 @@ app.add_middleware(
 
 
 def main(api_request=False, **kwargs):
+    town_map_scale = 8
     if api_request:
         my_map = Map(
             kwargs.get("nb_chunks_horizontal"),
@@ -46,8 +48,10 @@ def main(api_request=False, **kwargs):
             themed_towns=kwargs.get("themed_towns"),
             seed=kwargs.get("seed"),
             terrain_chaos=4,
-            max_height=6
+            max_height=6,
+            town_map=kwargs.get("town_map"),
         )
+        town_map_scale = kwargs.get("scale")
     else:
         parser = inputs.make_parser()
         args = parser.parse_args()
@@ -65,14 +69,21 @@ def main(api_request=False, **kwargs):
             themed_towns=args.themed_towns_opt,
             seed=args.seed,
             terrain_chaos=args.terrain_chaos,
-            max_height=args.max_height
+            max_height=args.max_height,
+            town_map=args.town_map,
         )
+        if args.scale:
+            town_map_scale = args.scale
     my_map.create()
     r = Render()
     r.render(my_map)
+    if my_map.town_map:
+        r.paste_town_map(my_map, scale=town_map_scale)
+
     if api_request:
         return r.visual
     else:
+        print(Fore.LIGHTBLACK_EX + f"Total generation time={str(time.time() - t)}s" + Style.RESET_ALL)
         if not args.no_show_opt:
             r.show()
         if args.save_opt:
@@ -90,24 +101,31 @@ async def root(seed: int = None,
                nb_chunks_vertical: int = 4,
                chunk_size: int = 50,
                max_buildings: int = 16,
-               themed_towns: bool = True):
-    if seed is None:
-        seed = random.randint(0, maxsize)
-    img = main(
-        api_request=True,
-        seed=seed,
-        height_map=height_map,
-        island=island,
-        nb_chunks_horizontal=nb_chunks_horizontal,
-        nb_chunks_vertical=nb_chunks_vertical,
-        chunk_size=chunk_size,
-        max_buildings=max_buildings,
-        themed_towns=themed_towns
-    )
-    img_io = io.BytesIO()
-    img.save(img_io, 'PNG')
-    img_io.seek(0)
-    return Response(content=img_io.getvalue(), media_type="image/png")
+               themed_towns: bool = True,
+               town_map: str = None,
+               scale: int = 8):
+    if 0 < nb_chunks_vertical <= 16 and 0 < nb_chunks_horizontal <= 16 and 15 < chunk_size <= 256:
+        if seed is None:
+            seed = random.randint(0, maxsize)
+        img = main(
+            api_request=True,
+            seed=seed,
+            height_map=height_map,
+            island=island,
+            nb_chunks_horizontal=nb_chunks_horizontal,
+            nb_chunks_vertical=nb_chunks_vertical,
+            chunk_size=chunk_size,
+            max_buildings=max_buildings,
+            themed_towns=themed_towns,
+            town_map=town_map,
+            scale=scale,
+        )
+        img_io = io.BytesIO()
+        img.save(img_io, 'PNG')
+        img_io.seek(0)
+        return Response(content=img_io.getvalue(), media_type="image/png")
+    else:
+        return Response(content="{type: error, message:'oh hell nah'")
 
 
 if __name__ == "__main__":
