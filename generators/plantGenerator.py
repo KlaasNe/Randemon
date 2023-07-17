@@ -17,11 +17,11 @@ freq3 = 100
 # Checks if enough space is available to plant a tree
 # No trees above the highest path height
 # Adds an overlay to decoration_layer if the top of the tree overlaps with another tree
-def create_trees(chunk: Chunk, spawn_rate):
+def create_trees(chunk: Chunk, spawn_rate, max_height):
     double = False
     for y in range(chunk.size):
         for x in range(chunk.size):
-            if chunk.get_height_exact(x, y) > 0.75:
+            if max_height > chunk.get_height_exact(x, y) > 0.75:
                 # if chunk.tile_heights.get((x, y), -1) <= chunk.highest_path:
                 if not chunk.has_tile_in_layer_at("GROUND0", x, y) and not chunk.has_tile_in_layer_at("BUILDINGS", x, y) and not chunk.has_tile_in_layer_at("HILLS", x, y) \
                         and not chunk.has_tile_in_layer_at("GROUND1", x, y - 1) \
@@ -59,17 +59,22 @@ def tree_formula(chunk, x, y):
 
 # The whole map is filled with random green tiles
 # Tall gras and flowers are spawned with a perlin noise field
-def grow_grass(chunk, coverage):
+def grow_grass(chunk, coverage, max_height):
     octaves = 2
     freq = 10 * octaves
     for y in range(chunk.size):
         for x in range(chunk.size):
             if not chunk.has_tile_in_layer_at("GROUND0", x, y):
                 sne_prob = abs(snoise2((x + chunk.off_x) / freq, (y + chunk.off_y) / freq, octaves))
-                if not chunk.has_town:
+                tile_height = chunk.get_height(x, y)
+                if tile_height <= max_height:
                     tile = random_tall_grass() if sne_prob >= 1 - coverage else random_grass()
                 else:
-                    tile = random_grass()
+                    hill_tile = chunk.get_tile("HILLS", x, y)
+                    if hill_tile and tile_height == max_height + 1 and hill_tile != Tile("HILLS", 3, 0):
+                        tile = random_grass()
+                    else:
+                        tile = Tile("HILLS", 0, 0)
                 chunk.set_tile("GROUND0", x, y, tile)
 
 

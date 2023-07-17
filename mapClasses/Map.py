@@ -31,7 +31,8 @@ class Map:
                  make_height_map: bool = False,
                  themed_towns: bool = True,
                  terrain_chaos: int = 4,
-                 max_height: int = 6) -> None:
+                 max_height: int = 6,
+                 town_map: str = None) -> None:
 
         self.chunk_size: int = chunk_size
         self.chunk_nb_h: int = chunk_nb_h
@@ -64,6 +65,8 @@ class Map:
         self.beach_tiles: set[tuple[int, int]] = set()
         self.towns: set[Coordinate] = set()
         self.route_chunks: set[Coordinate] = set()
+        self.town_map: str = town_map
+        self.town_map_img: Image = None
 
     def __iter__(self) -> Iterator[Chunk]:
         for chunk_row in self.chunks:
@@ -78,7 +81,7 @@ class Map:
             for y in range(self.chunk_nb_v):
                 for x in range(self.chunk_nb_h):
                     current_chunk = self.chunks[y][x]
-                    remove_faulty_heights(current_chunk, force=False)  # TODO fix this function
+                    remove_faulty_heights(current_chunk, force=True)
                     faulty_heights_bar()
         # create_lakes_and_sea(self) TODO fix this
         self.beach_tiles = create_beach(self, max_beach_inland_depth, water_threshold)
@@ -128,11 +131,12 @@ class Map:
                         current_chunk = self.chunks[y][x]
                         create_rivers(current_chunk, self.lake_tiles, water_threshold, no_sprite=True)
                         spawn_pokemons(current_chunk)
-                        create_trees(current_chunk, 0.55)
-                        grow_grass(current_chunk, 0.6)
+                        create_trees(current_chunk, 0.55, self.max_height)
+                        grow_grass(current_chunk, 0.6, self.max_height)
                         chunk_bar()
 
-        generate_town_map(self, 5)
+        if self.town_map:
+            self.town_map_img = generate_town_map(self)
 
     def get_chunk(self, x: int, y: int) -> Optional[Chunk]:
         try:

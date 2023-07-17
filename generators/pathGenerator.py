@@ -126,7 +126,7 @@ def draw_path2(rmap: Map, chunk: Chunk, path_type: int):
         for wy in range(chunk.size):
             weights_row = []
             for wx in range(chunk.size):
-                weights_row.append(WeightTile(wx, wy, determine_weight(chunk, wx, wy)))
+                weights_row.append(WeightTile(wx, wy, determine_weight(chunk, wx, wy, rmap.max_height)))
             weights_array.append(weights_row)
         return weights_array
 
@@ -218,7 +218,7 @@ def draw_path2(rmap: Map, chunk: Chunk, path_type: int):
     create_lanterns(chunk)
 
 
-def determine_weight(chunk: Chunk, x, y, avoid_hill_corners=True):
+def determine_weight(chunk: Chunk, x, y, max_height, avoid_hill_corners=True):
     def is_2x2_tile_type(layer, x, y, tile_type):
         return any((chunk.get_tile_type(layer, x, y) == tile_type,
                     chunk.get_tile_type(layer, x - 1, y) == tile_type,
@@ -233,6 +233,7 @@ def determine_weight(chunk: Chunk, x, y, avoid_hill_corners=True):
     if chunk.out_of_bounds(x - 1, y) or chunk.out_of_bounds(x, y - 1): return TileWeights.IMPASSABLE.value
     if any((chunk.has_tile_at(x, y), chunk.has_tile_at(x - 1, y), chunk.has_tile_at(x, y - 1),
             chunk.has_tile_at(x - 1, y - 1))):
+        if chunk.get_height(x, y) > max_height: return TileWeights.IMPASSABLE.value
         if is_2x2_tile_type("BUILDINGS", x, y, "BUILDINGS"): return TileWeights.IMPASSABLE.value
         if is_2x2_tile_type("FENCE", x, y, "FENCE"): return TileWeights.IMPASSABLE.value
         if avoid_hill_corners and any((is_corner(x, y), is_corner(x - 1, y), is_corner(x, y - 1),

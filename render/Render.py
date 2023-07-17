@@ -51,6 +51,24 @@ class Render:
                 y *= Render.TILE_SIZE
                 self.draw_tile(tile, x, y)
 
+    def paste_town_map(self, map_obj: Map, scale: int = 8):
+        town_map: Image = map_obj.town_map_img
+        w, h = town_map.size
+        nw, nh = w * scale, h * scale
+        town_map = town_map.resize((nw, nh), 0)
+
+        self_img_w, self_img_h = self.visual.size
+        pos = map_obj.town_map
+        if pos == 'TOPLEFT':
+            self.visual.paste(town_map, (0, 0, nw, nh))
+        elif pos == 'TOPRIGHT':
+            self.visual.paste(town_map, (self_img_w - nw, 0, self_img_w, nh))
+        elif pos == 'BOTTOMLEFT':
+            self.visual.paste(town_map, (0, self_img_h - nh, nw, self_img_h))
+        elif pos == 'BOTTOMRIGHT':
+            self.visual.paste(town_map, (self_img_w - nw, self_img_h - nh, self_img_w, self_img_h))
+
+
     # def render_npc(self, layer):
     #     sheet_writer = SpriteSheetWriter(Image.open(os.path.join("resources", "npc.png")), 20, 23)
     #     for tile_x, tile_y in layer.get_ex_pos():
@@ -73,7 +91,7 @@ class Render:
                            Fore.LIGHTYELLOW_EX + img_name + Style.RESET_ALL))
 
     def save_prompt(self, seed: Union[int, str] = "", directory: str = "saved_images") -> None:
-        save = input('\n' + Fore.LIGHTBLUE_EX + "Save this image? (y/n/w): " + Style.RESET_ALL)
+        save = input('\n' + Fore.LIGHTBLUE_EX + "Save this image? (y/[n]/w): " + Style.RESET_ALL)
         file_n = "{}_{}".format(datetime.now().strftime("%G-%m-%d_%H-%M-%S"), str(seed))
         if save == "y" or save == "w":
             if not os.path.isdir(directory):
