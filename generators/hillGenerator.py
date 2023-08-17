@@ -10,19 +10,22 @@ def create_edges(chunk, hill_type=0):
 
 def remove_faulty_heights(chunk, force=False):
     smooth = False
-    ignore_list = set()
+    warning_set = set()
+    ignored_set = set()
     while not smooth:
         smooth = True
         for y in range(chunk.size):
             for x in range(chunk.size):
-                if chunk.get_height(x, y) > 0:
-                    curr_surrounding = get_surrounding_tiles(chunk, x, y)
-                    height_change = get_tile_from_surrounding(curr_surrounding, FaultyHillTiles)
-                    if (x, y) not in ignore_list and height_change is not None:
-                        chunk.change_height(x, y, height_change)
-                        ignore_list.add((x, y))
-                        if force:
-                            smooth = False
+                curr_surrounding = get_surrounding_tiles(chunk, x, y)
+                height_change = get_tile_from_surrounding(curr_surrounding, FaultyHillTiles)
+                if (x, y) not in ignored_set and height_change is not None:
+                    chunk.change_height(x, y, height_change)
+                    if (x, y) in warning_set:
+                        ignored_set.add((x, y))
+                    else:
+                        warning_set.add((x, y))
+                    if force:
+                        smooth = False
 
 
 def create_hill_edges(chunk, hill_type):

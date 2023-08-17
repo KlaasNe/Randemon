@@ -25,19 +25,6 @@ def generate_height_map(size_h, size_v, max_height, off_x, off_y, chunk_size, te
 
 def get_height(max_height: int, x: int, y: int, static_offset_array, size_h: int, size_v: int, chunk_size,
                octaves: int = 4, freq: int = 150, island=False):
-    def plateau(px: float, py: float, tau: float, height: int, n: float):
-        """
-        MADE BY HELENA
-
-        geeft de hoogte van een cirkel vormig plateau op (x,y)
-        het plateau is van hoogte hoogte
-        is nul op r = sqrt(x²+y²) = nulpunt
-        tau bepaald hoe scherp de randen van het plateau zijn: hoe kleiner tau hoe scherper
-        tau en nulpunt horen altijd groter dan 0 te zijn
-        het centrum licht op (0,0)
-        """
-        r = max(abs(px), abs(py))
-        return height * (1 - pow(2.71, -(r + n) / tau)) * (1 - pow(2.71, (r - n) / tau))
 
     if island and (x == 0 or y == 0 or x == size_h - 1 or y == size_v - 1):
         return -1
@@ -60,6 +47,21 @@ def get_height(max_height: int, x: int, y: int, static_offset_array, size_h: int
     else:
         elevation = noise + 0.45
         return elevation * max_height
+
+
+def plateau(px: float, py: float, tau: float, height: int, n: float):
+    """
+    MADE BY HELENA
+
+    geeft de hoogte van een cirkel vormig plateau op (x,y)
+    het plateau is van hoogte hoogte
+    is nul op r = sqrt(x²+y²) = nulpunt
+    tau bepaald hoe scherp de randen van het plateau zijn: hoe kleiner tau hoe scherper
+    tau en nulpunt horen altijd groter dan 0 te zijn
+    het centrum licht op (0,0)
+    """
+    r = max(abs(px), abs(py))
+    return height * (1 - pow(2.71, -(r + n) / tau)) * (1 - pow(2.71, (r - n) / tau))
 
 
 def generate_height_map_from_image(img_path):

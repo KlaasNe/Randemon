@@ -104,7 +104,7 @@ async def root(seed: int = None,
                themed_towns: bool = True,
                town_map: str = None,
                scale: int = 8):
-    if 0 < nb_chunks_vertical <= 16 and 0 < nb_chunks_horizontal <= 16 and 15 < chunk_size <= 256:
+    if 0 < nb_chunks_vertical <= 12 and 0 < nb_chunks_horizontal <= 12 and 15 < chunk_size <= 256:
         if seed is None:
             seed = random.randint(0, maxsize)
         img = main(

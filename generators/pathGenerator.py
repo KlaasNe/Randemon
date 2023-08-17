@@ -240,10 +240,10 @@ def determine_weight(chunk: Chunk, x, y, max_height, avoid_hill_corners=True):
                                        is_corner(x - 1, y - 1))): return TileWeights.IMPASSABLE.value
         if is_2x2_tile_type("HILLS", x, y, "HILLS"): return TileWeights.HILL.value
         if is_2x2_tile_type("GROUND0", x, y, "WATER"): return TileWeights.WATER.value
-        if is_actual_path(chunk.layers["GROUND0"], x - 1, y - 1) and \
+        if is_actual_path(chunk.layers["GROUND0"], x, y) and \
+                is_actual_path(chunk.layers["GROUND0"], x - 1, y - 1) and \
                 is_actual_path(chunk.layers["GROUND0"], x - 1, y) and \
-                is_actual_path(chunk.layers["GROUND0"], x, y - 1) and \
-                is_actual_path(chunk.layers["GROUND0"], x, y):
+                is_actual_path(chunk.layers["GROUND0"], x, y - 1):
             return TileWeights.PATH.value
         if is_2x2_tile_type("GROUND0", x, y, "PATH"): return TileWeights.GRASS.value
     return TileWeights.GRASS.value if is_2x2_tile_type("GROUND0", x, y, None) else TileWeights.IMPASSABLE.value
