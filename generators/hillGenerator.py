@@ -1,6 +1,8 @@
 import random
+import re
 from enum import Enum
 
+from mapClasses.Coordinate import Coordinate
 from mapClasses.tile import Tile
 
 
@@ -43,8 +45,18 @@ def create_hill_edges(chunk, hill_type):
 
 
 def get_surrounding_tiles(chunk, x, y):
+    c = Coordinate(x, y)
     curr_h = chunk.get_height(x, y)
-    return [[chunk.get_height(hx, hy) - curr_h for hx in range(x - 1, x + 2)] for hy in range(y - 1, y + 2)]
+    surr_str = ""
+    for hx, hy in c.around():
+        surr_h = chunk.get_height(hx, hy)
+        if surr_h == curr_h:
+            surr_str += "0"
+        elif surr_h < curr_h:
+            surr_str += "l"
+        elif surr_h > curr_h:
+            surr_str += "h"
+    return surr_str
 
 
 def get_tile_from_surrounding(surrounding, tile_enum):
@@ -54,12 +66,7 @@ def get_tile_from_surrounding(surrounding, tile_enum):
 
 
 def equal_surrounding(template, arr):
-    if arr is not None:
-        for y in range(3):
-            for x in range(3):
-                if template[y][x] is not None and template[y][x] != arr[y][x]:
-                    return False
-    return True
+    return re.findall(template, arr)
 
 
 class HillTiles(Enum):
@@ -68,23 +75,37 @@ class HillTiles(Enum):
     def specific_tile(tile, tile_type):
         return Tile(tile.type, tile.x + tile_type * 5, tile.y)
 
-    A = [[None, None, None], [0, 0, None], [-1, 0, None]], Tile("HILLS", 0, 1)
-    B = [[None, None, None], [None, 0, 0], [None, 0, -1]], Tile("HILLS", 0, 2)
-    F = [[None, None, None], [0, 0, 0], [None, -1, None]], Tile("HILLS", 4, 0)
-    C1 = [[-1, 0, None], [0, 0, None], [None, None, None]], Tile("HILLS", 3, 0)
-    C2 = [[None, 0, -1], [None, 0, 0], [None, None, None]], Tile("HILLS", 3, 0)
-    E = [[None, 0, None], [-1, 0, None], [None, 0, None]], Tile("HILLS", 1, 0)
-    G = [[None, 0, None], [None, 0, -1], [None, 0, None]], Tile("HILLS", 2, 0)
-    H = [[None, -1, None], [0, 0, 0], [None, None, None]], Tile("HILLS", 3, 0)
-    I = [[None, -1, None], [-1, 0, 0], [None, 0, None]], Tile("HILLS", 1, 1)
-    J = [[None, 0, None], [-1, 0, 0], [None, -1, None]], Tile("HILLS", 3, 1)
-    K = [[None, 0, None], [0, 0, -1], [None, -1, None]], Tile("HILLS", 4, 1)
-    L = [[None, -1, None], [0, 0, -1], [None, 0, None]], Tile("HILLS", 2, 1)
+    # A = [[None, None, None], [0, 0, None], [-1, 0, None]], Tile("HILLS", 0, 1)
+    # B = [[None, None, None], [None, 0, 0], [None, 0, -1]], Tile("HILLS", 0, 2)
+    # F = [[None, None, None], [0, 0, 0], [None, -1, None]], Tile("HILLS", 4, 0)
+    # C1 = [[-1, 0, None], [0, 0, None], [None, None, None]], Tile("HILLS", 3, 0)
+    # C2 = [[None, 0, -1], [None, 0, 0], [None, None, None]], Tile("HILLS", 3, 0)
+    # E = [[None, 0, None], [-1, 0, None], [None, 0, None]], Tile("HILLS", 1, 0)
+    # G = [[None, 0, None], [None, 0, -1], [None, 0, None]], Tile("HILLS", 2, 0)
+    # H = [[None, -1, None], [0, 0, 0], [None, None, None]], Tile("HILLS", 3, 0)
+    # I = [[None, -1, None], [-1, 0, 0], [None, 0, None]], Tile("HILLS", 1, 1)
+    # J = [[None, 0, None], [-1, 0, 0], [None, -1, None]], Tile("HILLS", 3, 1)
+    # K = [[None, 0, None], [0, 0, -1], [None, -1, None]], Tile("HILLS", 4, 1)
+    # L = [[None, -1, None], [0, 0, -1], [None, 0, None]], Tile("HILLS", 2, 1)
+
+    NA = "^0{9}$", None
+    INSIDE_CORNER_LEFT_DOWN = "^.{3}00.l0.$", Tile("HILLS", 0, 1)
+    INSIDE_CORNER_RIGHT_DOWN = "^.{4}00.0l$", Tile("HILLS", 0, 2)
+    STRAIGHT_HORIZONTAL_FRONT = "^.{3}0{3}.l.$", Tile("HILLS", 4, 0)
+    INSIDE_CORNER_LEFT_UP = "^l0.00.{4}$", Tile("HILLS", 3, 0)
+    INSIDE_CORNER_RIGHT_UP = "^.0l.00.{3}$", Tile("HILLS", 3, 0)
+    STRAIGHT_VERTICAL_LEFT = "^.0.l0..0.$", Tile("HILLS", 1, 0)
+    STRAIGHT_VERTICAL_RIGHT = "^.0..0l.0.$", Tile("HILLS", 2, 0)
+    STRAIGHT_HORIZONTAL_BACK = "^.l.0{3}.{3}$", Tile("HILLS", 3, 0)
+    CORNER_LEFT_UP = "^.l.l00.0.$", Tile("HILLS", 1, 1)
+    CORNER_LEFT_DOWN = "^.0.l00.l.$", Tile("HILLS", 3, 1)
+    CORNER_RIGHT_DOWN = "^.0.00l.l.$", Tile("HILLS", 4, 1)
+    CORNER_RIGHT_UP = "^.l.00l.0.$", Tile("HILLS", 2, 1)
 
 
 class FaultyHillTiles(Enum):
-
-    X1 = [[None, -1, None], [None, 0, None], [None, -1, None]], -1
-    X2 = [[None, 1, None], [None, 0, None], [None, 1, None]], 1
-    X3 = [[None, None, None], [-1, 0, -1], [None, None, None]], -1
-    X4 = [[None, None, None], [1, 0, 1], [None, None, None]], 1
+    ...
+    # X1 = [[None, -1, None], [None, 0, None], [None, -1, None]], -1
+    # X2 = [[None, 1, None], [None, 0, None], [None, 1, None]], 1
+    # X3 = [[None, None, None], [-1, 0, -1], [None, None, None]], -1
+    # X4 = [[None, None, None], [1, 0, 1], [None, None, None]], 1

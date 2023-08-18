@@ -34,7 +34,7 @@ class Map:
                  terrain_chaos: int = 4,
                  max_height: int = 6,
                  town_map: str = None,
-                 style: str = "squareDiamond") -> None:
+                 style: str = "simplex") -> None:
 
         self.chunk_size: int = chunk_size
         self.chunk_nb_h: int = chunk_nb_h
@@ -62,8 +62,8 @@ class Map:
             self.height_map: list[list[int]] = ds.diamond_square(
                 shape=(self.size_h, self.size_v),
                 min_height=-max_height,
-                max_height=max_height,
-                roughness=0.55,
+                max_height=max_height*2,
+                roughness=0.45,
                 random_seed=seed
             )
             for y in range(self.chunk_size * self.chunk_nb_v):
