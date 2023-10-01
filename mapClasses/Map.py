@@ -34,7 +34,7 @@ class Map:
                  terrain_chaos: int = 4,
                  max_height: int = 6,
                  town_map: str = None,
-                 style: str = "squareDiamond") -> None:
+                 style: str = "simplex") -> None:
 
         self.chunk_size: int = chunk_size
         self.chunk_nb_h: int = chunk_nb_h
@@ -55,7 +55,7 @@ class Map:
                 self.size_h,
                 self.size_v, self.max_height,
                 off_x, off_y, self.chunk_size,
-                additional_noise_maps=1, island=island,
+                additional_noise_maps=0, island=island,
                 terrain_chaos=terrain_chaos
                 )
         elif style == "squareDiamond":

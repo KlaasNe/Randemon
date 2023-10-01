@@ -92,7 +92,7 @@ def make_parser() -> ArgumentParser:
         '--terrain-chaos',
         dest='terrain_chaos',
         type=int,
-        default=4,
+        default=6,
         help='Determine the chaos in the terrain generation process. A higher value means more chaos. Default is 4.'
     )
 

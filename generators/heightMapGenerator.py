@@ -24,7 +24,7 @@ def generate_height_map(size_h, size_v, max_height, off_x, off_y, chunk_size, te
 
 
 def get_height(max_height: int, x: int, y: int, static_offset_array, size_h: int, size_v: int, chunk_size,
-               octaves: int = 4, freq: int = 150, island=False):
+               octaves: int = 6, freq: int = 150, island=False):
 
     if island and (x == 0 or y == 0 or x == size_h - 1 or y == size_v - 1):
         return -1
@@ -36,7 +36,7 @@ def get_height(max_height: int, x: int, y: int, static_offset_array, size_h: int
         noise += snoise2(
             (off_x + x) / (freq * tuple_count),
             (off_y + y) / (freq * tuple_count),
-            octaves) / tuple_count
+            octaves, persistence=0.5, lacunarity=1.6) / tuple_count
         tuple_count += 1
     # if total_noise_maps > 1:
     #     noise /= sum(1 / i for i in range(1, total_noise_maps + 1))

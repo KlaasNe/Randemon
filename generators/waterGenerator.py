@@ -111,7 +111,7 @@ class WaterTiles(Enum):
     default = "aaa\naaa\naaa", Tile("WATER", 0, 0)
 
 
-# Creates sandy path around rivers; inside a perlin noise field
+# Creates sandy path around rivers; inside a simplex noise field
 def create_beach(rmap: Map, max_inland_size: int, threshold: int) -> set[tuple[int, int]]:
     def check_for_water_around(x0: int, y0: int, radius: int) -> bool:
         for check_y in range(y0 - radius, y0 + radius + 1):
@@ -138,7 +138,7 @@ def create_beach(rmap: Map, max_inland_size: int, threshold: int) -> set[tuple[i
         for x, y in new_beach_tiles.difference(beach_tiles):
             if round(rmap.get_height_map_pos(x, y)) == 1:
                 chunk, cx, cy = rmap.parse_to_coordinate_in_chunk(x, y)
-                if chunk["GROUND0"][(cx, cy)] is None and (i == 0 or chunk.get_height_exact(cx, cy) < 0.75):  # i == 0 to prevent buggy path tiles so beach depth will always be at least 2
+                if chunk["GROUND0"][(cx, cy)] is None and (i == 0 or chunk.get_height_exact(cx, cy) < 0.8):  # i == 0 to prevent buggy path tiles so beach inland depth will always be at least 2
                     chunk["GROUND0"][(cx, cy)] = Tile("PATH", 0, 9)
                     rmap.path_tiles.add(Coordinate(x, y))
                     i_distance_beach_tiles.update({(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1), (x - 1, y - 1), (x - 1, y + 1), (x + 1, y - 1), (x + 1, y + 1)})
