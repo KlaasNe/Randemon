@@ -2,6 +2,7 @@ from enum import Enum
 from random import shuffle
 
 from alive_progress import alive_bar
+from noise import snoise2
 
 from mapClasses import Map
 from mapClasses.Coordinate import Coordinate
@@ -305,6 +306,20 @@ def create_stairs(chunk, pl, bl):
                     elif chunk.get_height(px, py) > chunk.get_height(px + 1, py):
                         bl[px, py] = Tile("ROAD", 5, 0)
                         bl[px, py + 1] = Tile("ROAD", 5, 1)
+
+
+def create_dirt_patches(rmap: Map, off_x, off_y, threshold=0.15):
+    freq = 40
+    octaves = 2
+    for y in range(rmap.size_v):
+        for x in range(rmap.size_h):
+            if rmap.max_height > rmap.height_map[y][x] > 2:
+                noise = abs(snoise2((off_x + x) / freq, (off_y + y) / freq, octaves))
+                if noise < threshold:
+                    chunk, cx, cy = rmap.parse_to_coordinate_in_chunk(x, y)
+                    if not chunk.has_town:
+                        chunk.set_tile("GROUND0", cx, cy, Tile("PATH", 0, 6))
+                        rmap.path_tiles.add(Coordinate(x, y))
 
 
 def create_lanterns(chunk: Chunk):

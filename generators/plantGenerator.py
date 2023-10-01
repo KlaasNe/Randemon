@@ -60,8 +60,12 @@ def grow_grass(chunk, coverage, max_height):
             if not chunk.has_tile_in_layer_at("GROUND0", x, y):
                 sne_prob = abs(snoise2((x + chunk.off_x) / freq, (y + chunk.off_y) / freq, octaves))
                 tile_height = chunk.get_height(x, y)
-                if tile_height <= max_height and not chunk.has_tile_in_layer_at("FENCE", x, y):
-                    tile = random_tall_grass() if sne_prob >= 1 - coverage else random_grass()
+                tile = None
+                if tile_height <= max_height:
+                    if sne_prob >= 1 - coverage and not chunk.has_tile_in_layer_at("FENCE", x, y):
+                        tile = random_tall_grass()
+                    else:
+                        tile = random_grass()
                 else:
                     hill_tile = chunk.get_tile("HILLS", x, y)
                     if hill_tile and tile_height == max_height + 1 and hill_tile != Tile("HILLS", 3, 0):

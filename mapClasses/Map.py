@@ -49,12 +49,12 @@ class Map:
         random.seed(self.seed)
         print(Fore.LIGHTBLUE_EX + "seed = " + Fore.LIGHTYELLOW_EX + str(self.seed) + Style.RESET_ALL)
         print("Creating terrain...")
-        off_x, off_y = random.randint(0, 10000000), random.randint(0, 10000000)
+        self.off_x, self.off_y = random.randint(0, 10000000), random.randint(0, 10000000)
         if style == "simplex":
             self.height_map: list[list[int]] = generate_height_map(
                 self.size_h,
                 self.size_v, self.max_height,
-                off_x, off_y, self.chunk_size,
+                self.off_x, self.off_y, self.chunk_size,
                 additional_noise_maps=0, island=island,
                 terrain_chaos=terrain_chaos
                 )
@@ -74,7 +74,7 @@ class Map:
         # self.height_map = generate_height_map_from_image("heightMaps/earthLandMassHeight.png")
         smooth_height(self)
         self.chunks: list[list[Chunk]] = [
-            [Chunk(self.height_map, chunk_size, x, y, off_x + x * self.chunk_size, off_y + y * self.chunk_size) for x in
+            [Chunk(self.height_map, chunk_size, x, y, self.off_x + x * self.chunk_size, self.off_y + y * self.chunk_size) for x in
              range(chunk_nb_h)] for y in range(chunk_nb_v)]
         self.water_tiles: set[tuple[int, int]] = set()
         self.lake_tiles: set[tuple[int, int]] = set()
@@ -146,6 +146,7 @@ class Map:
                     chunk_bar()
 
         if not self.draw_height_map:
+            create_dirt_patches(self, self.off_x, self.off_y)
             create_path(self)
 
             with alive_bar(self.chunk_nb_v * self.chunk_nb_h,
