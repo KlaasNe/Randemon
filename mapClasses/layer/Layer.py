@@ -1,3 +1,4 @@
+import json
 from typing import Optional, Iterator
 
 from mapClasses.tile import Tile
@@ -40,3 +41,7 @@ class Layer:
 
     def clear(self) -> None:
         self.tiles.clear()
+
+    def to_json(self):
+        return {"tiles": [{"pos": {"x": pos[0], "y": pos[1]}, "tile": tile.to_json()} for pos, tile in self.tiles.items()]}
+

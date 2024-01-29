@@ -42,8 +42,7 @@ def get_height(max_height: int, x: int, y: int, static_offset_array, size_h: int
     #     noise /= sum(1 / i for i in range(1, total_noise_maps + 1))
     if island:
         # print(noise*max_height)
-        return (noise * (max_height + 2)) + plateau((x - (size_h // 2)) / (size_h / 2), (y - (size_v // 2)) / (size_v / 2),
-                                              0.15, 1, 0.5)  # GEEN 0 invullen op height plateau!!!
+        return (noise * (max_height + 2)) + plateau((x - (size_h // 2)) / (size_h / 2), (y - (size_v // 2)) / (size_v / 2),0.15, 1, 0.5)  # GEEN 0 invullen op height plateau!!!
     else:
         elevation = noise + 0.45
         return elevation * max_height

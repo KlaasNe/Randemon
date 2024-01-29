@@ -222,3 +222,6 @@ fabric.properties
 .idea/
 
 temp/
+
+map.json
+recreate.json

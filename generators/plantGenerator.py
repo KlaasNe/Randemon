@@ -6,6 +6,7 @@ from mapClasses.chunk import Chunk
 from mapClasses.tile import Tile
 
 
+HIDDEN_ITEM_ODDS = {Tile("NATURE", 1, 4): 0.8, Tile("NATURE", 5, 2): 0.19, Tile("NATURE", 5, 3): 0.01}
 octaves1 = 3
 freq1 = 40
 
@@ -62,7 +63,7 @@ def grow_grass(chunk, coverage, max_height):
                 tile_height = chunk.get_height(x, y)
                 tile = None
                 if tile_height <= max_height:
-                    if sne_prob >= 1 - coverage and not chunk.has_tile_in_layer_at("FENCE", x, y):
+                    if not chunk.has_town and (sne_prob >= 1 - coverage and not (x, y) in chunk.hill_tiles) and not chunk.has_tile_in_layer_at("FENCE", x, y):
                         tile = random_tall_grass()
                     else:
                         tile = random_grass()
@@ -85,8 +86,8 @@ def random_tall_grass():
     if sne_type == 1 and random.random() < 0.85:
         return Tile("NATURE", 1, 0)
     # Turn 0.5 percent of the tall grass into tall grass with a hidden item
-    elif sne_type == 0 and random.random() < 0.005:
-        return Tile("NATURE", 1, 4)
+    elif random.random() < 0.01:
+        return random.choices(list(HIDDEN_ITEM_ODDS.keys()), weights=list(HIDDEN_ITEM_ODDS.values()))[0]
     return Tile("NATURE", 1, sne_type)
 
 

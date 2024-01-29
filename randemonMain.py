@@ -37,6 +37,7 @@ app.add_middleware(
 
 def main(api_request=False, **kwargs):
     town_map_scale = 8
+    my_map = None
     if api_request:
         my_map = Map(
             kwargs.get("nb_chunks_horizontal"),
@@ -74,7 +75,11 @@ def main(api_request=False, **kwargs):
         )
         if args.scale:
             town_map_scale = args.scale
+
     my_map.create()
+
+    with open("map.json", "w+") as file:
+        file.write(my_map.to_json())
     r = Render()
     r.render(my_map)
     if my_map.town_map:

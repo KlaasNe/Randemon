@@ -1,7 +1,6 @@
 from enum import Enum
 from random import shuffle
 
-from alive_progress import alive_bar
 from noise import snoise2
 
 from mapClasses import Map
@@ -42,12 +41,10 @@ def update_path(rmap: Map, coordinates: set[tuple[int, int]], separated):
 
 
 def create_path(rmap: Map, separated: bool = True) -> None:
-    with alive_bar(len(rmap.path_tiles), title="Creating path", theme="classic") as path_bar:
-        path_tiles = rmap.path_tiles.copy()
-        for coordinate in path_tiles:
-            if not draw_path_tile(rmap, coordinate.x, coordinate.y, separated):
-                update_path(rmap, set(coordinate.around()), separated)
-            path_bar()
+    path_tiles = rmap.path_tiles.copy()
+    for coordinate in path_tiles:
+        if not draw_path_tile(rmap, coordinate.x, coordinate.y, separated):
+            update_path(rmap, set(coordinate.around()), separated)
 
 
 def get_surrounding_tiles(rmap: Map, x: int, y: int, path_type: int, separated: bool) -> list[list]:
@@ -337,17 +334,17 @@ def create_lanterns(chunk: Chunk):
         for x in range(chunk.size):
             if random() < 0.08:
                 if chunk.get_tile_type("GROUND1", x, y) != "FENCES":
-                    if is_actual_path(chunk["GROUND0"], x - 1, y) and not chunk.has_tile_in_layer_at("BUILDINGS", x - 1,
-                                                                                                     y) and not chunk.has_tile_in_layer_at(
-                            "GROUND2", x - 1, y):
+                    if is_actual_path(chunk["GROUND0"], x - 1, y) \
+                            and not chunk.has_tile_in_layer_at("BUILDINGS", x - 1, y) \
+                            and not chunk.has_tile_in_layer_at("GROUND2", x - 1, y):
                         if check_availability_zone(x, y - 2, x + 2, y + 1):
                             chunk.set_tile("GROUND2", x, y, Tile("DECO", 4, 2))
                             chunk.set_tile("GROUND2", x, y - 1, Tile("DECO", 4, 1))
                             chunk.set_tile("GROUND2", x, y - 2, Tile("DECO", 4, 0))
                             chunk.set_tile("GROUND2", x + 1, y, Tile("DECO", 5, 2))
-                    if is_actual_path(chunk["GROUND0"], x + 1, y) and not chunk.has_tile_in_layer_at("BUILDINGS", x + 1,
-                                                                                                     y) and not chunk.has_tile_in_layer_at(
-                            "GROUND2", x + 1, y):
+                    if is_actual_path(chunk["GROUND0"], x + 1, y) \
+                            and not chunk.has_tile_in_layer_at("BUILDINGS", x + 1, y) \
+                            and not chunk.has_tile_in_layer_at("GROUND2", x + 1, y):
                         if check_availability_zone(x, y - 2, x, y + 1):
                             chunk.set_tile("GROUND2", x, y, Tile("DECO", 3, 2))
                             chunk.set_tile("GROUND2", x, y - 1, Tile("DECO", 3, 1))

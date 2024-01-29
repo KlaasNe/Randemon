@@ -1,3 +1,5 @@
+import concurrent.futures
+import json
 from random import random
 
 from hkb_diamondsquare import DiamondSquare as ds
@@ -76,6 +78,7 @@ class Map:
         self.chunks: list[list[Chunk]] = [
             [Chunk(self.height_map, chunk_size, x, y, self.off_x + x * self.chunk_size, self.off_y + y * self.chunk_size) for x in
              range(chunk_nb_h)] for y in range(chunk_nb_v)]
+        remove_faulty_heights(self.height_map, force=True)
         self.water_tiles: set[tuple[int, int]] = set()
         self.lake_tiles: set[tuple[int, int]] = set()
         self.sea_tiles: set[tuple[int, int]] = set()
@@ -94,56 +97,18 @@ class Map:
     def create(self):
         water_threshold = 2
         max_beach_inland_depth = 16
-        with alive_bar(self.chunk_nb_v * self.chunk_nb_h, title="Removing faulty heights",
-                       theme="classic") as faulty_heights_bar:
-            for y in range(self.chunk_nb_v):
-                for x in range(self.chunk_nb_h):
-                    current_chunk = self.chunks[y][x]
-                    remove_faulty_heights(current_chunk, force=True)
-                    faulty_heights_bar()
         # create_lakes_and_sea(self) TODO fix this
         self.beach_tiles = create_beach(self, max_beach_inland_depth, water_threshold)
-        with alive_bar(self.chunk_nb_v * self.chunk_nb_h, title="Generating chunks", theme="classic") as chunk_bar:
-            powerplant = False
-            for y in range(self.chunk_nb_v):
-                for x in range(self.chunk_nb_h):
-                    current_chunk = self.chunks[y][x]
-                    if not self.draw_height_map:
-                        create_edges(current_chunk, hill_type=0)
-                        # create_rivers(current_chunk, self.lake_tiles)
-                        if self.max_buildings > 0 and current_chunk.can_have_town:
-                            path_type = random.randint(0, 7)
-                            if random.randint(0, 9) < 9:
-                                current_chunk.has_town = True
-                                valid_town = spawn_functional_buildings(self, current_chunk, path_type)
-                                if valid_town:
-                                    self.towns.add(Coordinate(x, y))
-                                    for (cx, cy) in Coordinate(x, y).around():
-                                        try:
-                                            self.chunks[cy][cx].can_have_town = False
-                                        except IndexError:
-                                            pass
-                                    if self.themed_towns:
-                                        building_theme: BuildingTheme = BuildingThemes.get_random_theme().value
-                                    for b in range(random.randint(1, self.max_buildings)):
-                                        if self.themed_towns:
-                                            spawn_building(self, current_chunk,
-                                                           building_theme.get_random_building_type().value, path_type)
-                                        else:
-                                            spawn_building(self, current_chunk,
-                                                           BuildingTypes["H" + str(random.randint(0, 21))].value,
-                                                           path_type)
-                                    draw_path2(self, current_chunk, path_type)
-                                else:
-                                    current_chunk.has_town = False
-                                    current_chunk.clear_layer("BUILDINGS")
-                                    remove_path(current_chunk)
-                            else:
-                                if not powerplant:
-                                    spawn_building(self, current_chunk, BuildingTypes.POWERPLANT.value, path_type)
-                    else:
-                        draw_height_map(self, current_chunk)
-                    chunk_bar()
+
+        # Attempt at multithreading, but it wasn't faster
+        # with alive_bar(1, title="processing chunks", theme="classic") as render_bar:
+        #     with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+        #         executor.map(self.process_chunk, [(x, y) for y in range(self.chunk_nb_v) for x in range(self.chunk_nb_h)])
+        #     render_bar()
+
+        for y in range(self.chunk_nb_v):
+            for x in range(self.chunk_nb_h):
+                self.process_chunk((x, y))
 
         if not self.draw_height_map:
             create_dirt_patches(self, self.off_x, self.off_y)
@@ -162,6 +127,46 @@ class Map:
 
         if self.town_map:
             self.town_map_img = generate_town_map(self)
+
+    def process_chunk(self, coords):
+        powerplant = True
+        x, y = coords
+        current_chunk = self.chunks[y][x]
+        if not self.draw_height_map:
+            create_edges(current_chunk, hill_type=0)
+            # create_rivers(current_chunk, self.lake_tiles)
+            if self.max_buildings > 0 and current_chunk.can_have_town:
+                path_type = random.randint(0, 7)
+                if random.randint(0, 9) < 9:
+                    current_chunk.has_town = True
+                    valid_town = spawn_functional_buildings(self, current_chunk, path_type)
+                    if valid_town:
+                        self.towns.add(Coordinate(x, y))
+                        for (cx, cy) in Coordinate(x, y).around():
+                            try:
+                                self.chunks[cy][cx].can_have_town = False
+                            except IndexError:
+                                pass
+                        if self.themed_towns:
+                            building_theme: BuildingTheme = BuildingThemes.get_random_theme().value
+                        for b in range(random.randint(1, self.max_buildings)):
+                            if self.themed_towns:
+                                spawn_building(self, current_chunk,
+                                               building_theme.get_random_building_type().value, path_type)
+                            else:
+                                spawn_building(self, current_chunk,
+                                               BuildingTypes["H" + str(random.randint(0, 21))].value,
+                                               path_type)
+                        draw_path2(self, current_chunk, path_type)
+                    else:
+                        current_chunk.has_town = False
+                        current_chunk.clear_layer("BUILDINGS")
+                        remove_path(current_chunk)
+                else:
+                    if not powerplant:
+                        spawn_building(self, current_chunk, BuildingTypes.POWERPLANT.value, path_type)
+        else:
+            draw_height_map(self, current_chunk)
 
     def get_chunk(self, x: int, y: int) -> Optional[Chunk]:
         try:
@@ -198,3 +203,9 @@ class Map:
     def change_height(self, c: Chunk, x: int, y: int, val: int) -> None:
         x_parsed, y_parsed = self.parse_to_coordinate_on_map(c, x, y)
         self.height_map[y_parsed][x_parsed] += val
+
+    def to_json(self) -> str:
+        return json.dumps({
+            "dimensions": {"x": self.chunk_nb_h, "y": self.chunk_nb_v},
+            "chunks": [[chunk.to_json() for chunk in chunk_row] for chunk_row in self.chunks]
+        })

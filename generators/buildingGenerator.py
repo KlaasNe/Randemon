@@ -22,8 +22,8 @@ def spawn_building(rmap: Map, chunk: Chunk, building, path_type: int, fence_opt=
                 if ch <= 0.4 or ch > rmap.max_height:
                     return False
 
-                if x1 <= x < x2 + 2 and y1 <= y < y2 + 1:
-                    if chunk.has_tile_in_layer_at("BUILDINGS", x, y) or chunk.has_tile_in_layer_at("HILLS", x, y):
+                if x1 <= x < x2 + 1 and y1 <= y < y2 + 1:
+                    if chunk.has_tile_in_layer_at("BUILDINGS", x, y) or (x, y) in chunk.hill_tiles:
                         return False
                 if chunk.has_tile_in_layer_at("GROUND0", x, y) or chunk.has_tile_in_layer_at("FENCE", x, y):
                     return False
@@ -37,12 +37,19 @@ def spawn_building(rmap: Map, chunk: Chunk, building, path_type: int, fence_opt=
         def get_random_coo():
             return random.randint(2, chunk.size - size_x), random.randint(2, chunk.size - size_y - 2)
 
+        def get_size_area_coo(x1, y1, x2, y2):
+            area = set()
+            for y in range(y1, y2 + 1):
+                for x in range(x1, x2 + 1):
+                    area.add((x, y))
+            return area
+
+
         attempts = 1
         size_x, size_y = building.size
         try_x, try_y = get_random_coo()
         available = is_available_spot(try_x, try_y - 1, try_x + size_x, try_y + size_y + 2)
-        while attempts < max_attempts and (
-                not available or not is_inside_cluster(chunk, try_x, try_y, cluster_radius, 2)):
+        while (not available or not is_inside_cluster(chunk, try_x, try_y, cluster_radius, 2)) and attempts < max_attempts:
             attempts += 1
             try_x, try_y = get_random_coo()
             available = is_available_spot(try_x, try_y - 1, try_x + size_x, try_y + size_y + 2)

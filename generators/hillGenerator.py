@@ -3,6 +3,7 @@ import re
 from enum import Enum
 
 from mapClasses.Coordinate import Coordinate
+from mapClasses.chunk import Chunk
 from mapClasses.tile import Tile
 
 
@@ -10,22 +11,23 @@ def create_edges(chunk, hill_type=0):
     create_hill_edges(chunk, hill_type)
 
 
-def remove_faulty_heights(chunk, force=False):
+def remove_faulty_heights(height_map, force=False):
     smooth = False
     warning_set = set()
     ignored_set = set()
     while not smooth:
         smooth = True
-        for y in range(chunk.size):
-            for x in range(chunk.size):
-                curr_surrounding = get_surrounding_tiles(chunk, x, y)
+        for y in range(len(height_map)):
+            for x in range(len(height_map[y])):
+                curr_surrounding = get_surrounding_tiles_map(height_map, x, y)
                 height_change = get_tile_from_surrounding(curr_surrounding, FaultyHillTiles)
-                if (x, y) not in ignored_set and height_change is not None:
-                    chunk.change_height(x, y, height_change)
+                if height_change is not None and (x, y) not in ignored_set:
+                    height_map[y][x] += height_change
                     if (x, y) in warning_set:
                         ignored_set.add((x, y))
                     else:
                         warning_set.add((x, y))
+
                     if force:
                         smooth = False
 
@@ -42,20 +44,38 @@ def create_hill_edges(chunk, hill_type):
                         if random.random() < 0.01:
                             specific_tile = Tile("HILLS", 0, 4)
                     chunk.set_tile("HILLS", x, y, specific_tile)
+                    chunk.hill_tiles.add((x, y))
 
 
-def get_surrounding_tiles(chunk, x, y):
+def get_surrounding_tiles(chunk: Chunk, x, y):
     c = Coordinate(x, y)
-    curr_h = chunk.get_height(x, y)
+    curr_h = round(chunk.get_height(x, y))
     surr_str = ""
-    for hx, hy in c.around():
-        surr_h = chunk.get_height(hx, hy)
-        if surr_h == curr_h:
-            surr_str += "0"
-        elif surr_h < curr_h:
-            surr_str += "l"
-        elif surr_h > curr_h:
-            surr_str += "h"
+    if curr_h > 0:
+        heights = []
+        for hx, hy in c.around():
+            heights.append(round(chunk.get_height(hx, hy)))
+        surr_str = ''.join(
+            "0" if surr_h == curr_h else ("l" if surr_h < curr_h else "h") for surr_h in heights
+        )
+    else:
+        surr_str = "000000000"
+    return surr_str
+
+
+def get_surrounding_tiles_map(height_map, x, y):
+    c = Coordinate(x, y)
+    curr_h = round(height_map[y][x])
+    surr_str = ""
+    if curr_h >= 0:
+        heights = []
+        for hx, hy in c.around():
+            heights.append(round(height_map[hy][hx]))
+        surr_str = ''.join(
+            "0" if surr_h == curr_h else ("l" if surr_h < curr_h else "h") for surr_h in heights
+        )
+    else:
+        surr_str = "000000000"
     return surr_str
 
 
@@ -104,8 +124,11 @@ class HillTiles(Enum):
 
 
 class FaultyHillTiles(Enum):
-    ...
     # X1 = [[None, -1, None], [None, 0, None], [None, -1, None]], -1
     # X2 = [[None, 1, None], [None, 0, None], [None, 1, None]], 1
     # X3 = [[None, None, None], [-1, 0, -1], [None, None, None]], -1
     # X4 = [[None, None, None], [1, 0, 1], [None, None, None]], 1
+    X1 = "^.l..0..l.$", -1
+    X2 = "^.h..0..h.$", 1
+    X3 = "^...l0l...$", -1
+    X4 = "^...h0h...$", 1
