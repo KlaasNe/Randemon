@@ -1,5 +1,5 @@
-from .chunk import *
+from .chunks import *
 from .layer import *
 from .tile import *
-from .Map import *
+from .pkmnMap import *
 from .Coordinate import *

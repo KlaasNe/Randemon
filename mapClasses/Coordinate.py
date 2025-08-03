@@ -8,7 +8,7 @@ class Coordinate:
         self.y = y
 
     def __str__(self):
-        return f"C({self.x}, {self.y})"
+        return f"Coordinate({self.x}, {self.y})"
 
     def __repr__(self):
         return str(self)

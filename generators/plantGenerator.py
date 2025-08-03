@@ -2,7 +2,7 @@ import random
 
 from noise import snoise2
 
-from mapClasses.chunk import Chunk
+from mapClasses.chunks import Chunk
 from mapClasses.tile import Tile
 
 
@@ -19,7 +19,7 @@ def create_trees(chunk: Chunk, spawn_rate, max_height):
     for y in range(chunk.size):
         for x in range(chunk.size):
             if max_height > chunk.get_height_exact(x, y) > 0.75:
-                # if chunk.tile_heights.get((x, y), -1) <= chunk.highest_path:
+                # if chunks.tile_heights.get((x, y), -1) <= chunks.highest_path:
                 if not chunk.has_tile_in_layer_at("GROUND0", x, y) and not chunk.has_tile_in_layer_at("BUILDINGS", x, y) and not chunk.has_tile_in_layer_at("HILLS", x, y) \
                         and not chunk.has_tile_in_layer_at("GROUND1", x, y - 1) \
                         and not chunk.has_tile_in_layer_at("GROUND2", x, y) and not chunk.has_tile_in_layer_at("GROUND2", x, y - 1) and not chunk.has_tile_in_layer_at("GROUND2", x, y - 2)\

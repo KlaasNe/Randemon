@@ -1,8 +1,6 @@
-import concurrent.futures
 import json
 from random import random
 
-from hkb_diamondsquare import DiamondSquare as ds
 from colorama import Fore
 from colorama import Style
 from typing import Optional, Iterator
@@ -19,10 +17,8 @@ from generators.townMapGenerator import draw_town_map, generate_town_map
 from generators.waterGenerator import *
 from mapClasses import Chunk
 
-from alive_progress import alive_bar
 
-
-class Map:
+class PkmnMap:
 
     def __init__(self,
                  chunk_nb_h: int,
@@ -35,8 +31,7 @@ class Map:
                  themed_towns: bool = True,
                  terrain_chaos: int = 4,
                  max_height: int = 6,
-                 town_map: str = None,
-                 style: str = "simplex") -> None:
+                 town_map: str = None) -> None:
 
         self.chunk_size: int = chunk_size
         self.chunk_nb_h: int = chunk_nb_h
@@ -52,31 +47,18 @@ class Map:
         print(Fore.LIGHTBLUE_EX + "seed = " + Fore.LIGHTYELLOW_EX + str(self.seed) + Style.RESET_ALL)
         print("Creating terrain...")
         self.off_x, self.off_y = random.randint(0, 10000000), random.randint(0, 10000000)
-        if style == "simplex":
-            self.height_map: list[list[int]] = generate_height_map(
-                self.size_h,
-                self.size_v, self.max_height,
-                self.off_x, self.off_y, self.chunk_size,
-                additional_noise_maps=0, island=island,
-                terrain_chaos=terrain_chaos
-                )
-        elif style == "squareDiamond":
-            self.height_map: list[list[int]] = ds.diamond_square(
-                shape=(self.size_h, self.size_v),
-                min_height=-max_height,
-                max_height=max_height*2,
-                roughness=0.45,
-                random_seed=seed
-            )
-            for y in range(self.chunk_size * self.chunk_nb_v):
-                for x in range(self.chunk_size * self.chunk_nb_h):
-                    self.height_map[y][x] += plateau((x - (self.size_h // 2)) / (self.size_h / 2),
-                                                     (y - (self.size_v // 2)) / (self.size_v / 2), 0.15, 1, 0.5)
-                    self.height_map[y][x] = max(0, self.height_map[y][x])
+        self.height_map: list[list[int]] = generate_height_map(
+            self.size_h,
+            self.size_v, self.max_height,
+            self.off_x, self.off_y, self.chunk_size,
+            additional_noise_maps=0, island=island,
+            terrain_chaos=terrain_chaos
+        )
         # self.height_map = generate_height_map_from_image("heightMaps/earthLandMassHeight.png")
         smooth_height(self)
         self.chunks: list[list[Chunk]] = [
-            [Chunk(self.height_map, chunk_size, x, y, self.off_x + x * self.chunk_size, self.off_y + y * self.chunk_size) for x in
+            [Chunk(self.height_map, chunk_size, x, y, self.off_x + x * self.chunk_size,
+                   self.off_y + y * self.chunk_size) for x in
              range(chunk_nb_h)] for y in range(chunk_nb_v)]
         remove_faulty_heights(self.height_map, force=True)
         self.water_tiles: set[tuple[int, int]] = set()
@@ -111,19 +93,16 @@ class Map:
                 self.process_chunk((x, y))
 
         if not self.draw_height_map:
-            create_dirt_patches(self, self.off_x, self.off_y)
+            # create_dirt_patches(self, self.off_x, self.off_y)
             create_path(self)
 
-            with alive_bar(self.chunk_nb_v * self.chunk_nb_h,
-                           title="Updating chunks (nature, sea and plants and stuff)", theme="classic") as chunk_bar:
-                for y in range(self.chunk_nb_v):
-                    for x in range(self.chunk_nb_h):
-                        current_chunk = self.chunks[y][x]
-                        create_rivers(current_chunk, self.lake_tiles, water_threshold, no_sprite=True)
-                        spawn_pokemons(current_chunk)
-                        create_trees(current_chunk, 0.75, self.max_height)
-                        grow_grass(current_chunk, 0.6, self.max_height)
-                        chunk_bar()
+            for y in range(self.chunk_nb_v):
+                for x in range(self.chunk_nb_h):
+                    current_chunk = self.chunks[y][x]
+                    create_rivers(current_chunk, self.lake_tiles, water_threshold, no_sprite=True)
+                    spawn_pokemons(current_chunk)
+                    create_trees(current_chunk, 0.75, self.max_height)
+                    grow_grass(current_chunk, 0.6, self.max_height)
 
         if self.town_map:
             self.town_map_img = generate_town_map(self)

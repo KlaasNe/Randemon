@@ -63,11 +63,11 @@ class Chunk:
 
     def height_map_pos(self, x: int, y: int) -> tuple[int, int]:
         """
-        Find the position of a tile in the global height map based on it's chunk.
+        Find the position of a tile in the global height map based on it's chunks.
         :rtype: tuple[int, int]
         :param x: position of the tile
         :param y: position of the tile
-        :return: position of a tile in the height map based on it's chunk
+        :return: position of a tile in the height map based on it's chunks
         """
         try:
             return self.chunk_x * self.size + x, self.chunk_y * self.size + y

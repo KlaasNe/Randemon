@@ -3,9 +3,8 @@ from random import shuffle
 
 from noise import snoise2
 
-from mapClasses import Map
 from mapClasses.Coordinate import Coordinate
-from mapClasses.chunk import Chunk
+from mapClasses.chunks import Chunk
 from mapClasses.layer import Layer
 from mapClasses.tile import Tile
 from mapClasses.tile.TileWeights import TileWeights
@@ -17,7 +16,7 @@ def get_path_type(layer: Layer, x: int, y: int) -> int:
     return tile.y // 3 if type(tile) == Tile and tile.type == "PATH" else None
 
 
-def draw_path_tile(rmap: Map, x: int, y: int, separated: bool) -> bool:
+def draw_path_tile(rmap, x: int, y: int, separated: bool) -> bool:
     chunk, cx, cy = rmap.parse_to_coordinate_in_chunk(x, y)
     if chunk is not None:
         tile: Tile = chunk["GROUND0"][(cx, cy)]
@@ -35,19 +34,19 @@ def draw_path_tile(rmap: Map, x: int, y: int, separated: bool) -> bool:
         return True
 
 
-def update_path(rmap: Map, coordinates: set[tuple[int, int]], separated):
+def update_path(rmap, coordinates: set[tuple[int, int]], separated):
     for x, y in coordinates:
         draw_path_tile(rmap, x, y, separated)
 
 
-def create_path(rmap: Map, separated: bool = True) -> None:
+def create_path(rmap, separated: bool = True) -> None:
     path_tiles = rmap.path_tiles.copy()
     for coordinate in path_tiles:
         if not draw_path_tile(rmap, coordinate.x, coordinate.y, separated):
             update_path(rmap, set(coordinate.around()), separated)
 
 
-def get_surrounding_tiles(rmap: Map, x: int, y: int, path_type: int, separated: bool) -> list[list]:
+def get_surrounding_tiles(rmap, x: int, y: int, path_type: int, separated: bool) -> list[list]:
     surrounding = []
     for py in range(y - 1, y + 2):
         row = []
@@ -108,7 +107,7 @@ def is_actual_path(layer, x, y):
     return get_path_type(layer, x, y) not in [None, 3, 9]
 
 
-def place_path_tile(rmap: Map, chunk: Chunk, x: int, y: int, path_type: int) -> None:
+def place_path_tile(rmap, chunk: Chunk, x: int, y: int, path_type: int) -> None:
     if chunk.get_height(x, y) > 0:
         if chunk.get_tile("GROUND0", x, y) is None:
             chunk.set_tile("GROUND0", x, y, Tile("PATH", 0, path_type * 3))
@@ -118,7 +117,7 @@ def place_path_tile(rmap: Map, chunk: Chunk, x: int, y: int, path_type: int) -> 
     rmap.path_tiles.add(Coordinate(map_x, map_y))
 
 
-def draw_path2(rmap: Map, chunk: Chunk, path_type: int):
+def draw_path2(rmap, chunk: Chunk, path_type: int):
     def init_weight_tiles():
         weights_array = []
         for wy in range(chunk.size):
@@ -305,7 +304,7 @@ def create_stairs(chunk, pl, bl):
                         bl[px, py + 1] = Tile("ROAD", 5, 1)
 
 
-def create_dirt_patches(rmap: Map, off_x, off_y, threshold=0.15):
+def create_dirt_patches(rmap, off_x, off_y, threshold=0.15):
     freq = 40
     octaves = 2
     for y in range(rmap.size_v):

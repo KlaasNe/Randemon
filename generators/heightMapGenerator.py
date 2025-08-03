@@ -2,10 +2,8 @@ import random
 from math import pow
 from PIL import Image
 
-from alive_progress import alive_bar
 from noise import snoise2
 
-from mapClasses import Map
 from mapClasses.Coordinate import Coordinate
 from mapClasses.tile.Tile import Tile
 
@@ -76,7 +74,7 @@ def generate_height_map_from_image(img_path):
     return height_map
 
 
-def smooth_height(rmap: Map) -> None:
+def smooth_height(rmap) -> None:
     smooth = False
     tries = 0
     while not smooth:
@@ -96,16 +94,14 @@ def smooth_height(rmap: Map) -> None:
         for h in heights_sorted.values():
             steps += len(h)
 
-        with alive_bar(steps, title=f"smoothening terrain | attempt {tries}", theme="classic") as smooth_bar:
-            for h in heights_sorted.values():
-                for x, y in h:
-                    if rmap.height_map[y][x] > 0:
-                        if not smooth_down(rmap, x, y):
-                            smooth = False
-                    smooth_bar()
+        for h in heights_sorted.values():
+            for x, y in h:
+                if rmap.height_map[y][x] > 0:
+                    if not smooth_down(rmap, x, y):
+                        smooth = False
 
 
-def smooth_down(rmap: Map, x: int, y: int) -> bool:
+def smooth_down(rmap, x: int, y: int) -> bool:
     def check_and_update_height(u_x, u_y):
         if rmap.in_bounds(u_x, u_y) and height_diff > 1:
             rmap.height_map[u_y][u_x] = center_height + 1
@@ -135,7 +131,7 @@ def smooth_down(rmap: Map, x: int, y: int) -> bool:
     return smooth
 
 
-def draw_height_map(rmap: Map, chunk):
+def draw_height_map(rmap, chunk):
     for y in range(chunk.size):
         for x in range(chunk.size):
             chunk.set_tile("HEIGHTMAP", x, y, Tile("HEIGHTS", round(rmap.get_height(chunk, x, y)), 0))

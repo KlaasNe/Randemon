@@ -5,11 +5,10 @@ from datetime import datetime
 from typing import Union
 
 from PIL import Image
-from alive_progress import alive_bar
 from colorama import Fore, Style
 
-from mapClasses import Tile, Map
-from mapClasses.chunk import Chunk
+from mapClasses import Tile, PkmnMap
+from mapClasses.chunks import Chunk
 from render.SpriteSheetReaders import *
 
 
@@ -23,15 +22,13 @@ class Render:
         for reader in SpriteSheetReaders:
             self.readers[reader.name] = reader.value
 
-    def render(self, map_obj: Map):
+    def render(self, map_obj: PkmnMap):
         chunk_size = map_obj.chunk_size
         chunk_nb_h, chunk_nb_v = map_obj.chunk_nb_h, map_obj.chunk_nb_v
         size = (chunk_size * Render.TILE_SIZE * chunk_nb_h, chunk_size * Render.TILE_SIZE * chunk_nb_v)
         self.visual = Image.new("RGBA", size, (0, 0, 0, 0))
-        with alive_bar(chunk_nb_h * chunk_nb_v, title="rendering chunks", theme="classic") as render_bar:
-            for chunk in map_obj:
-                self.render_chunk(chunk)
-                render_bar()
+        for chunk in map_obj:
+            self.render_chunk(chunk)
 
     def get_tile_img(self, tile: Tile) -> Image:
         try:
@@ -52,7 +49,7 @@ class Render:
                 y *= Render.TILE_SIZE
                 self.draw_tile(tile, x, y)
 
-    def paste_town_map(self, map_obj: Map, scale: int = 8):
+    def paste_town_map(self, map_obj: PkmnMap, scale: int = 8):
         town_map: Image = map_obj.town_map_img
         w, h = town_map.size
         nw, nh = w * scale, h * scale
@@ -84,9 +81,7 @@ class Render:
 
     def save(self, name: str, directory: str) -> None:
         img_name = name + ".png"
-        with alive_bar(1, title="Saving image", theme="classic") as save_bar:
-            self.visual.save(os.path.join(directory, img_name), "png")
-            save_bar()
+        self.visual.save(os.path.join(directory, img_name), "png")
         print("Image saved successfully")
         print(os.path.join(Fore.LIGHTBLUE_EX + os.path.abspath(directory),
                            Fore.LIGHTYELLOW_EX + img_name + Style.RESET_ALL))

@@ -3,7 +3,7 @@ import re
 from enum import Enum
 
 from mapClasses.Coordinate import Coordinate
-from mapClasses.chunk import Chunk
+from mapClasses.chunks import Chunk
 from mapClasses.tile import Tile
 
 
