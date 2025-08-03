@@ -4,8 +4,8 @@ from PIL import Image
 
 from noise import snoise2
 
-from mapClasses.Coordinate import Coordinate
-from mapClasses.tile.Tile import Tile
+from mapStructure.Coordinate import Coordinate
+from mapStructure.tiles.Tile import Tile
 
 
 def generate_height_map(size_h, size_v, max_height, off_x, off_y, chunk_size, terrain_chaos=4, additional_noise_maps=0,
@@ -36,10 +36,7 @@ def get_height(max_height: int, x: int, y: int, static_offset_array, size_h: int
             (off_y + y) / (freq * tuple_count),
             octaves, persistence=0.5, lacunarity=1.6) / tuple_count
         tuple_count += 1
-    # if total_noise_maps > 1:
-    #     noise /= sum(1 / i for i in range(1, total_noise_maps + 1))
     if island:
-        # print(noise*max_height)
         return (noise * (max_height + 2)) + plateau((x - (size_h // 2)) / (size_h / 2), (y - (size_v // 2)) / (size_v / 2),0.15, 1, 0.5)  # GEEN 0 invullen op height plateau!!!
     else:
         elevation = noise + 0.45

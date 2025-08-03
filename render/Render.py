@@ -1,14 +1,14 @@
 import ctypes
 import os
-import json
 from datetime import datetime
 from typing import Union
 
 from PIL import Image
 from colorama import Fore, Style
 
-from mapClasses import Tile, PkmnMap
-from mapClasses.chunks import Chunk
+from mapStructure.chunks import Chunk
+from mapStructure.pkmnMap import PkmnMap
+from mapStructure.tiles.Tile import Tile
 from render.SpriteSheetReaders import *
 
 
@@ -67,10 +67,10 @@ class Render:
             self.visual.paste(town_map, (self_img_w - nw, self_img_h - nh, self_img_w, self_img_h))
 
 
-    # def render_npc(self, layer):
+    # def render_npc(self, layers):
     #     sheet_writer = SpriteSheetWriter(Image.open(os.path.join("resources", "npc.png")), 20, 23)
-    #     for tile_x, tile_y in layer.get_ex_pos():
-    #         current_tile = layer.get_tile_img((tile_x, tile_y))
+    #     for tile_x, tile_y in layers.get_ex_pos():
+    #         current_tile = layers.get_tile_img((tile_x, tile_y))
     #         try:
     #             sheet_writer.draw_tile(current_tile, self.visual, tile_x * Render.TILE_SIZE, tile_y * Render.TILE_SIZE - 7)
     #         except KeyError:

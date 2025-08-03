@@ -1,12 +1,12 @@
-import json
-from typing import Optional, Iterator
+from typing import Optional, Iterator, Any, Generator
 
-from mapClasses.tile import Tile
+from mapStructure.tiles.Tile import Tile
 
 
 class Layer:
 
-    def __init__(self) -> None:
+    def __init__(self, name: str) -> None:
+        self.name: str = name
         self.tiles: dict[tuple[int, int], Tile] = dict()
 
     def __getitem__(self, pos: tuple[int, int]) -> Tile:
@@ -15,7 +15,7 @@ class Layer:
     def __setitem__(self, pos: tuple[int, int], tile: Tile) -> None:
         self.tiles[pos] = tile
 
-    def __iter__(self) -> tuple[tuple[int, int], Tile]:
+    def __iter__(self) -> Generator[tuple[tuple[int, int], Tile], Any, None]:
         for item in self.tiles.items():
             yield item
 
@@ -43,5 +43,5 @@ class Layer:
         self.tiles.clear()
 
     def to_json(self):
-        return {"tiles": [{"pos": {"x": pos[0], "y": pos[1]}, "tile": tile.to_json()} for pos, tile in self.tiles.items()]}
+        return {"tiles": [{"pos": {"x": pos[0], "y": pos[1]}, "tiles": tile.to_json()} for pos, tile in self.tiles.items()]}
 

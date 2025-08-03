@@ -3,8 +3,8 @@ from math import sqrt
 from buildings.Building import Building
 from buildings.BuildingTypes import BuildingTypes
 from generators.pathGenerator import place_path_tile
-from mapClasses.chunks import Chunk
-from mapClasses.tile import Tile
+from mapStructure.chunks import Chunk
+from mapStructure.tiles.Tile import Tile
 
 
 # Spawns a house on the map with house_front_path_type as its front porch

@@ -2,9 +2,8 @@ import random
 
 from noise import snoise2
 
-from mapClasses.chunks import Chunk
-from mapClasses.tile import Tile
-
+from mapStructure.chunks import Chunk
+from mapStructure.tiles.Tile import Tile
 
 HIDDEN_ITEM_ODDS = {Tile("NATURE", 1, 4): 0.8, Tile("NATURE", 5, 2): 0.19, Tile("NATURE", 5, 3): 0.01}
 octaves1 = 3
@@ -93,7 +92,7 @@ def random_tall_grass():
 
 # # Creates an overlay for the entire map showing rain
 # # The amount of rain is given with rain_rate
-# def create_rain(pmap, layer, odds, rain_rate):
+# def create_rain(pmap, layers, odds, rain_rate):
 #     if random.random() < odds:
 #         for y in range(pmap.height):
 #             for x in range(pmap.width):
@@ -101,8 +100,8 @@ def random_tall_grass():
 #                     if random.random() < 0.5 and "fe" != pmap.ground2.get_tile_type(
 #                             (x, y)) and "hi" != pmap.ground.get_tile_type((x, y)) and (
 #                     x, y) not in pmap.npc.get_ex_pos():
-#                         layer.set_tile((x, y), ("ra", random.randint(0, 2), 1))
+#                         layers.set_tile((x, y), ("ra", random.randint(0, 2), 1))
 #                     else:
-#                         layer.set_tile((x, y), ("ra", random.randint(1, 2), 0))
+#                         layers.set_tile((x, y), ("ra", random.randint(1, 2), 0))
 #                 else:
-#                     layer.set_tile((x, y), ("ra", 0, 0))
+#                     layers.set_tile((x, y), ("ra", 0, 0))

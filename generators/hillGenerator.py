@@ -2,9 +2,9 @@ import random
 import re
 from enum import Enum
 
-from mapClasses.Coordinate import Coordinate
-from mapClasses.chunks import Chunk
-from mapClasses.tile import Tile
+from mapStructure.Coordinate import Coordinate
+from mapStructure.chunks import Chunk
+from mapStructure.tiles.Tile import Tile
 
 
 def create_edges(chunk, hill_type=0):
@@ -17,8 +17,8 @@ def remove_faulty_heights(height_map, force=False):
     ignored_set = set()
     while not smooth:
         smooth = True
-        for y in range(len(height_map)):
-            for x in range(len(height_map[y])):
+        for y in range(height_map.shape[1]):
+            for x in range(height_map.shape[0]):
                 curr_surrounding = get_surrounding_tiles_map(height_map, x, y)
                 height_change = get_tile_from_surrounding(curr_surrounding, FaultyHillTiles)
                 if height_change is not None and (x, y) not in ignored_set:
@@ -70,7 +70,10 @@ def get_surrounding_tiles_map(height_map, x, y):
     if curr_h >= 0:
         heights = []
         for hx, hy in c.around():
-            heights.append(round(height_map[hy][hx]))
+            try:
+                heights.append(round(height_map[hy][hx]))
+            except IndexError:
+                heights.append(0)
         surr_str = ''.join(
             "0" if surr_h == curr_h else ("l" if surr_h < curr_h else "h") for surr_h in heights
         )

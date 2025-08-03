@@ -1,6 +1,6 @@
 import os
 
-from mapClasses import Coordinate
+from mapStructure import Coordinate
 from PIL import Image
 from math import ceil
 

@@ -1,6 +1,7 @@
 import json
 from random import random
 
+import numpy as np
 from colorama import Fore
 from colorama import Style
 from typing import Optional, Iterator
@@ -13,19 +14,21 @@ from generators.buildingGenerator import *
 from generators.hillGenerator import *
 from generators.pathGenerator import *
 from generators.plantGenerator import *
-from generators.townMapGenerator import draw_town_map, generate_town_map
+from generators.townMapGenerator import generate_town_map
 from generators.waterGenerator import *
-from mapClasses import Chunk
+from mapStructure.HeightMap import HeightMap
+from mapStructure.chunks.Chunk import Chunk
+from mapStructure.pkmnMapInterface import PkmnMapInterface
 
 
-class PkmnMap:
+class PkmnMap(PkmnMapInterface):
 
     def __init__(self,
                  chunk_nb_h: int,
                  chunk_nb_v: int,
                  chunk_size: int,
                  seed: int,
-                 max_buildings: int = 16,
+                 max_buildings_per_chunk: int = 16,
                  island: bool = False,
                  make_height_map: bool = False,
                  themed_towns: bool = True,
@@ -38,7 +41,7 @@ class PkmnMap:
         self.chunk_nb_v: int = chunk_nb_v
         self.size_h: int = self.chunk_size * self.chunk_nb_h
         self.size_v: int = self.chunk_size * self.chunk_nb_v
-        self.max_buildings = max_buildings
+        self.max_buildings_per_chunk = max_buildings_per_chunk
         self.seed: int = seed
         self.draw_height_map = make_height_map
         self.themed_towns = themed_towns
@@ -47,18 +50,12 @@ class PkmnMap:
         print(Fore.LIGHTBLUE_EX + "seed = " + Fore.LIGHTYELLOW_EX + str(self.seed) + Style.RESET_ALL)
         print("Creating terrain...")
         self.off_x, self.off_y = random.randint(0, 10000000), random.randint(0, 10000000)
-        self.height_map: list[list[int]] = generate_height_map(
-            self.size_h,
-            self.size_v, self.max_height,
-            self.off_x, self.off_y, self.chunk_size,
-            additional_noise_maps=0, island=island,
-            terrain_chaos=terrain_chaos
-        )
+        self.height_map = HeightMap((self.chunk_nb_h, self.chunk_nb_v), self.chunk_size, self.off_x, self.off_y, self.max_height, island)
         # self.height_map = generate_height_map_from_image("heightMaps/earthLandMassHeight.png")
         smooth_height(self)
         self.chunks: list[list[Chunk]] = [
             [Chunk(self.height_map, chunk_size, x, y, self.off_x + x * self.chunk_size,
-                   self.off_y + y * self.chunk_size) for x in
+                   self.off_y + y * self.chunk_size, self.max_buildings_per_chunk) for x in
              range(chunk_nb_h)] for y in range(chunk_nb_v)]
         remove_faulty_heights(self.height_map, force=True)
         self.water_tiles: set[tuple[int, int]] = set()
@@ -78,15 +75,9 @@ class PkmnMap:
 
     def create(self):
         water_threshold = 2
-        max_beach_inland_depth = 16
+        max_beach_inland_depth = 8
         # create_lakes_and_sea(self) TODO fix this
         self.beach_tiles = create_beach(self, max_beach_inland_depth, water_threshold)
-
-        # Attempt at multithreading, but it wasn't faster
-        # with alive_bar(1, title="processing chunks", theme="classic") as render_bar:
-        #     with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
-        #         executor.map(self.process_chunk, [(x, y) for y in range(self.chunk_nb_v) for x in range(self.chunk_nb_h)])
-        #     render_bar()
 
         for y in range(self.chunk_nb_v):
             for x in range(self.chunk_nb_h):
@@ -114,7 +105,7 @@ class PkmnMap:
         if not self.draw_height_map:
             create_edges(current_chunk, hill_type=0)
             # create_rivers(current_chunk, self.lake_tiles)
-            if self.max_buildings > 0 and current_chunk.can_have_town:
+            if self.max_buildings_per_chunk > 0 and current_chunk.can_have_town:
                 path_type = random.randint(0, 7)
                 if random.randint(0, 9) < 9:
                     current_chunk.has_town = True
@@ -128,7 +119,7 @@ class PkmnMap:
                                 pass
                         if self.themed_towns:
                             building_theme: BuildingTheme = BuildingThemes.get_random_theme().value
-                        for b in range(random.randint(1, self.max_buildings)):
+                        for b in range(random.randint(1, self.max_buildings_per_chunk)):
                             if self.themed_towns:
                                 spawn_building(self, current_chunk,
                                                building_theme.get_random_building_type().value, path_type)

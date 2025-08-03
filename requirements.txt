@@ -2,3 +2,5 @@ colorama==0.4.4
 fastapi==0.95.1
 noise==1.2.2
 Pillow==9.5.0
+
+numpy~=1.26.3

@@ -1,8 +1,8 @@
 from enum import Enum
 
-from mapClasses.Coordinate import Coordinate
-from mapClasses.chunks import Chunk
-from mapClasses.tile import Tile
+from mapStructure.Coordinate import Coordinate
+from mapStructure.chunks import Chunk
+from mapStructure.tiles.Tile import Tile
 
 
 def create_lakes_and_sea(rmap, sea_threshold=0.20) -> None:

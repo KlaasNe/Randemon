@@ -1,6 +1,3 @@
-import json
-
-
 class Tile:
 
     def __init__(self, reader_name: str, x: int, y: int, mirror: bool = False) -> None:

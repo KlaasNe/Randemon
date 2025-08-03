@@ -3,12 +3,12 @@ from random import shuffle
 
 from noise import snoise2
 
-from mapClasses.Coordinate import Coordinate
-from mapClasses.chunks import Chunk
-from mapClasses.layer import Layer
-from mapClasses.tile import Tile
-from mapClasses.tile.TileWeights import TileWeights
-from mapClasses.tile.WeightTile import WeightTile
+from mapStructure.Coordinate import Coordinate
+from mapStructure.chunks import Chunk
+from mapStructure.layers import Layer
+from mapStructure.tiles.Tile import Tile
+from mapStructure.tiles.TileWeights import TileWeights
+from mapStructure.tiles.WeightTile import WeightTile
 
 
 def get_path_type(layer: Layer, x: int, y: int) -> int:

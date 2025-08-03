@@ -1,14 +1,16 @@
-import json
+from typing import Iterator, Optional
 
-from mapClasses.layer import *
-from buildings import Building
+from buildings.Building import Building
+from mapStructure.layers.Layer import Layer
+from mapStructure.layers.LayersFactory import LayersFactory
+from mapStructure.tiles.Tile import Tile
 
 MAX_HEIGHT = 5
 
 
 class Chunk:
 
-    def __init__(self, height_map: list[list[int]], size: int, chunk_x: int, chunk_y: int, off_x: int, off_y: int) -> None:
+    def __init__(self, height_map: list[list[int]], size: int, chunk_x: int, chunk_y: int, off_x: int, off_y: int, max_buildings: int) -> None:
         self.height_map: list[list[float]] = height_map
         self.height_map_rounded: list[list[int]] = self.round_and_copy(height_map)  # TODO fix this maybe to be inited after heightmap is certain
         self.size: int = size
@@ -16,15 +18,14 @@ class Chunk:
         self.off_y: int = off_y
         self.chunk_x: int = chunk_x
         self.chunk_y: int = chunk_y
-        self.layers: dict[str, Layer] = dict()
-        for layer in Layers:
-            self.layers[layer.name] = Layer()
+        self.layers: dict[str, Layer] = LayersFactory.create_layers()
         self.buildings: list[Building] = []
         self.has_town: bool = False
         self.can_have_town: bool = True
         self.path_tiles: set[tuple[int, int]] = set()
         self.route = None
         self.hill_tiles: set[tuple[int, int]] = set()
+        self.max_buildings: int = max_buildings
 
     def __getitem__(self, layer: str) -> Layer:
         return self.layers[layer]
@@ -61,18 +62,18 @@ class Chunk:
     def has_tile_in_layer_at(self, layer: str, x: int, y: int) -> bool:
         return self[layer].has_tile_at(x, y)
 
-    def height_map_pos(self, x: int, y: int) -> tuple[int, int]:
+    def height_map_pos(self, x: int, y: int) -> tuple[int, int] | None:
         """
-        Find the position of a tile in the global height map based on it's chunks.
+        Find the position of a tiles in the global height map based on its chunks.
         :rtype: tuple[int, int]
-        :param x: position of the tile
-        :param y: position of the tile
-        :return: position of a tile in the height map based on it's chunks
+        :param x: position of the tiles
+        :param y: position of the tiles
+        :return: position of a tiles in the height map based on it's chunks
         """
         try:
             return self.chunk_x * self.size + x, self.chunk_y * self.size + y
         except TypeError as e:
-            print(self.chunk_x, self.chunk_y, x, y)
+            print(e, self.chunk_x, self.chunk_y, x, y)
 
     def get_height_exact(self, x: int, y: int) -> float:
         hmx, hmy = self.height_map_pos(x, y)
@@ -92,7 +93,6 @@ class Chunk:
         hmx, hmy = self.height_map_pos(x, y)
         self.height_map[hmy][hmx] += val
         self.height_map[hmy][hmx] = max(self.height_map[hmy][hmx], .15)  # TODO hardcoded based on .15 dark water
-        self.set_tile("GROUND2", x, y, Tile("TNF", 1, 0))
 
     def get_tile_type(self, layer: str, x: int, y: int) -> Optional[str]:
         return self[layer].get_tile_type(x, y)

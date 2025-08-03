@@ -6,15 +6,15 @@ from sys import maxsize
 def make_parser() -> ArgumentParser:
     """Make the ArgParser object."""
     parser = ArgumentParser(
-        prog='randemonMain.py',
-        description='Landscape generator using the tile set of pokemon fire red'
+        prog='randemon.py',
+        description='Landscape generator using the tiles set of pokemon fire red'
     )
 
     parser.add_argument(
         '--chunks-size',
         dest='chunk_size',
         type=int,
-        default=40,
+        default=64,
         help='The number of tiles a chunks consists of.')
 
     parser.add_argument(
