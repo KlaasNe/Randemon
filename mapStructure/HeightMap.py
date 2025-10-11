@@ -27,7 +27,7 @@ class HeightMap:
             octaves, persistence=0.5, lacunarity=1.6)
         if island:
             return (noise * (max_height + 2)) + HeightMap.plateau((x - (size_h // 2)) / (size_h / 2),
-                                                        (y - (size_v // 2)) / (size_v / 2), 0.20, 1,
+                                                        (y - (size_v // 2)) / (size_v / 2), .2, 1,
                                                         0.5)  # GEEN 0 invullen op height plateau!!!
         else:
             elevation = noise + .45  # TODO ???? magic number??? why????

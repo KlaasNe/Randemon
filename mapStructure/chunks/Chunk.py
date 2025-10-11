@@ -12,7 +12,7 @@ class Chunk:
 
     def __init__(self, height_map: list[list[int]], size: int, chunk_x: int, chunk_y: int, off_x: int, off_y: int, max_buildings: int) -> None:
         self.height_map: list[list[float]] = height_map
-        self.height_map_rounded: list[list[int]] = self.round_and_copy(height_map)  # TODO fix this maybe to be inited after heightmap is certain
+        self.height_map_rounded: list[list[int]] = self.round_and_copy(height_map)
         self.size: int = size
         self.off_x: int = off_x
         self.off_y: int = off_y
@@ -35,8 +35,8 @@ class Chunk:
 
     def round_and_copy(self, input_array):
         # Use list comprehensions for a more concise and efficient solution
-        rounded_array = [[round(value) for value in inner_array] for inner_array in input_array]
-        return rounded_array
+        rounded_matrix = [[round(value) for value in inner_array] for inner_array in input_array]
+        return rounded_matrix
 
     def get_layers(self) -> Iterator[Layer]:
         return self.layers.values().__iter__()

@@ -1,7 +1,6 @@
 import json
 from random import random
 
-import numpy as np
 from colorama import Fore
 from colorama import Style
 from typing import Optional, Iterator
@@ -107,7 +106,7 @@ class PkmnMap(PkmnMapInterface):
             # create_rivers(current_chunk, self.lake_tiles)
             if self.max_buildings_per_chunk > 0 and current_chunk.can_have_town:
                 path_type = random.randint(0, 7)
-                if random.randint(0, 9) < 9:
+                if random.randint(0, 9) < 9:  # HELL YEAH magic number (1 in 10 odds to spawn a town i guess?)
                     current_chunk.has_town = True
                     valid_town = spawn_functional_buildings(self, current_chunk, path_type)
                     if valid_town:
