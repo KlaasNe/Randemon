@@ -82,6 +82,9 @@ class PkmnMap(PkmnMapInterface):
             for x in range(self.chunk_nb_h):
                 self.process_chunk((x, y))
 
+        if self.town_map:
+            self.town_map_img = generate_town_map(self)
+
         if not self.draw_height_map:
             # create_dirt_patches(self, self.off_x, self.off_y)
             create_path(self)
@@ -94,8 +97,6 @@ class PkmnMap(PkmnMapInterface):
                     create_trees(current_chunk, 0.75, self.max_height)
                     grow_grass(current_chunk, 0.6, self.max_height)
 
-        if self.town_map:
-            self.town_map_img = generate_town_map(self)
 
     def process_chunk(self, coords):
         powerplant = True
@@ -104,18 +105,13 @@ class PkmnMap(PkmnMapInterface):
         if not self.draw_height_map:
             create_edges(current_chunk, hill_type=0)
             # create_rivers(current_chunk, self.lake_tiles)
-            if self.max_buildings_per_chunk > 0 and current_chunk.can_have_town:
-                path_type = random.randint(0, 7)
-                if random.randint(0, 9) < 9:  # HELL YEAH magic number (1 in 10 odds to spawn a town i guess?)
+            if self.max_buildings_per_chunk > 0 and x % 2 == 0 and y % 2 == 0:
+                path_type = random.randint(0, 7)  # HELL YEAH MAGIC NUMBER
+                if random.randint(0, 9) < 9:  # HELL YEAH magic number
                     current_chunk.has_town = True
                     valid_town = spawn_functional_buildings(self, current_chunk, path_type)
                     if valid_town:
                         self.towns.add(Coordinate(x, y))
-                        for (cx, cy) in Coordinate(x, y).around():
-                            try:
-                                self.chunks[cy][cx].can_have_town = False
-                            except IndexError:
-                                pass
                         if self.themed_towns:
                             building_theme: BuildingTheme = BuildingThemes.get_random_theme().value
                         for b in range(random.randint(1, self.max_buildings_per_chunk)):

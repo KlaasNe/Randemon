@@ -4,6 +4,7 @@ from mapStructure import Coordinate
 from PIL import Image
 from math import ceil
 
+
 TILE_SIZE = 8
 TILE_SHEET_DIRECTORY = os.path.join("render", "tileSheets")
 
@@ -32,13 +33,13 @@ class TMC:  # Town Map Colors
         return tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))
 
 
-def generate_town_map(pmap):
-    tiles_per_pixel = pmap.chunk_size // 8
-    generate_routes(pmap)
-    return draw_town_map(pmap, tiles_per_pixel)
+def generate_town_map(pkmnMap) -> Image:
+    tiles_per_pixel = pkmnMap.chunk_size // 8
+    generate_routes(pkmnMap)
+    return draw_town_map(pkmnMap, tiles_per_pixel)
 
 
-def generate_routes(pmap, looping_chance: float = 0):
+def generate_routes(pkmn_map, looping_chance: float = 0):
     def is_connected(branches, start, end):
         nodes: set[Coordinate] = {start}
         seen: set[Coordinate] = set()
@@ -60,7 +61,7 @@ def generate_routes(pmap, looping_chance: float = 0):
 
         return False
 
-    towns = pmap.towns
+    towns = pkmn_map.towns
     tree: set[tuple[Coordinate, Coordinate]] = set()
     edges = sorted([
         (town1, town2, town1.distance(town2))
@@ -72,6 +73,7 @@ def generate_routes(pmap, looping_chance: float = 0):
         if not is_connected(tree, edge[0], edge[1]):
             tree.add((edge[0], edge[1]))
 
+    chunks_on_route: set[Coordinate] = set()
     for town1, town2 in tree:
         queue: list[tuple[Coordinate, int]] = [(town1, town1.distance(town2))]
         visited: set[Coordinate] = set()
@@ -79,8 +81,8 @@ def generate_routes(pmap, looping_chance: float = 0):
         previous: dict[str, Coordinate] = {str(town1): None}
         while queue and curr_pos != town2:
             curr_pos, curr_dist = queue.pop()
-            for pos in curr_pos.udlr():
-                if pos not in visited and pos.in_bounds((0, 0), (pmap.chunk_nb_h - 1, pmap.chunk_nb_v - 1)):
+            for pos in curr_pos.nesw():
+                if pos not in visited and pos.in_bounds((0, 0), (pkmn_map.chunk_nb_h - 1, pkmn_map.chunk_nb_v - 1)):
                     dist = pos.distance(town2)
                     if dist < curr_dist:
                         queue.append((pos, dist))
@@ -91,18 +93,26 @@ def generate_routes(pmap, looping_chance: float = 0):
 
             sorted(queue, key=lambda i: i[1])
 
-        route = [town2]
-        prev = town2
+        route: list[Coordinate] = [town2]
+        prev: Coordinate = town2
         while prev is not None:
+            chunks_on_route.add(prev)
             prev = previous[str(prev)]
             route.append(prev)
 
-        for chunk_coordinate in route:
-            try:
-                pmap.chunks[chunk_coordinate.y][
-                    chunk_coordinate.x].route = True  # TODO use better type than boolean to indicate n-e-s-w flow of the route in this chunks
-            except Exception as e:
-                print(e)
+    for chunk_coordinate in chunks_on_route:
+        current_chunk = pkmn_map.chunks[chunk_coordinate.y][chunk_coordinate.x]
+        if chunk_coordinate.up() in chunks_on_route:
+            current_chunk.route[0] = True
+
+        if chunk_coordinate.right() in chunks_on_route:
+            current_chunk.route[1] = True
+
+        if chunk_coordinate.down() in chunks_on_route:
+            current_chunk.route[2] = True
+
+        if chunk_coordinate.left() in chunks_on_route:
+            current_chunk.route[3] = True
 
 
 def draw_town_map(pmap, tiles_per_pixel: int):
@@ -113,7 +123,7 @@ def draw_town_map(pmap, tiles_per_pixel: int):
         for x in range(0, pmap.size_h, tiles_per_pixel):
             height_sum = 0
             c, _, _ = pmap.parse_to_coordinate_in_chunk(x, y)
-            chunk_on_route = c.route is not None
+            chunk_on_route = any(c.route)
             for j in range(min(tiles_per_pixel, pmap.size_v - y)):
                 for i in range(min(tiles_per_pixel, pmap.size_h - x)):
                     height_sum += round(pmap.get_height_map_pos(x + i, y + j))

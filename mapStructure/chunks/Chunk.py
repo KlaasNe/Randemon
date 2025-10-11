@@ -23,7 +23,7 @@ class Chunk:
         self.has_town: bool = False
         self.can_have_town: bool = True
         self.path_tiles: set[tuple[int, int]] = set()
-        self.route = None
+        self.route: list[bool] = [False, False, False, False]  # [N, E, S, W] route connection
         self.hill_tiles: set[tuple[int, int]] = set()
         self.max_buildings: int = max_buildings
 
