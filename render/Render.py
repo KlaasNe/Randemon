@@ -7,7 +7,7 @@ from PIL import Image
 from colorama import Fore, Style
 
 from mapStructure.chunks import Chunk
-from mapStructure.pkmnMap import PkmnMap
+#from mapStructure.pkmnMap import PkmnMap
 from mapStructure.tiles.Tile import Tile
 from render.SpriteSheetReaders import *
 
@@ -22,7 +22,7 @@ class Render:
         for reader in SpriteSheetReaders:
             self.readers[reader.name] = reader.value
 
-    def render(self, map_obj: PkmnMap):
+    def render(self, map_obj):
         chunk_size = map_obj.chunk_size
         chunk_nb_h, chunk_nb_v = map_obj.chunk_nb_h, map_obj.chunk_nb_v
         size = (chunk_size * Render.TILE_SIZE * chunk_nb_h, chunk_size * Render.TILE_SIZE * chunk_nb_v)
@@ -49,7 +49,7 @@ class Render:
                 y *= Render.TILE_SIZE
                 self.draw_tile(tile, x, y)
 
-    def paste_town_map(self, map_obj: PkmnMap, scale: int = 8):
+    def paste_town_map(self, map_obj, scale: int = 8):
         town_map: Image = map_obj.town_map_img
         w, h = town_map.size
         nw, nh = w * scale, h * scale

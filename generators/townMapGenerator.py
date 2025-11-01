@@ -103,16 +103,16 @@ def generate_routes(pkmn_map, looping_chance: float = 0):
     for chunk_coordinate in chunks_on_route:
         current_chunk = pkmn_map.chunks[chunk_coordinate.y][chunk_coordinate.x]
         if chunk_coordinate.up() in chunks_on_route:
-            current_chunk.route[0] = True
+            current_chunk.route[0] = True  # North
 
         if chunk_coordinate.right() in chunks_on_route:
-            current_chunk.route[1] = True
+            current_chunk.route[1] = True  # East
 
         if chunk_coordinate.down() in chunks_on_route:
-            current_chunk.route[2] = True
+            current_chunk.route[2] = True  # South
 
         if chunk_coordinate.left() in chunks_on_route:
-            current_chunk.route[3] = True
+            current_chunk.route[3] = True  # West
 
 
 def draw_town_map(pmap, tiles_per_pixel: int):

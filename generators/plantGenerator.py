@@ -54,7 +54,7 @@ def tree_formula(chunk, x, y):
 # Tall gras and flowers are spawned with a perlin noise field
 def grow_grass(chunk, coverage, max_height):
     octaves = 2
-    freq = 10 * octaves
+    freq = 20
     for y in range(chunk.size):
         for x in range(chunk.size):
             if not chunk.has_tile_in_layer_at("GROUND0", x, y):

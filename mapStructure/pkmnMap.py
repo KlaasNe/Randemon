@@ -84,18 +84,23 @@ class PkmnMap(PkmnMapInterface):
 
         if self.town_map:
             self.town_map_img = generate_town_map(self)
+            create_path(self)
 
         if not self.draw_height_map:
             # create_dirt_patches(self, self.off_x, self.off_y)
-            create_path(self)
-
             for y in range(self.chunk_nb_v):
                 for x in range(self.chunk_nb_h):
                     current_chunk = self.chunks[y][x]
                     create_rivers(current_chunk, self.lake_tiles, water_threshold, no_sprite=True)
+
+                    if not current_chunk.has_town and any(current_chunk.route):
+                        create_route_path(self, current_chunk)
+
+                    create_path(self)
                     spawn_pokemons(current_chunk)
                     create_trees(current_chunk, 0.75, self.max_height)
                     grow_grass(current_chunk, 0.6, self.max_height)
+
 
 
     def process_chunk(self, coords):

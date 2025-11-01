@@ -1,5 +1,5 @@
 from enum import Enum
-from random import shuffle
+from random import shuffle, randint
 
 from noise import snoise2
 
@@ -304,7 +304,7 @@ def create_stairs(chunk, pl, bl):
                         bl[px, py + 1] = Tile("ROAD", 5, 1)
 
 
-def create_dirt_patches(rmap, off_x, off_y, threshold=0.15):
+def create_dirt_patches(rmap, off_x, off_y, threshold=.15):
     freq = 40
     octaves = 2
     for y in range(rmap.size_v):
@@ -357,3 +357,47 @@ def remove_path(chunk: Chunk):
         except KeyError:
             pass
     chunk.path_tiles.clear()
+
+
+def create_route_path(pkmn_map, chunk: Chunk):
+
+    def put_path_tile_down(px: int, py: int):
+        n = snoise2((px + offset_x) / freq, (py + offset_y) / freq, octaves)
+        if abs(n) > 1 - path_threshold and chunk.get_height_exact(px, py) >= 1:  # 1 is a magic number equal to the water threshold somewhere in create beaches
+            chunk.set_tile("GROUND0", px, py, Tile("PATH", 0, 0))
+            ppx, ppy = pkmn_map.parse_to_coordinate_on_map(chunk, px, py)
+            pkmn_map.path_tiles.add(Coordinate(ppx, ppy))
+
+    freq: int = 20
+    octaves: int = 2
+    offset_x, offset_y = randint(0, 1000000), randint(0, 1000000)
+    path_threshold: float = .6
+
+    # North
+    if chunk.route[0]:
+        for y in range(0, chunk.size // 3):
+            for x in range(chunk.size // 3, 2 * chunk.size // 3):
+                put_path_tile_down(x, y)
+
+    # East
+    if chunk.route[1]:
+        for y in range(chunk.size // 3, 2 * chunk.size // 3):
+            for x in range(2 * chunk.size // 3, chunk.size):
+                put_path_tile_down(x, y)
+
+    # South
+    if chunk.route[2]:
+        for y in range(2 * chunk.size // 3, chunk.size):
+            for x in range(chunk.size // 3, 2 * chunk.size // 3):
+                put_path_tile_down(x, y)
+
+    # West
+    if chunk.route[3]:
+        for y in range(chunk.size // 3, 2 * chunk.size // 3):
+            for x in range(0, chunk.size // 3):
+                put_path_tile_down(x, y)
+
+    # Central
+    for y in range(chunk.size // 3, 2 * chunk.size // 3):
+        for x in range(chunk.size // 3, 2 * chunk.size // 3):
+            put_path_tile_down(x, y)
