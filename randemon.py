@@ -5,7 +5,7 @@ from colorama import Fore
 from colorama import Style
 
 import parser as inputs
-from mapStructure.pkmnMapFactory import PkmnMapFactory
+from pkmnMap.PkmnMapFactory import PkmnMapFactory
 from render import Render
 
 

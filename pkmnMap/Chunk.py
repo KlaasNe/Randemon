@@ -1,17 +1,18 @@
 from typing import Iterator, Optional
 
 from buildings.Building import Building
-from mapStructure.layers.Layer import Layer
-from mapStructure.layers.LayersFactory import LayersFactory
-from mapStructure.tiles.Tile import Tile
+from pkmnMap import HeightMap
+from pkmnMap.Layer import Layer
+from pkmnMap.Layer.LayersFactory import LayersFactory
+from pkmnMap.tiles.Tile import Tile
 
 MAX_HEIGHT = 5
 
 
 class Chunk:
 
-    def __init__(self, height_map: list[list[int]], size: int, chunk_x: int, chunk_y: int, off_x: int, off_y: int, max_buildings: int) -> None:
-        self.height_map: list[list[float]] = height_map
+    def __init__(self, height_map: HeightMap, size: int, chunk_x: int, chunk_y: int, off_x: int, off_y: int, max_buildings: int) -> None:
+        self.height_map: HeightMap = height_map
         self.height_map_rounded: list[list[int]] = self.round_and_copy(height_map)
         self.size: int = size
         self.off_x: int = off_x
@@ -64,11 +65,11 @@ class Chunk:
 
     def height_map_pos(self, x: int, y: int) -> tuple[int, int] | None:
         """
-        Find the position of a tiles in the global height map based on its chunks.
+        Find the position of a tiles in the global height map based on its Chunk.
         :rtype: tuple[int, int]
         :param x: position of the tiles
         :param y: position of the tiles
-        :return: position of a tiles in the height map based on it's chunks
+        :return: position of a tiles in the height map based on it's Chunk
         """
         try:
             return self.chunk_x * self.size + x, self.chunk_y * self.size + y
@@ -102,5 +103,5 @@ class Chunk:
 
     def to_json(self):
         return {
-            "layers": [layer.to_json() for layer in self.get_layers()]
+            "Layer": [layer.to_json() for layer in self.get_layers()]
         }

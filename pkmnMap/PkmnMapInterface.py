@@ -1,6 +1,6 @@
 from typing import Optional
 
-from mapStructure.chunks.Chunk import Chunk
+from pkmnMap.Chunk import Chunk
 
 
 class PkmnMapInterface:

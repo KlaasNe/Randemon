@@ -4,8 +4,8 @@ from PIL import Image
 
 from noise import snoise2
 
-from mapStructure.Coordinate import Coordinate
-from mapStructure.tiles.Tile import Tile
+from pkmnMap.Coordinate import Coordinate
+from pkmnMap.tiles.Tile import Tile
 
 
 def generate_height_map(size_h, size_v, max_height, off_x, off_y, chunk_size, terrain_chaos=4, additional_noise_maps=0,
@@ -71,16 +71,16 @@ def generate_height_map_from_image(img_path):
     return height_map
 
 
-def smooth_height(rmap) -> None:
+def smooth_height(self) -> None:
     smooth = False
     tries = 0
     while not smooth:
         smooth = True
         tries += 1
         heights_sorted = dict()
-        for y in range(0, rmap.size_v):
-            for x in range(0, rmap.size_h):
-                h = round(rmap.get_height_map_pos(x, y))
+        for y in range(0, self.size_v):
+            for x in range(0, self.size_h):
+                h = round(self.get_height_map_pos(x, y))
                 if h > 0:
                     if h in heights_sorted.keys():
                         heights_sorted[h].append((x, y))
@@ -93,8 +93,8 @@ def smooth_height(rmap) -> None:
 
         for h in heights_sorted.values():
             for x, y in h:
-                if rmap.height_map[y][x] > 0:
-                    if not smooth_down(rmap, x, y):
+                if self.height_map[y][x] > 0:
+                    if not smooth_down(self, x, y):
                         smooth = False
 
 
@@ -128,7 +128,7 @@ def smooth_down(rmap, x: int, y: int) -> bool:
     return smooth
 
 
-def draw_height_map(rmap, chunk):
+def draw_height_map(self, chunk):
     for y in range(chunk.size):
         for x in range(chunk.size):
-            chunk.set_tile("HEIGHTMAP", x, y, Tile("HEIGHTS", round(rmap.get_height(chunk, x, y)), 0))
+            chunk.set_tile("HEIGHTMAP", x, y, Tile("HEIGHTS", round(self.get_height(chunk, x, y)), 0))

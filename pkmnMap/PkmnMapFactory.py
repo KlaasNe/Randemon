@@ -1,5 +1,5 @@
 from timeit import timeit
-from mapStructure.pkmnMap import PkmnMap
+from pkmnMap import PkmnMap
 
 
 class PkmnMapFactory:

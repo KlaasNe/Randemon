@@ -2,8 +2,8 @@ import random
 
 from noise import snoise2
 
-from mapStructure.chunks import Chunk
-from mapStructure.tiles.Tile import Tile
+from pkmnMap.Chunk import Chunk
+from pkmnMap.tiles.Tile import Tile
 
 HIDDEN_ITEM_ODDS = {Tile("NATURE", 1, 4): 0.8, Tile("NATURE", 5, 2): 0.19, Tile("NATURE", 5, 3): 0.01}
 octaves1 = 3
@@ -13,12 +13,12 @@ freq1 = 40
 # Checks if enough space is available to plant a tree
 # No trees above the highest path height
 # Adds an overlay to decoration_layer if the top of the tree overlaps with another tree
-def create_trees(chunk: Chunk, spawn_rate, max_height):
+def create_trees(self, chunk: Chunk, spawn_rate, max_height):
     double = False
     for y in range(chunk.size):
         for x in range(chunk.size):
             if max_height > chunk.get_height_exact(x, y) > 0.75:
-                # if chunks.tile_heights.get((x, y), -1) <= chunks.highest_path:
+                # if Chunk.tile_heights.get((x, y), -1) <= Chunk.highest_path:
                 if not chunk.has_tile_in_layer_at("GROUND0", x, y) and not chunk.has_tile_in_layer_at("BUILDINGS", x, y) and not chunk.has_tile_in_layer_at("HILLS", x, y) \
                         and not chunk.has_tile_in_layer_at("GROUND1", x, y - 1) \
                         and not chunk.has_tile_in_layer_at("GROUND2", x, y) and not chunk.has_tile_in_layer_at("GROUND2", x, y - 1) and not chunk.has_tile_in_layer_at("GROUND2", x, y - 2)\
@@ -52,7 +52,7 @@ def tree_formula(chunk, x, y):
 
 # The whole map is filled with random green tiles
 # Tall gras and flowers are spawned with a perlin noise field
-def grow_grass(chunk, coverage, max_height):
+def grow_grass(self, chunk, coverage, max_height):
     octaves = 2
     freq = 20
     for y in range(chunk.size):
@@ -92,7 +92,7 @@ def random_tall_grass():
 
 # # Creates an overlay for the entire map showing rain
 # # The amount of rain is given with rain_rate
-# def create_rain(pmap, layers, odds, rain_rate):
+# def create_rain(pmap, Layer, odds, rain_rate):
 #     if random.random() < odds:
 #         for y in range(pmap.height):
 #             for x in range(pmap.width):
@@ -100,8 +100,8 @@ def random_tall_grass():
 #                     if random.random() < 0.5 and "fe" != pmap.ground2.get_tile_type(
 #                             (x, y)) and "hi" != pmap.ground.get_tile_type((x, y)) and (
 #                     x, y) not in pmap.npc.get_ex_pos():
-#                         layers.set_tile((x, y), ("ra", random.randint(0, 2), 1))
+#                         Layer.set_tile((x, y), ("ra", random.randint(0, 2), 1))
 #                     else:
-#                         layers.set_tile((x, y), ("ra", random.randint(1, 2), 0))
+#                         Layer.set_tile((x, y), ("ra", random.randint(1, 2), 0))
 #                 else:
-#                     layers.set_tile((x, y), ("ra", 0, 0))
+#                     Layer.set_tile((x, y), ("ra", 0, 0))

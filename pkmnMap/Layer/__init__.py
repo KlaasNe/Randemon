@@ -1,9 +1,10 @@
 from typing import Optional, Iterator, Any, Generator
 
-from mapStructure.tiles.Tile import Tile
+from pkmnMap.Layer.LayerInterface import LayerInterface
+from pkmnMap.tiles.Tile import Tile
 
 
-class Layer:
+class Layer(LayerInterface):
 
     def __init__(self, name: str) -> None:
         self.name: str = name

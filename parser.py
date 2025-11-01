@@ -11,25 +11,25 @@ def make_parser() -> ArgumentParser:
     )
 
     parser.add_argument(
-        '--chunks-size',
+        '--Chunk-size',
         dest='chunk_size',
         type=int,
         default=64,
-        help='The number of tiles a chunks consists of.')
+        help='The number of tiles a Chunk consists of.')
 
     parser.add_argument(
         '--ch',
         dest='chunks_horizontal',
         type=int,
         default=4,
-        help='The number of chunks horizontally.')
+        help='The number of Chunk horizontally.')
 
     parser.add_argument(
         '--cv',
         dest='chunks_vertical',
         type=int,
         default=4,
-        help='The number of chunks vertically.')
+        help='The number of Chunk vertically.')
 
     parser.add_argument(
         '--save',
@@ -63,7 +63,7 @@ def make_parser() -> ArgumentParser:
         dest='max_buildings',
         type=int,
         default=16,
-        help='Define the maximum amount of buildings for a chunks 0 for none, Pokécenter\nGym and Pokémart are'
+        help='Define the maximum amount of buildings for a Chunk 0 for none, Pokécenter\nGym and Pokémart are'
              ' not included in this argument.'
     )
 

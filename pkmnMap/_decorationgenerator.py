@@ -1,7 +1,7 @@
 import math
 import random
 
-from generators.pathGenerator import is_actual_path, get_path_type
+from pkmnMap._pathgenerator import is_actual_path, get_path_type
 
 
 # Spawns a truck on top of path
@@ -51,7 +51,7 @@ def check_for_decoration(layer, x, y, x_size, y_size):
     return True
 
 
-# Spawns rocks in water if no water is present in the ground layers at 10 tiles distance
+# Spawns rocks in water if no water is present in the ground Layer at 10 tiles distance
 def spawn_rocks(pmap, rocky_percentage):
     for y in range(pmap.ground.sy):
         for x in range(pmap.ground.sx):

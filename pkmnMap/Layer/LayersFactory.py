@@ -1,6 +1,6 @@
 from enum import Enum, auto
 
-from mapStructure.layers.Layer import Layer
+from pkmnMap.Layer import Layer
 
 
 class Layers(Enum):
@@ -16,5 +16,5 @@ class Layers(Enum):
 class LayersFactory:
 
     @staticmethod
-    def create_layers():
+    def create_layers() -> dict[str, Layer]:
         return {layer.name: Layer(layer.name) for layer in Layers}

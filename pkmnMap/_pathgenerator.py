@@ -3,12 +3,12 @@ from random import shuffle, randint
 
 from noise import snoise2
 
-from mapStructure.Coordinate import Coordinate
-from mapStructure.chunks import Chunk
-from mapStructure.layers import Layer
-from mapStructure.tiles.Tile import Tile
-from mapStructure.tiles.TileWeights import TileWeights
-from mapStructure.tiles.WeightTile import WeightTile
+from pkmnMap.Coordinate import Coordinate
+from pkmnMap.Chunk import Chunk
+from pkmnMap import Layer
+from pkmnMap.tiles.Tile import Tile
+from pkmnMap.tiles.TileWeights import TileWeights
+from pkmnMap.tiles.WeightTile import WeightTile
 
 
 def get_path_type(layer: Layer, x: int, y: int) -> int:
@@ -16,13 +16,13 @@ def get_path_type(layer: Layer, x: int, y: int) -> int:
     return tile.y // 3 if type(tile) == Tile and tile.type == "PATH" else None
 
 
-def draw_path_tile(rmap, x: int, y: int, separated: bool) -> bool:
-    chunk, cx, cy = rmap.parse_to_coordinate_in_chunk(x, y)
+def draw_path_tile(self, x: int, y: int, separated: bool) -> bool:
+    chunk, cx, cy = self.parse_to_coordinate_in_chunk(x, y)
     if chunk is not None:
         tile: Tile = chunk["GROUND0"][(cx, cy)]
         if tile is not None and tile.type == "PATH":
             path_type = tile.y // 3
-            prev_surrounding = get_surrounding_tiles(rmap, x, y, path_type, separated)
+            prev_surrounding = get_surrounding_tiles(self, x, y, path_type, separated)
             tile = get_tile_from_surrounding(prev_surrounding)
             if tile is None:
                 chunk["GROUND0"].remove_tile(cx, cy)
@@ -34,24 +34,24 @@ def draw_path_tile(rmap, x: int, y: int, separated: bool) -> bool:
         return True
 
 
-def update_path(rmap, coordinates: set[tuple[int, int]], separated):
+def update_path(self, coordinates: set[tuple[int, int]], separated):
     for x, y in coordinates:
-        draw_path_tile(rmap, x, y, separated)
+        draw_path_tile(self, x, y, separated)
 
 
-def create_path(rmap, separated: bool = True) -> None:
-    path_tiles = rmap.path_tiles.copy()
+def create_path(self, separated: bool = True) -> None:
+    path_tiles = self.path_tiles.copy()
     for coordinate in path_tiles:
-        if not draw_path_tile(rmap, coordinate.x, coordinate.y, separated):
-            update_path(rmap, set(coordinate.around()), separated)
+        if not draw_path_tile(self, coordinate.x, coordinate.y, separated):
+            update_path(self, set(coordinate.around()), separated)
 
 
-def get_surrounding_tiles(rmap, x: int, y: int, path_type: int, separated: bool) -> list[list]:
+def get_surrounding_tiles(self, x: int, y: int, path_type: int, separated: bool) -> list[list]:
     surrounding = []
     for py in range(y - 1, y + 2):
         row = []
         for px in range(x - 1, x + 2):
-            chunk, cx, cy = rmap.parse_to_coordinate_in_chunk(px, py)
+            chunk, cx, cy = self.parse_to_coordinate_in_chunk(px, py)
             if chunk is not None:
                 pt = get_path_type(chunk["GROUND0"], cx, cy)
                 valid = (pt == path_type or any(
@@ -107,23 +107,23 @@ def is_actual_path(layer, x, y):
     return get_path_type(layer, x, y) not in [None, 3, 9]
 
 
-def place_path_tile(rmap, chunk: Chunk, x: int, y: int, path_type: int) -> None:
+def place_path_tile(self, chunk: Chunk, x: int, y: int, path_type: int) -> None:
     if chunk.get_height(x, y) > 0:
         if chunk.get_tile("GROUND0", x, y) is None:
             chunk.set_tile("GROUND0", x, y, Tile("PATH", 0, path_type * 3))
     elif chunk.get_tile_type("GROUND0", x, y) == "WATER":
         chunk.set_tile("GROUND0", x, y, Tile("ROAD", -1, -1))
-    map_x, map_y = rmap.parse_to_coordinate_on_map(chunk, x, y)
-    rmap.path_tiles.add(Coordinate(map_x, map_y))
+    map_x, map_y = self.parse_to_coordinate_on_map(chunk, x, y)
+    self.path_tiles.add(Coordinate(map_x, map_y))
 
 
-def draw_path2(rmap, chunk: Chunk, path_type: int):
+def draw_path2(self, chunk: Chunk, path_type: int):
     def init_weight_tiles():
         weights_array = []
         for wy in range(chunk.size):
             weights_row = []
             for wx in range(chunk.size):
-                weights_row.append(WeightTile(wx, wy, determine_weight(chunk, wx, wy, rmap.max_height)))
+                weights_row.append(WeightTile(wx, wy, determine_weight(chunk, wx, wy, self.max_height)))
             weights_array.append(weights_row)
         return weights_array
 
@@ -170,7 +170,7 @@ def draw_path2(rmap, chunk: Chunk, path_type: int):
                     path_extention.add((x, y))
 
         for (x, y) in path_extention:
-            place_path_tile(rmap, chunk, x, y, path_type)
+            place_path_tile(self, chunk, x, y, path_type)
 
     connected_buildings = set()
     chunk_wght_tiles = init_weight_tiles()
@@ -304,18 +304,18 @@ def create_stairs(chunk, pl, bl):
                         bl[px, py + 1] = Tile("ROAD", 5, 1)
 
 
-def create_dirt_patches(rmap, off_x, off_y, threshold=.15):
+def create_dirt_patches(self, off_x, off_y, threshold=.15):
     freq = 40
     octaves = 2
-    for y in range(rmap.size_v):
-        for x in range(rmap.size_h):
-            if rmap.max_height > rmap.height_map[y][x] > 2:
+    for y in range(self.size_v):
+        for x in range(self.size_h):
+            if self.max_height > self.height_map[y][x] > 2:
                 noise = abs(snoise2((off_x + x) / freq, (off_y + y) / freq, octaves))
                 if noise < threshold:
-                    chunk, cx, cy = rmap.parse_to_coordinate_in_chunk(x, y)
+                    chunk, cx, cy = self.parse_to_coordinate_in_chunk(x, y)
                     if not chunk.has_town:
                         chunk.set_tile("GROUND0", cx, cy, Tile("PATH", 0, 6))
-                        rmap.path_tiles.add(Coordinate(x, y))
+                        self.path_tiles.add(Coordinate(x, y))
 
 
 def create_lanterns(chunk: Chunk):
@@ -359,14 +359,14 @@ def remove_path(chunk: Chunk):
     chunk.path_tiles.clear()
 
 
-def create_route_path(pkmn_map, chunk: Chunk):
+def create_route_path(self, chunk: Chunk):
 
     def put_path_tile_down(px: int, py: int):
         n = snoise2((px + offset_x) / freq, (py + offset_y) / freq, octaves)
         if abs(n) > 1 - path_threshold and chunk.get_height_exact(px, py) >= 1:  # 1 is a magic number equal to the water threshold somewhere in create beaches
             chunk.set_tile("GROUND0", px, py, Tile("PATH", 0, 0))
-            ppx, ppy = pkmn_map.parse_to_coordinate_on_map(chunk, px, py)
-            pkmn_map.path_tiles.add(Coordinate(ppx, ppy))
+            ppx, ppy = self.parse_to_coordinate_on_map(chunk, px, py)
+            self.path_tiles.add(Coordinate(ppx, ppy))
 
     freq: int = 20
     octaves: int = 2

@@ -2,9 +2,9 @@ import random
 import re
 from enum import Enum
 
-from mapStructure.Coordinate import Coordinate
-from mapStructure.chunks import Chunk
-from mapStructure.tiles.Tile import Tile
+from pkmnMap.Coordinate import Coordinate
+from pkmnMap.Chunk import Chunk
+from pkmnMap.tiles.Tile import Tile
 
 
 def create_edges(chunk, hill_type=0):

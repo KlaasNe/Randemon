@@ -1,9 +1,9 @@
 from random import random, randint
-from generators.pathGenerator import get_path_type
+from pkmnMap._pathgenerator import get_path_type
 from colorama import Fore
 from colorama import Style
 
-from mapStructure.tiles.Tile import Tile
+from pkmnMap.tiles.Tile import Tile
 
 # Spawns pokémon on the map most in the pmap.ground_layer
 # Returns true if all existing pokémon are present on the map

@@ -6,9 +6,9 @@ from typing import Union
 from PIL import Image
 from colorama import Fore, Style
 
-from mapStructure.chunks import Chunk
-#from mapStructure.pkmnMap import PkmnMap
-from mapStructure.tiles.Tile import Tile
+from pkmnMap.Chunk import Chunk
+from pkmnMap import PkmnMap
+from pkmnMap.tiles.Tile import Tile
 from render.SpriteSheetReaders import *
 
 
@@ -22,7 +22,7 @@ class Render:
         for reader in SpriteSheetReaders:
             self.readers[reader.name] = reader.value
 
-    def render(self, map_obj):
+    def render(self, map_obj: PkmnMap):
         chunk_size = map_obj.chunk_size
         chunk_nb_h, chunk_nb_v = map_obj.chunk_nb_h, map_obj.chunk_nb_v
         size = (chunk_size * Render.TILE_SIZE * chunk_nb_h, chunk_size * Render.TILE_SIZE * chunk_nb_v)
@@ -49,7 +49,7 @@ class Render:
                 y *= Render.TILE_SIZE
                 self.draw_tile(tile, x, y)
 
-    def paste_town_map(self, map_obj, scale: int = 8):
+    def paste_town_map(self, map_obj: PkmnMap, scale: int = 8):
         town_map: Image = map_obj.town_map_img
         w, h = town_map.size
         nw, nh = w * scale, h * scale
@@ -67,10 +67,10 @@ class Render:
             self.visual.paste(town_map, (self_img_w - nw, self_img_h - nh, self_img_w, self_img_h))
 
 
-    # def render_npc(self, layers):
+    # def render_npc(self, Layer):
     #     sheet_writer = SpriteSheetWriter(Image.open(os.path.join("resources", "npc.png")), 20, 23)
-    #     for tile_x, tile_y in layers.get_ex_pos():
-    #         current_tile = layers.get_tile_img((tile_x, tile_y))
+    #     for tile_x, tile_y in Layer.get_ex_pos():
+    #         current_tile = Layer.get_tile_img((tile_x, tile_y))
     #         try:
     #             sheet_writer.draw_tile(current_tile, self.visual, tile_x * Render.TILE_SIZE, tile_y * Render.TILE_SIZE - 7)
     #         except KeyError:

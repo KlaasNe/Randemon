@@ -1,6 +1,6 @@
 import os
 
-from mapStructure import Coordinate
+from pkmnMap import Coordinate
 from PIL import Image
 from math import ceil
 
@@ -33,13 +33,13 @@ class TMC:  # Town Map Colors
         return tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))
 
 
-def generate_town_map(pkmnMap) -> Image:
-    tiles_per_pixel = pkmnMap.chunk_size // 8
-    generate_routes(pkmnMap)
-    return draw_town_map(pkmnMap, tiles_per_pixel)
+def generate_town_map(self):
+    tiles_per_pixel = self.chunk_size // 8
+    _generate_routes(self)
+    self.town_map_img = _draw_town_map(self, tiles_per_pixel)
 
 
-def generate_routes(pkmn_map, looping_chance: float = 0):
+def _generate_routes(self, looping_chance: float = 0):
     def is_connected(branches, start, end):
         nodes: set[Coordinate] = {start}
         seen: set[Coordinate] = set()
@@ -61,12 +61,11 @@ def generate_routes(pkmn_map, looping_chance: float = 0):
 
         return False
 
-    towns = pkmn_map.towns
     tree: set[tuple[Coordinate, Coordinate]] = set()
     edges = sorted([
         (town1, town2, town1.distance(town2))
-        for town1 in towns
-        for town2 in towns
+        for town1 in self.towns
+        for town2 in self.towns
         if town1 != town2
     ], key=lambda i: i[2])
     for edge in edges:
@@ -82,7 +81,7 @@ def generate_routes(pkmn_map, looping_chance: float = 0):
         while queue and curr_pos != town2:
             curr_pos, curr_dist = queue.pop()
             for pos in curr_pos.nesw():
-                if pos not in visited and pos.in_bounds((0, 0), (pkmn_map.chunk_nb_h - 1, pkmn_map.chunk_nb_v - 1)):
+                if pos not in visited and pos.in_bounds((0, 0), (self.chunk_nb_h - 1, self.chunk_nb_v - 1)):
                     dist = pos.distance(town2)
                     if dist < curr_dist:
                         queue.append((pos, dist))
@@ -101,7 +100,7 @@ def generate_routes(pkmn_map, looping_chance: float = 0):
             route.append(prev)
 
     for chunk_coordinate in chunks_on_route:
-        current_chunk = pkmn_map.chunks[chunk_coordinate.y][chunk_coordinate.x]
+        current_chunk = self.chunks[chunk_coordinate.y][chunk_coordinate.x]
         if chunk_coordinate.up() in chunks_on_route:
             current_chunk.route[0] = True  # North
 
@@ -115,18 +114,18 @@ def generate_routes(pkmn_map, looping_chance: float = 0):
             current_chunk.route[3] = True  # West
 
 
-def draw_town_map(pmap, tiles_per_pixel: int):
-    town_map: Image = Image.new("RGBA", (ceil(pmap.size_h / tiles_per_pixel), ceil(pmap.size_v / tiles_per_pixel)), TMC.water_0)
+def _draw_town_map(pkmn_map, tiles_per_pixel: int):
+    town_map: Image = Image.new("RGBA", (ceil(pkmn_map.size_h / tiles_per_pixel), ceil(pkmn_map.size_v / tiles_per_pixel)), TMC.water_0)
     image_y = 0
-    for y in range(0, pmap.size_v, tiles_per_pixel):
+    for y in range(0, pkmn_map.size_v, tiles_per_pixel):
         image_x = 0
-        for x in range(0, pmap.size_h, tiles_per_pixel):
+        for x in range(0, pkmn_map.size_h, tiles_per_pixel):
             height_sum = 0
-            c, _, _ = pmap.parse_to_coordinate_in_chunk(x, y)
+            c, _, _ = pkmn_map.parse_to_coordinate_in_chunk(x, y)
             chunk_on_route = any(c.route)
-            for j in range(min(tiles_per_pixel, pmap.size_v - y)):
-                for i in range(min(tiles_per_pixel, pmap.size_h - x)):
-                    height_sum += round(pmap.get_height_map_pos(x + i, y + j))
+            for j in range(min(tiles_per_pixel, pkmn_map.size_v - y)):
+                for i in range(min(tiles_per_pixel, pkmn_map.size_h - x)):
+                    height_sum += round(pkmn_map.get_height_map_pos(x + i, y + j))
             avg_height = height_sum // (tiles_per_pixel ** 2)
             color = None
             if avg_height > 0:
@@ -153,7 +152,7 @@ def draw_town_map(pmap, tiles_per_pixel: int):
 
     with Image.open(os.path.join(TILE_SHEET_DIRECTORY, "townMap.png")).convert("RGBA") as marker:
         marker.load()
-        for town in pmap.towns:
+        for town in pkmn_map.towns:
             dest_box = (town.x * 8, town.y * 8, town.x * 8 + TILE_SIZE, town.y * 8 + TILE_SIZE)
             town_map.paste(marker, dest_box, marker)
 
