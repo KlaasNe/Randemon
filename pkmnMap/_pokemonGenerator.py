@@ -176,9 +176,9 @@ def spawn_pokemons(chunk, shiny_detector=True):
                 cleffa = True
         return cleffa
 
-    lapras = spawn_lapras(0.00005)
-    gyarados = spawn_gyarados(0.00005)
-    diglett = spawn_diglett(0.0005)
+    lapras = spawn_lapras(0.00001)
+    gyarados = spawn_gyarados(0.00001)
+    diglett = spawn_diglett(0.0001)
     snorlax = spawn_snorlax(0.025)
     exceguttor = spawn_exceguttor(0.0005)
     # togetic = spawn_togetic(0.0001)

@@ -8,7 +8,7 @@ class PkmnMapInterface:
     def create(self) -> None:
         pass
 
-    def process_chunk(self, coords) -> None:
+    def try_place_buildings(self, coords) -> None:
         pass
 
     def get_chunk(self, x, y) -> Optional[Chunk]:

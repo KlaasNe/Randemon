@@ -22,13 +22,17 @@ class Render:
         for reader in SpriteSheetReaders:
             self.readers[reader.name] = reader.value
 
-    def render(self, map_obj: PkmnMap):
-        chunk_size = map_obj.chunk_size
-        chunk_nb_h, chunk_nb_v = map_obj.chunk_nb_h, map_obj.chunk_nb_v
+    def render(self, pkmn_map: PkmnMap, town_map_pos: str):
+        town_map_scale = 8
+        chunk_size = pkmn_map.chunk_size
+        chunk_nb_h, chunk_nb_v = pkmn_map.chunk_nb_h, pkmn_map.chunk_nb_v
         size = (chunk_size * Render.TILE_SIZE * chunk_nb_h, chunk_size * Render.TILE_SIZE * chunk_nb_v)
         self.visual = Image.new("RGBA", size, (0, 0, 0, 0))
-        for chunk in map_obj:
+        for chunk in pkmn_map:
             self.render_chunk(chunk)
+
+        if pkmn_map.town_map_img is not None:
+            self.paste_town_map(pkmn_map, town_map_pos, scale=town_map_scale)
 
     def get_tile_img(self, tile: Tile) -> Image:
         try:
@@ -49,14 +53,13 @@ class Render:
                 y *= Render.TILE_SIZE
                 self.draw_tile(tile, x, y)
 
-    def paste_town_map(self, map_obj: PkmnMap, scale: int = 8):
-        town_map: Image = map_obj.town_map_img
+    def paste_town_map(self, pkmn_map: PkmnMap, pos: str, scale: int = 8):
+        town_map: Image = pkmn_map.town_map_img
         w, h = town_map.size
         nw, nh = w * scale, h * scale
         town_map = town_map.resize((nw, nh), 0)
 
         self_img_w, self_img_h = self.visual.size
-        pos = map_obj.town_map
         if pos == 'TOPLEFT':
             self.visual.paste(town_map, (0, 0, nw, nh))
         elif pos == 'TOPRIGHT':
@@ -65,6 +68,7 @@ class Render:
             self.visual.paste(town_map, (0, self_img_h - nh, nw, self_img_h))
         elif pos == 'BOTTOMRIGHT':
             self.visual.paste(town_map, (self_img_w - nw, self_img_h - nh, self_img_w, self_img_h))
+
 
 
     # def render_npc(self, Layer):

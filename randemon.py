@@ -10,7 +10,6 @@ from render import Render
 
 
 def main(**kwargs):
-    town_map_scale = 8
     parser = inputs.make_parser()
     args = parser.parse_args()
     if not os.path.isdir(args.save_directory) and not args.save_directory == "saved_images":
@@ -29,15 +28,11 @@ def main(**kwargs):
         max_height=args.max_height,
         town_map=args.town_map,
     )
-    if args.scale:
-        town_map_scale = args.scale
 
     with open("map.json", "w+") as file:
         file.write(pkmn_map.to_json())
     r = Render()
-    r.render(pkmn_map)
-    if pkmn_map.town_map:
-        r.paste_town_map(pkmn_map, scale=town_map_scale)
+    r.render(pkmn_map, args.town_map)
 
     if not args.no_show_opt:
         r.show()

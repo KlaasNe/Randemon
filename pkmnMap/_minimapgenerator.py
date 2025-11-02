@@ -33,88 +33,12 @@ class TMC:  # Town Map Colors
         return tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))
 
 
-def generate_town_map(self):
+def generate_mini_map(self) -> None:
     tiles_per_pixel = self.chunk_size // 8
-    _generate_routes(self)
-    self.town_map_img = _draw_town_map(self, tiles_per_pixel)
+    self.town_map_img = _draw_mini_map(self, tiles_per_pixel)
 
 
-def _generate_routes(self, looping_chance: float = 0):
-    def is_connected(branches, start, end):
-        nodes: set[Coordinate] = {start}
-        seen: set[Coordinate] = set()
-        while nodes:
-            node = nodes.pop()
-            if node == end:
-                return True
-
-            for branch in branches:
-                add_node = None
-                if branch[0] == node:
-                    add_node = branch[1]
-                elif branch[1] == node:
-                    add_node = branch[0]
-
-                if add_node and add_node not in seen:
-                    nodes.add(add_node)
-                    seen.add(node)
-
-        return False
-
-    tree: set[tuple[Coordinate, Coordinate]] = set()
-    edges = sorted([
-        (town1, town2, town1.distance(town2))
-        for town1 in self.towns
-        for town2 in self.towns
-        if town1 != town2
-    ], key=lambda i: i[2])
-    for edge in edges:
-        if not is_connected(tree, edge[0], edge[1]):
-            tree.add((edge[0], edge[1]))
-
-    chunks_on_route: set[Coordinate] = set()
-    for town1, town2 in tree:
-        queue: list[tuple[Coordinate, int]] = [(town1, town1.distance(town2))]
-        visited: set[Coordinate] = set()
-        curr_pos = None
-        previous: dict[str, Coordinate] = {str(town1): None}
-        while queue and curr_pos != town2:
-            curr_pos, curr_dist = queue.pop()
-            for pos in curr_pos.nesw():
-                if pos not in visited and pos.in_bounds((0, 0), (self.chunk_nb_h - 1, self.chunk_nb_v - 1)):
-                    dist = pos.distance(town2)
-                    if dist < curr_dist:
-                        queue.append((pos, dist))
-                        previous[str(pos)] = curr_pos
-                    else:
-                        visited.add(pos)
-                    visited.add(curr_pos)
-
-            sorted(queue, key=lambda i: i[1])
-
-        route: list[Coordinate] = [town2]
-        prev: Coordinate = town2
-        while prev is not None:
-            chunks_on_route.add(prev)
-            prev = previous[str(prev)]
-            route.append(prev)
-
-    for chunk_coordinate in chunks_on_route:
-        current_chunk = self.chunks[chunk_coordinate.y][chunk_coordinate.x]
-        if chunk_coordinate.up() in chunks_on_route:
-            current_chunk.route[0] = True  # North
-
-        if chunk_coordinate.right() in chunks_on_route:
-            current_chunk.route[1] = True  # East
-
-        if chunk_coordinate.down() in chunks_on_route:
-            current_chunk.route[2] = True  # South
-
-        if chunk_coordinate.left() in chunks_on_route:
-            current_chunk.route[3] = True  # West
-
-
-def _draw_town_map(pkmn_map, tiles_per_pixel: int):
+def _draw_mini_map(pkmn_map, tiles_per_pixel: int):
     town_map: Image = Image.new("RGBA", (ceil(pkmn_map.size_h / tiles_per_pixel), ceil(pkmn_map.size_v / tiles_per_pixel)), TMC.water_0)
     image_y = 0
     for y in range(0, pkmn_map.size_v, tiles_per_pixel):

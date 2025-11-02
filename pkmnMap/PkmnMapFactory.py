@@ -28,9 +28,12 @@ class PkmnMapFactory:
             make_height_map,
             themed_towns,
             terrain_chaos,
-            max_height,
-            town_map
-        )
+            max_height
+        ).with_beaches(8, 2).with_buildings().with_water().with_routes()
+
         pkmn_map.create()
+
+        if town_map is not None:
+            pkmn_map = pkmn_map.with_mini_map()
 
         return pkmn_map

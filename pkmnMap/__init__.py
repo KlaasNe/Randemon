@@ -24,7 +24,7 @@ from ._pathgenerator import remove_path  # TODO wth bruh clean this up!!!!!
 class PkmnMap(PkmnMapInterface):
 
     from ._watergenerator import create_rivers, create_beach
-    from ._townmapgenerator import generate_town_map
+    from ._minimapgenerator import generate_mini_map
     from ._buildinggenerator import spawn_building, spawn_functional_buildings
     from ._heightmapgenerator import draw_height_map, smooth_height
     from ._pathgenerator import draw_path2, create_path, create_route_path
@@ -40,8 +40,7 @@ class PkmnMap(PkmnMapInterface):
                  make_height_map: bool = False,
                  themed_towns: bool = True,
                  terrain_chaos: int = 4,
-                 max_height: int = 6,
-                 town_map: str = None) -> None:
+                 max_height: int = 6) -> None:
 
         self.chunk_size: int = chunk_size
         self.chunk_nb_h: int = chunk_nb_h
@@ -72,7 +71,6 @@ class PkmnMap(PkmnMapInterface):
         self.beach_tiles: set[tuple[int, int]] = set()
         self.towns: set[Coordinate] = set()
         self.route_chunks: set[Coordinate] = set()
-        self.town_map: str = town_map
         self.town_map_img: Image = None
 
     def __iter__(self) -> Iterator[Chunk]:
@@ -80,71 +78,159 @@ class PkmnMap(PkmnMapInterface):
             for chunk in chunk_row:
                 yield chunk
 
-    def create(self):
-        water_threshold = 2
-        max_beach_inland_depth = 8
-        # create_lakes_and_sea(self) TODO fix this
+    def with_beaches(self, max_beach_inland_depth: int, water_threshold: int) -> "PkmnMap":
+        # create_lakes_and_sea(self) TODO fix this (maybe ever)
         self.beach_tiles = self.create_beach(max_beach_inland_depth, water_threshold)
 
+        return self
+
+    def with_mini_map(self) -> "PkmnMap":
+        self.generate_mini_map()
+
+        return self
+
+    def with_routes(self, looping_chance: float = 0) -> "PkmnMap":
+        def is_connected(branches, start, end):
+            nodes: set[Coordinate] = {start}
+            seen: set[Coordinate] = set()
+            while nodes:
+                node = nodes.pop()
+                if node == end:
+                    return True
+
+                for branch in branches:
+                    add_node = None
+                    if branch[0] == node:
+                        add_node = branch[1]
+                    elif branch[1] == node:
+                        add_node = branch[0]
+
+                    if add_node and add_node not in seen:
+                        nodes.add(add_node)
+                        seen.add(node)
+
+            return False
+
+        tree: set[tuple[Coordinate, Coordinate]] = set()
+        edges = sorted([
+            (town1, town2, town1.distance(town2))
+            for town1 in self.towns
+            for town2 in self.towns
+            if town1 != town2
+        ], key=lambda i: i[2])
+        for edge in edges:
+            if not is_connected(tree, edge[0], edge[1]):
+                tree.add((edge[0], edge[1]))
+
+        chunks_on_route: set[Coordinate] = set()
+        for town1, town2 in tree:
+            queue: list[tuple[Coordinate, int]] = [(town1, town1.distance(town2))]
+            visited: set[Coordinate] = set()
+            curr_pos = None
+            previous: dict[str, Optional[Coordinate]] = {str(town1): None}
+            while queue and curr_pos != town2:
+                curr_pos, curr_dist = queue.pop()
+                for pos in curr_pos.nesw():
+                    if pos not in visited and pos.in_bounds((0, 0), (self.chunk_nb_h - 1, self.chunk_nb_v - 1)):
+                        dist = pos.distance(town2)
+                        if dist < curr_dist:
+                            queue.append((pos, dist))
+                            previous[str(pos)] = curr_pos
+                        else:
+                            visited.add(pos)
+                        visited.add(curr_pos)
+
+                sorted(queue, key=lambda i: i[1])
+
+            route: list[Coordinate] = [town2]
+            prev: Coordinate = town2
+            while prev is not None:
+                chunks_on_route.add(prev)
+                prev = previous[str(prev)]
+                route.append(prev)
+
+        for chunk_coordinate in chunks_on_route:
+            current_chunk = self.chunks[chunk_coordinate.y][chunk_coordinate.x]
+            if chunk_coordinate.up() in chunks_on_route:
+                current_chunk.route[0] = True  # North
+
+            if chunk_coordinate.right() in chunks_on_route:
+                current_chunk.route[1] = True  # East
+
+            if chunk_coordinate.down() in chunks_on_route:
+                current_chunk.route[2] = True  # South
+
+            if chunk_coordinate.left() in chunks_on_route:
+                current_chunk.route[3] = True  # West
+
+        return self
+
+    def with_buildings(self) -> "PkmnMap":
         for y in range(self.chunk_nb_v):
             for x in range(self.chunk_nb_h):
-                self.process_chunk((x, y))
+                current_chunk = self.chunks[y][x]
+                self.try_place_buildings(current_chunk)
 
-        if self.town_map:
-            self.generate_town_map()
-            self.create_path()
+        return self
 
-        if not self.draw_height_map:
-            # create_dirt_patches(self, self.off_x, self.off_y)
-            for y in range(self.chunk_nb_v):
-                for x in range(self.chunk_nb_h):
-                    current_chunk = self.chunks[y][x]
-                    self.create_rivers(current_chunk, self.lake_tiles, water_threshold, no_sprite=True)
+    def with_water(self) -> "PkmnMap":
+        water_threshold = 2
+        for y in range(self.chunk_nb_v):
+            for x in range(self.chunk_nb_h):
+                current_chunk = self.chunks[y][x]
+                self.create_rivers(current_chunk, self.lake_tiles, water_threshold, no_sprite=True)
 
-                    if not current_chunk.has_town and any(current_chunk.route):
-                        self.create_route_path(current_chunk)
-
-                    self.create_path()
-                    spawn_pokemons(current_chunk)
-                    self.create_trees(current_chunk, 0.75, self.max_height)
-                    self.grow_grass(current_chunk, 0.6, self.max_height)
+        return self
 
 
+    def create(self):
+        # create_dirt_patches(self, self.off_x, self.off_y)
+        for y in range(self.chunk_nb_v):
+            for x in range(self.chunk_nb_h):
+                current_chunk = self.chunks[y][x]
 
-    def process_chunk(self, coords):
+                if not current_chunk.has_town and any(current_chunk.route):
+                    self.create_route_path(current_chunk)
+
+                self.create_path()
+
+                spawn_pokemons(current_chunk)
+                self.create_trees(current_chunk, 0.75, self.max_height)
+                self.grow_grass(current_chunk, 0.6, self.max_height)
+
+
+
+    def try_place_buildings(self, chunk: Chunk) -> "PkmnMap":
         powerplant = True
-        x, y = coords
-        current_chunk = self.chunks[y][x]
-        if not self.draw_height_map:
-            create_edges(current_chunk, hill_type=0)
-            # create_rivers(current_chunk, self.lake_tiles)
-            if self.max_buildings_per_chunk > 0 and x % 2 == 0 and y % 2 == 0:
-                path_type = random.randint(0, 7)  # HELL YEAH MAGIC NUMBER
-                if random.randint(0, 9) < 9:  # HELL YEAH magic number
-                    current_chunk.has_town = True
-                    valid_town = self.spawn_functional_buildings(current_chunk, path_type)
-                    if valid_town:
-                        self.towns.add(Coordinate(x, y))
+        create_edges(chunk, hill_type=0)
+        # create_rivers(current_chunk, self.lake_tiles)
+        if self.max_buildings_per_chunk > 0 and chunk.chunk_x % 2 == 0 and chunk.chunk_y % 2 == 0:
+            path_type = random.randint(0, 7)  # HELL YEAH MAGIC NUMBER
+            if random.randint(0, 9) < 9:  # HELL YEAH magic number
+                chunk.has_town = True
+                valid_town = self.spawn_functional_buildings(chunk, path_type)
+                if valid_town:
+                    self.towns.add(Coordinate(chunk.chunk_x, chunk.chunk_y))
+                    if self.themed_towns:
+                        building_theme: BuildingTheme = BuildingThemes.get_random_theme().value
+                    for b in range(random.randint(1, self.max_buildings_per_chunk)):
                         if self.themed_towns:
-                            building_theme: BuildingTheme = BuildingThemes.get_random_theme().value
-                        for b in range(random.randint(1, self.max_buildings_per_chunk)):
-                            if self.themed_towns:
-                                self.spawn_building(current_chunk,
-                                               building_theme.get_random_building_type().value, path_type)
-                            else:
-                                self.spawn_building(current_chunk,
-                                               BuildingTypes["H" + str(random.randint(0, 21))].value,
-                                               path_type)
-                        self.draw_path2(current_chunk, path_type)
-                    else:
-                        current_chunk.has_town = False
-                        current_chunk.clear_layer("BUILDINGS")
-                        remove_path(current_chunk)
+                            self.spawn_building(chunk,
+                                           building_theme.get_random_building_type().value, path_type)
+                        else:
+                            self.spawn_building(chunk,
+                                           BuildingTypes["H" + str(random.randint(0, 21))].value,
+                                           path_type)
+                    self.draw_path2(chunk, path_type)
                 else:
-                    if not powerplant:
-                        self.spawn_building(current_chunk, BuildingTypes.POWERPLANT.value, path_type)
-        else:
-            self.draw_height_map(self, current_chunk)
+                    chunk.has_town = False
+                    chunk.clear_layer("BUILDINGS")
+                    remove_path(chunk)
+            else:
+                if not powerplant:
+                    self.spawn_building(chunk, BuildingTypes.POWERPLANT.value, path_type)
+
+        return self
 
     def get_chunk(self, x: int, y: int) -> Optional[Chunk]:
         try:
