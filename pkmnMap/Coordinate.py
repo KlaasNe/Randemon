@@ -8,10 +8,16 @@ class Coordinate:
         self.y = y
 
     def __str__(self):
-        return f"C({self.x}, {self.y})"
+        return f"Coordinate({self.x}, {self.y})"
 
     def __repr__(self):
         return str(self)
+
+    def __eq__(self, other: "Coordinate"):
+        return type(other) == Coordinate and self.x == other.x and self.y == other.y
+
+    def __hash__(self):
+        return hash((self.x, self.y))
 
     def pos(self):
         return self.x, self.y
@@ -28,7 +34,7 @@ class Coordinate:
     def right(self, i: int = 1):
         return Coordinate(self.x + i, self.y)
 
-    def udlr(self) -> tuple:
+    def nesw(self) -> tuple:
         yield self.up()
         yield self.down()
         yield self.left()

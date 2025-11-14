@@ -8,7 +8,7 @@ I really will. I promise.
 
 * [Bryant Nelson](https://github.com/bethune-bryant) decided in July 2020 to completely fix my parser in the previous repo. Thank you for that.
 
-* Simon drew a team rocket balloon based on the one from Pokémon Go for me
+* Simon drew a team rocket balloon based on the one from Pokémon Go for me.
 
 > Helena: "Get that donut out of your island"
 

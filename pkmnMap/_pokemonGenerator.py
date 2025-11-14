@@ -1,11 +1,12 @@
 from random import random, randint
-from generators.pathGenerator import get_path_type
+from pkmnMap._pathgenerator import get_path_type
 from colorama import Fore
 from colorama import Style
 
+from pkmnMap.tiles.Tile import Tile
+
 # Spawns pokémon on the map most in the pmap.ground_layer
 # Returns true if all existing pokémon are present on the map
-from mapClasses.tile import Tile
 
 pokemon_data = {
     "diglett": {"pos": (0, 0), "size": (1, 1), "odds": 0.001},
@@ -84,7 +85,7 @@ def spawn_pokemons(chunk, shiny_detector=True):
         for y in range(0, chunk.size):
             for x in range(0, chunk.size):
                 if good_odds(odds) and not chunk.has_tile_in_layer_at("GROUND0", x,
-                                                                      y) and not chunk.has_tile_in_layer_at("BUILDINGS",
+                                                                      y) and chunk.get_height(x, y) > 1 and not chunk.has_tile_in_layer_at("BUILDINGS",
                                                                                                             x, y) and \
                         chunk["HILLS"][(x, y)] == None:
                     if random() < SHINY_PROBABILITY:
@@ -175,9 +176,9 @@ def spawn_pokemons(chunk, shiny_detector=True):
                 cleffa = True
         return cleffa
 
-    lapras = spawn_lapras(0.00005)
-    gyarados = spawn_gyarados(0.00005)
-    diglett = spawn_diglett(0.0005)
+    lapras = spawn_lapras(0.00001)
+    gyarados = spawn_gyarados(0.00001)
+    diglett = spawn_diglett(0.0001)
     snorlax = spawn_snorlax(0.025)
     exceguttor = spawn_exceguttor(0.0005)
     # togetic = spawn_togetic(0.0001)

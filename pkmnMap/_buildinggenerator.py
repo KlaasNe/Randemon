@@ -2,31 +2,34 @@ import random
 from math import sqrt
 from buildings.Building import Building
 from buildings.BuildingTypes import BuildingTypes
-from generators.pathGenerator import place_path_tile
-from mapClasses import Map
-from mapClasses.chunk import Chunk
-from mapClasses.tile import Tile
+from pkmnMap._pathgenerator import place_path_tile
+from pkmnMap.Chunk import Chunk
+from pkmnMap.tiles.Tile import Tile
 
 
 # Spawns a house on the map with house_front_path_type as its front porch
 # Houses are spawned by choosing a random x and y coordinate, checking whether enough space is available for the given
 # house if not, choose a new position. There's an upper limit to trying to find a building spot.
-def spawn_building(rmap: Map, chunk: Chunk, building, path_type: int, fence_opt=True, mail_box_opt=True) -> bool:
+def spawn_building(self, chunk: Chunk, building, path_type: int, fence_opt=True, mail_box_opt=True) -> bool:
     # checks if a chosen position has enough free space for the house + spacing, starting from the top left corner
     def is_available_spot(x1, y1, x2, y2):
         if chunk.out_of_bounds(x1, y1) or chunk.out_of_bounds(x2, y2):
             return False
+
+        ref_height = chunk.get_height(x1, y1)
         for y in range(y1, y2 + 1):
-            for x in range(x1 - 2, x2 + 1 + 2):
-                ch = chunk.get_height(x, y)
-                if ch <= 0.4 or ch > rmap.max_height:
+            for x in range(x1, x2 + 1):
+                current_height = chunk.get_height(x, y)
+                if current_height <= 1 or current_height > self.max_height or ref_height != current_height:
                     return False
 
-                if x1 <= x < x2 + 2 and y1 <= y < y2 + 1:
-                    if chunk.has_tile_in_layer_at("BUILDINGS", x, y) or chunk.has_tile_in_layer_at("HILLS", x, y):
+                if x1 <= x < x2 + 1 and y1 <= y < y2 + 1:
+                    if chunk.has_tile_in_layer_at("BUILDINGS", x, y):
                         return False
-                if chunk.has_tile_in_layer_at("GROUND0", x, y) or chunk.has_tile_in_layer_at("FENCE", x, y):
+
+                if chunk.has_tile_in_layer_at("FENCE", x, y):
                     return False
+
         return True
 
     # Chooses a random x and y coordinate to try build a house
@@ -37,36 +40,41 @@ def spawn_building(rmap: Map, chunk: Chunk, building, path_type: int, fence_opt=
         def get_random_coo():
             return random.randint(2, chunk.size - size_x), random.randint(2, chunk.size - size_y - 2)
 
+        def get_size_area_coo(x1, y1, x2, y2):
+            area = set()
+            for y in range(y1, y2 + 1):
+                for x in range(x1, x2 + 1):
+                    area.add((x, y))
+            return area
+
+
         attempts = 1
         size_x, size_y = building.size
         try_x, try_y = get_random_coo()
-        available = is_available_spot(try_x, try_y - 1, try_x + size_x, try_y + size_y + 2)
-        while attempts < max_attempts and (
-                not available or not is_inside_cluster(chunk, try_x, try_y, cluster_radius, 2)):
+        available = is_available_spot(try_x - 1, try_y - 2, try_x + size_x + 1, try_y + size_y + 3)
+        while not available and attempts < max_attempts:
             attempts += 1
             try_x, try_y = get_random_coo()
-            available = is_available_spot(try_x, try_y - 1, try_x + size_x, try_y + size_y + 2)
-        return (try_x, try_y) if attempts <= max_attempts and available and is_inside_cluster(chunk, try_x, try_y, cluster_radius, 2) else False
+            available = is_available_spot(try_x - 1, try_y - 2, try_x + size_x + 1, try_y + size_y + 3)
+        return (try_x, try_y) if attempts <= max_attempts and available else False
 
     # search for the lower right corner of a house
     # def find_lower_right_of_house(x, y, size_y):
-    #     while (x, y) in chunk.get_layer("BUILDINGS").get_ex_pos():
-    #         if chunk.get_tile("BUILDINGS", x - 1, y).get_type() == "BUILDINGS": y += 1
-    #         if chunk.get_tile("BUILDINGS", x, y - 1).get_type() == "BUILDINGS": x += 1
+    #     while (x, y) in Chunk.get_layer("BUILDINGS").get_ex_pos():
+    #         if Chunk.get_tile("BUILDINGS", x - 1, y).get_type() == "BUILDINGS": y += 1
+    #         if Chunk.get_tile("BUILDINGS", x, y - 1).get_type() == "BUILDINGS": x += 1
     #     return x, y - size_y
 
-    size_x, size_y = building.size
-    map_size_factor = max(chunk.size * chunk.size // 2500, 1) ** 2
-    max_attempts = size_x * size_y * 100 * map_size_factor + 1000
+    max_attempts = 100
     build_spot = search_available_spot(building, 25, max_attempts)
     if build_spot:
-        build_building(rmap, chunk, building, build_spot, path_type, fence_opt=fence_opt, mail_box_opt=mail_box_opt)
+        build_building(self, chunk, building, build_spot, path_type, fence_opt=fence_opt, mail_box_opt=mail_box_opt)
         return True
     else:
         return False
 
 
-def build_building(rmap: Map, chunk: Chunk, building, build_spot, path_type, fence_opt=True, mail_box_opt=True):
+def build_building(self, chunk: Chunk, building, build_spot, path_type, fence_opt=True, mail_box_opt=True):
     size_x, size_y = building.size
     house_x, house_y = build_spot
     for house_build_y in range(size_y):
@@ -76,12 +84,12 @@ def build_building(rmap: Map, chunk: Chunk, building, build_spot, path_type, fen
     chunk.buildings.append(Building(building, build_spot[0], build_spot[1]))
     for front_y in range(house_y + size_y, house_y + size_y + 2):
         for front_x in range(house_x, house_x + size_x):
-            place_path_tile(rmap, chunk, front_x, front_y, path_type)
+            place_path_tile(self, chunk, front_x, front_y, path_type)
             chunk.path_tiles.add((front_x, front_y))
     if mail_box_opt:
         if random.randint(0, 1) == 1 and \
-                not chunk.has_tile_in_layer_at("BUILDINGS", house_x - 1, house_y + size_y - 2) and \
-                not chunk.has_tile_in_layer_at("HILLS", house_x - 1, house_y + size_y - 2):
+                not chunk.has_tile_in_layer_at("BUILDINGS", house_x - 1, house_y + size_y - 1) and \
+                not chunk.has_tile_in_layer_at("HILLS", house_x - 1, house_y + size_y - 1):
             chunk.set_tile("GROUND2", house_x - 1, house_y + size_y - 2, Tile("DECO", 7, 2))
             chunk.set_tile("GROUND2", house_x - 1, house_y + size_y - 1, Tile("DECO", 7, 3))
 
@@ -108,10 +116,10 @@ def is_inside_cluster(chunk, x, y, radius, connections):
     return False
 
 
-def spawn_functional_buildings(rmap: Map, chunk, path_type):
-    pc = spawn_building(rmap, chunk, BuildingTypes.POKECENTER.value, path_type, fence_opt=False, mail_box_opt=False)
-    g = spawn_building(rmap, chunk, BuildingTypes.GYM.value, path_type, fence_opt=False, mail_box_opt=False)
-    pm = spawn_building(rmap, chunk, BuildingTypes.POKEMART.value, path_type, fence_opt=False, mail_box_opt=False)
+def spawn_functional_buildings(self, chunk, path_type):
+    pc = spawn_building(self, chunk, BuildingTypes.POKECENTER.value, path_type, fence_opt=False, mail_box_opt=False)
+    g = spawn_building(self, chunk, BuildingTypes.GYM.value, path_type, fence_opt=False, mail_box_opt=False)
+    pm = spawn_building(self, chunk, BuildingTypes.POKEMART.value, path_type, fence_opt=False, mail_box_opt=False)
     return pc and g and pm
 
 
@@ -143,7 +151,7 @@ def create_fence(chunk, x, y, max_y, rel_fence_type, tree=False):
         return x - test_x - 1
 
     def try_build_fence(fx, fy, height, fence):
-        if chunk.get_height(fx, fy) == height:  # or chunk.get_tile("GROUND0", fx, fy)[1] == 3):
+        if chunk.get_height(fx, fy) == height:  # or Chunk.get_tile("GROUND0", fx, fy)[1] == 3):
             chunk.set_tile("FENCE", fx, fy, fence)
 
     size_x = check_house_width()

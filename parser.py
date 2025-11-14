@@ -6,30 +6,30 @@ from sys import maxsize
 def make_parser() -> ArgumentParser:
     """Make the ArgParser object."""
     parser = ArgumentParser(
-        prog='randemonMain.py',
-        description='Landscape generator using the tile set of pokemon fire red'
+        prog='randemon.py',
+        description='Landscape generator using the tiles set of pokemon fire red'
     )
 
     parser.add_argument(
-        '--chunk-size',
+        '--Chunk-size',
         dest='chunk_size',
         type=int,
-        default=40,
-        help='The number of tiles a chunk consists of.')
+        default=64,
+        help='The number of tiles a Chunk consists of.')
 
     parser.add_argument(
         '--ch',
         dest='chunks_horizontal',
         type=int,
         default=4,
-        help='The number of chunks horizontally.')
+        help='The number of Chunk horizontally.')
 
     parser.add_argument(
         '--cv',
         dest='chunks_vertical',
         type=int,
         default=4,
-        help='The number of chunks vertically.')
+        help='The number of Chunk vertically.')
 
     parser.add_argument(
         '--save',
@@ -48,7 +48,7 @@ def make_parser() -> ArgumentParser:
         '--max-height',
         dest='max_height',
         type=int,
-        default=4,
+        default=6,
         help='Maximal height of a hill')
 
     parser.add_argument(
@@ -63,7 +63,7 @@ def make_parser() -> ArgumentParser:
         dest='max_buildings',
         type=int,
         default=16,
-        help='Define the maximum amount of buildings for a chunk 0 for none, Pokécenter\nGym and Pokémart are'
+        help='Define the maximum amount of buildings for a Chunk 0 for none, Pokécenter\nGym and Pokémart are'
              ' not included in this argument.'
     )
 
@@ -92,7 +92,7 @@ def make_parser() -> ArgumentParser:
         '--terrain-chaos',
         dest='terrain_chaos',
         type=int,
-        default=4,
+        default=6,
         help='Determine the chaos in the terrain generation process. A higher value means more chaos. Default is 4.'
     )
 

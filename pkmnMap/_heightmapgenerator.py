@@ -2,12 +2,11 @@ import random
 from math import pow
 from PIL import Image
 
-from alive_progress import alive_bar
 from noise import snoise2
 
-from mapClasses import Map
-from mapClasses.Coordinate import Coordinate
-from mapClasses.tile.Tile import Tile
+from pkmnMap.Coordinate import Coordinate
+from pkmnMap.tiles.Tile import Tile
+from timeit import timeit
 
 
 def generate_height_map(size_h, size_v, max_height, off_x, off_y, chunk_size, terrain_chaos=4, additional_noise_maps=0,
@@ -24,20 +23,7 @@ def generate_height_map(size_h, size_v, max_height, off_x, off_y, chunk_size, te
 
 
 def get_height(max_height: int, x: int, y: int, static_offset_array, size_h: int, size_v: int, chunk_size,
-               octaves: int = 4, freq: int = 150, island=False):
-    def plateau(px: float, py: float, tau: float, height: int, n: float):
-        """
-        MADE BY HELENA
-
-        geeft de hoogte van een cirkel vormig plateau op (x,y)
-        het plateau is van hoogte hoogte
-        is nul op r = sqrt(x²+y²) = nulpunt
-        tau bepaald hoe scherp de randen van het plateau zijn: hoe kleiner tau hoe scherper
-        tau en nulpunt horen altijd groter dan 0 te zijn
-        het centrum licht op (0,0)
-        """
-        r = max(abs(px), abs(py))
-        return height * (1 - pow(2.71, -(r + n) / tau)) * (1 - pow(2.71, (r - n) / tau))
+               octaves: int = 6, freq: int = 150, island=False):
 
     if island and (x == 0 or y == 0 or x == size_h - 1 or y == size_v - 1):
         return -1
@@ -49,17 +35,28 @@ def get_height(max_height: int, x: int, y: int, static_offset_array, size_h: int
         noise += snoise2(
             (off_x + x) / (freq * tuple_count),
             (off_y + y) / (freq * tuple_count),
-            octaves) / tuple_count
+            octaves, persistence=0.5, lacunarity=1.6) / tuple_count
         tuple_count += 1
-    # if total_noise_maps > 1:
-    #     noise /= sum(1 / i for i in range(1, total_noise_maps + 1))
     if island:
-        # print(noise*max_height)
-        return (noise * (max_height + 2)) + plateau((x - (size_h // 2)) / (size_h / 2), (y - (size_v // 2)) / (size_v / 2),
-                                              0.15, 1, 0.5)  # GEEN 0 invullen op height plateau!!!
+        return (noise * (max_height + 2)) + plateau((x - (size_h // 2)) / (size_h / 2), (y - (size_v // 2)) / (size_v / 2),0.15, 1, 0.5)  # GEEN 0 invullen op height plateau!!!
     else:
         elevation = noise + 0.45
         return elevation * max_height
+
+
+def plateau(px: float, py: float, tau: float, height: int, n: float):
+    """
+    MADE BY HELENA
+
+    geeft de hoogte van een cirkel vormig plateau op (x,y)
+    het plateau is van hoogte hoogte
+    is nul op r = sqrt(x²+y²) = nulpunt
+    tau bepaald hoe scherp de randen van het plateau zijn: hoe kleiner tau hoe scherper
+    tau en nulpunt horen altijd groter dan 0 te zijn
+    het centrum licht op (0,0)
+    """
+    r = max(abs(px), abs(py))
+    return height * (1 - pow(2.71, -(r + n) / tau)) * (1 - pow(2.71, (r - n) / tau))
 
 
 def generate_height_map_from_image(img_path):
@@ -75,16 +72,17 @@ def generate_height_map_from_image(img_path):
     return height_map
 
 
-def smooth_height(rmap: Map) -> None:
+@timeit
+def smooth_height(self) -> None:
     smooth = False
     tries = 0
     while not smooth:
         smooth = True
         tries += 1
         heights_sorted = dict()
-        for y in range(0, rmap.size_v):
-            for x in range(0, rmap.size_h):
-                h = round(rmap.get_height_map_pos(x, y))
+        for y in range(0, self.size_v):
+            for x in range(0, self.size_h):
+                h = round(self.get_height_map_pos(x, y))
                 if h > 0:
                     if h in heights_sorted.keys():
                         heights_sorted[h].append((x, y))
@@ -95,16 +93,14 @@ def smooth_height(rmap: Map) -> None:
         for h in heights_sorted.values():
             steps += len(h)
 
-        with alive_bar(steps, title=f"smoothening terrain | attempt {tries}", theme="classic") as smooth_bar:
-            for h in heights_sorted.values():
-                for x, y in h:
-                    if rmap.height_map[y][x] > 0:
-                        if not smooth_down(rmap, x, y):
-                            smooth = False
-                    smooth_bar()
+        for h in heights_sorted.values():
+            for x, y in h:
+                if self.height_map[y][x] > 0:
+                    if not smooth_down(self, x, y):
+                        smooth = False
 
 
-def smooth_down(rmap: Map, x: int, y: int) -> bool:
+def smooth_down(rmap, x: int, y: int) -> bool:
     def check_and_update_height(u_x, u_y):
         if rmap.in_bounds(u_x, u_y) and height_diff > 1:
             rmap.height_map[u_y][u_x] = center_height + 1
@@ -134,7 +130,7 @@ def smooth_down(rmap: Map, x: int, y: int) -> bool:
     return smooth
 
 
-def draw_height_map(rmap: Map, chunk):
+def draw_height_map(self, chunk):
     for y in range(chunk.size):
         for x in range(chunk.size):
-            chunk.set_tile("HEIGHTMAP", x, y, Tile("HEIGHTS", round(rmap.get_height(chunk, x, y)), 0))
+            chunk.set_tile("HEIGHTMAP", x, y, Tile("HEIGHTS", round(self.find_height(chunk, x, y)), 0))

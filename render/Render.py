@@ -4,12 +4,13 @@ from datetime import datetime
 from typing import Union
 
 from PIL import Image
-from alive_progress import alive_bar
 from colorama import Fore, Style
 
-from mapClasses import Tile, Map
-from mapClasses.chunk import Chunk
+from pkmnMap.Chunk import Chunk
+from pkmnMap import PkmnMap
+from pkmnMap.tiles.Tile import Tile
 from render.SpriteSheetReaders import *
+from timeit import timeit
 
 
 class Render:
@@ -22,15 +23,18 @@ class Render:
         for reader in SpriteSheetReaders:
             self.readers[reader.name] = reader.value
 
-    def render(self, map_obj: Map):
-        chunk_size = map_obj.chunk_size
-        chunk_nb_h, chunk_nb_v = map_obj.chunk_nb_h, map_obj.chunk_nb_v
+    @timeit
+    def render(self, pkmn_map: PkmnMap, town_map_pos: str):
+        town_map_scale = 8
+        chunk_size = pkmn_map.chunk_size
+        chunk_nb_h, chunk_nb_v = pkmn_map.chunk_nb_h, pkmn_map.chunk_nb_v
         size = (chunk_size * Render.TILE_SIZE * chunk_nb_h, chunk_size * Render.TILE_SIZE * chunk_nb_v)
         self.visual = Image.new("RGBA", size, (0, 0, 0, 0))
-        with alive_bar(chunk_nb_h * chunk_nb_v, title="rendering chunks", theme="classic") as render_bar:
-            for chunk in map_obj:
-                self.render_chunk(chunk)
-                render_bar()
+        for chunk in pkmn_map:
+            self.render_chunk(chunk)
+
+        if pkmn_map.town_map_img is not None:
+            self.paste_town_map(pkmn_map, town_map_pos, scale=town_map_scale)
 
     def get_tile_img(self, tile: Tile) -> Image:
         try:
@@ -51,14 +55,13 @@ class Render:
                 y *= Render.TILE_SIZE
                 self.draw_tile(tile, x, y)
 
-    def paste_town_map(self, map_obj: Map, scale: int = 8):
-        town_map: Image = map_obj.town_map_img
+    def paste_town_map(self, pkmn_map: PkmnMap, pos: str, scale: int = 8):
+        town_map: Image = pkmn_map.town_map_img
         w, h = town_map.size
         nw, nh = w * scale, h * scale
         town_map = town_map.resize((nw, nh), 0)
 
         self_img_w, self_img_h = self.visual.size
-        pos = map_obj.town_map
         if pos == 'TOPLEFT':
             self.visual.paste(town_map, (0, 0, nw, nh))
         elif pos == 'TOPRIGHT':
@@ -69,10 +72,11 @@ class Render:
             self.visual.paste(town_map, (self_img_w - nw, self_img_h - nh, self_img_w, self_img_h))
 
 
-    # def render_npc(self, layer):
+
+    # def render_npc(self, Layer):
     #     sheet_writer = SpriteSheetWriter(Image.open(os.path.join("resources", "npc.png")), 20, 23)
-    #     for tile_x, tile_y in layer.get_ex_pos():
-    #         current_tile = layer.get_tile_img((tile_x, tile_y))
+    #     for tile_x, tile_y in Layer.get_ex_pos():
+    #         current_tile = Layer.get_tile_img((tile_x, tile_y))
     #         try:
     #             sheet_writer.draw_tile(current_tile, self.visual, tile_x * Render.TILE_SIZE, tile_y * Render.TILE_SIZE - 7)
     #         except KeyError:
@@ -83,9 +87,7 @@ class Render:
 
     def save(self, name: str, directory: str) -> None:
         img_name = name + ".png"
-        with alive_bar(1, title="Saving image", theme="classic") as save_bar:
-            self.visual.save(os.path.join(directory, img_name), "png")
-            save_bar()
+        self.visual.save(os.path.join(directory, img_name), "png")
         print("Image saved successfully")
         print(os.path.join(Fore.LIGHTBLUE_EX + os.path.abspath(directory),
                            Fore.LIGHTYELLOW_EX + img_name + Style.RESET_ALL))

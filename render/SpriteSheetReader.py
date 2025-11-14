@@ -2,7 +2,7 @@ import os
 
 from PIL import ImageOps, Image
 
-from mapClasses import Tile
+from pkmnMap.tiles.Tile import Tile
 
 TILE_SIZE = 16
 TILE_SHEET_DIRECTORY = os.path.join("render", "tileSheets")

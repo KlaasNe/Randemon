@@ -18,3 +18,11 @@ class Tile:
 
     def __hash__(self) -> int:
         return hash((self.x, self.y, self.type))
+
+    def to_json(self):
+        return {
+            "type": self.type,
+            "x": self.x,
+            "y": self.y,
+            "mirror": self.mirror
+        }
