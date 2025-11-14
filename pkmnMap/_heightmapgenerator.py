@@ -6,6 +6,7 @@ from noise import snoise2
 
 from pkmnMap.Coordinate import Coordinate
 from pkmnMap.tiles.Tile import Tile
+from timeit import timeit
 
 
 def generate_height_map(size_h, size_v, max_height, off_x, off_y, chunk_size, terrain_chaos=4, additional_noise_maps=0,
@@ -71,6 +72,7 @@ def generate_height_map_from_image(img_path):
     return height_map
 
 
+@timeit
 def smooth_height(self) -> None:
     smooth = False
     tries = 0
@@ -131,4 +133,4 @@ def smooth_down(rmap, x: int, y: int) -> bool:
 def draw_height_map(self, chunk):
     for y in range(chunk.size):
         for x in range(chunk.size):
-            chunk.set_tile("HEIGHTMAP", x, y, Tile("HEIGHTS", round(self.get_height(chunk, x, y)), 0))
+            chunk.set_tile("HEIGHTMAP", x, y, Tile("HEIGHTS", round(self.find_height(chunk, x, y)), 0))

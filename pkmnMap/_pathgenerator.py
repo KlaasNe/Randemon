@@ -9,6 +9,7 @@ from pkmnMap import Layer
 from pkmnMap.tiles.Tile import Tile
 from pkmnMap.tiles.TileWeights import TileWeights
 from pkmnMap.tiles.WeightTile import WeightTile
+from timeit import timeit
 
 
 def get_path_type(layer: Layer, x: int, y: int) -> int:
@@ -38,7 +39,7 @@ def update_path(self, coordinates: set[tuple[int, int]], separated):
     for x, y in coordinates:
         draw_path_tile(self, x, y, separated)
 
-
+@timeit
 def create_path(self, separated: bool = True) -> None:
     path_tiles = self.path_tiles.copy()
     for coordinate in path_tiles:

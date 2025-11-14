@@ -48,7 +48,7 @@ def make_parser() -> ArgumentParser:
         '--max-height',
         dest='max_height',
         type=int,
-        default=4,
+        default=6,
         help='Maximal height of a hill')
 
     parser.add_argument(

@@ -4,6 +4,7 @@ from noise import snoise2
 
 from pkmnMap.Chunk import Chunk
 from pkmnMap.tiles.Tile import Tile
+from timeit import timeit
 
 HIDDEN_ITEM_ODDS = {Tile("NATURE", 1, 4): 0.8, Tile("NATURE", 5, 2): 0.19, Tile("NATURE", 5, 3): 0.01}
 octaves1 = 3
@@ -57,7 +58,7 @@ def grow_grass(self, chunk, coverage, max_height):
     freq = 20
     for y in range(chunk.size):
         for x in range(chunk.size):
-            if not chunk.has_tile_in_layer_at("GROUND0", x, y):
+            if chunk.get_height(x, y) > 0 and not chunk.has_tile_in_layer_at("GROUND0", x, y):
                 sne_prob = abs(snoise2((x + chunk.off_x) / freq, (y + chunk.off_y) / freq, octaves))
                 tile_height = chunk.get_height(x, y)
                 tile = None

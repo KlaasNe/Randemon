@@ -5,12 +5,14 @@ from enum import Enum
 from pkmnMap.Coordinate import Coordinate
 from pkmnMap.Chunk import Chunk
 from pkmnMap.tiles.Tile import Tile
+from timeit import timeit
 
 
 def create_edges(chunk, hill_type=0):
     create_hill_edges(chunk, hill_type)
 
 
+@timeit
 def remove_faulty_heights(height_map, force=False):
     smooth = False
     warning_set = set()
@@ -87,9 +89,11 @@ def get_tile_from_surrounding(surrounding, tile_enum):
         if equal_surrounding(tile.value[0], surrounding):
             return tile.value[1]
 
+    return None
+
 
 def equal_surrounding(template, arr):
-    return re.findall(template, arr)
+    return re.fullmatch(template, arr)
 
 
 class HillTiles(Enum):

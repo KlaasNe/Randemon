@@ -18,7 +18,7 @@ class PkmnMapFactory:
                         max_height: int = 6,
                         town_map: str = None
                         ) -> PkmnMap:
-        pkmn_map: PkmnMap = PkmnMap(
+        pkmn_map: PkmnMap = (PkmnMap(
             chunk_nb_h,
             chunk_nb_v,
             chunk_size,
@@ -29,9 +29,13 @@ class PkmnMapFactory:
             themed_towns,
             terrain_chaos,
             max_height
-        ).with_beaches(8, 2).with_buildings().with_water().with_routes()
+        ).with_buildings().with_beaches(8, 2)
+                             .with_routes()
+                             .with_route_path())
 
         pkmn_map.create()
+        pkmn_map.create_path()
+        pkmn_map = pkmn_map.with_water()
 
         if town_map is not None:
             pkmn_map = pkmn_map.with_mini_map()

@@ -1,4 +1,3 @@
-
 import json
 from random import random
 
@@ -11,6 +10,7 @@ from typing import Optional, Iterator
 # TODO same for spawning pokemons, that's chunk business
 from buildings.BuildingTheme import BuildingTheme
 from buildings.BuildingTypes import BuildingThemes, BuildingTypes
+from timeit import timeit
 from ._pokemonGenerator import spawn_pokemons
 # TODO move hill generator stuff to the heightmap business i guess?
 from ._hillgenerator import *
@@ -22,7 +22,6 @@ from ._pathgenerator import remove_path  # TODO wth bruh clean this up!!!!!
 
 
 class PkmnMap(PkmnMapInterface):
-
     from ._watergenerator import create_rivers, create_beach
     from ._minimapgenerator import generate_mini_map
     from ._buildinggenerator import spawn_building, spawn_functional_buildings
@@ -56,14 +55,17 @@ class PkmnMap(PkmnMapInterface):
         print(Fore.LIGHTBLUE_EX + "seed = " + Fore.LIGHTYELLOW_EX + str(self.seed) + Style.RESET_ALL)
         print("Creating terrain...")
         self.off_x, self.off_y = random.randint(0, 10000000), random.randint(0, 10000000)
-        self.height_map = HeightMap((self.chunk_nb_h, self.chunk_nb_v), self.chunk_size, self.off_x, self.off_y, self.max_height, island)
+        self.height_map = HeightMap((self.chunk_nb_h, self.chunk_nb_v), self.chunk_size, self.off_x, self.off_y,
+                                    self.max_height, 0.0, island).remove_faulty_heights()
         # self.height_map = generate_height_map_from_image("heightMaps/earthLandMassHeight.png")
-        self.smooth_height()
+        # self.smooth_height()
+
         self.chunks: list[list[Chunk]] = [
             [Chunk(self.height_map, chunk_size, x, y, self.off_x + x * self.chunk_size,
                    self.off_y + y * self.chunk_size, self.max_buildings_per_chunk) for x in
              range(chunk_nb_h)] for y in range(chunk_nb_v)]
-        remove_faulty_heights(self.height_map, force=True)
+
+
         self.water_tiles: set[tuple[int, int]] = set()
         self.lake_tiles: set[tuple[int, int]] = set()
         self.sea_tiles: set[tuple[int, int]] = set()
@@ -78,17 +80,20 @@ class PkmnMap(PkmnMapInterface):
             for chunk in chunk_row:
                 yield chunk
 
+    @timeit
     def with_beaches(self, max_beach_inland_depth: int, water_threshold: int) -> "PkmnMap":
         # create_lakes_and_sea(self) TODO fix this (maybe ever)
         self.beach_tiles = self.create_beach(max_beach_inland_depth, water_threshold)
 
         return self
 
+    @timeit
     def with_mini_map(self) -> "PkmnMap":
         self.generate_mini_map()
 
         return self
 
+    @timeit
     def with_routes(self, looping_chance: float = 0) -> "PkmnMap":
         def is_connected(branches, start, end):
             nodes: set[Coordinate] = {start}
@@ -165,6 +170,7 @@ class PkmnMap(PkmnMapInterface):
 
         return self
 
+    @timeit
     def with_buildings(self) -> "PkmnMap":
         for y in range(self.chunk_nb_v):
             for x in range(self.chunk_nb_h):
@@ -173,6 +179,7 @@ class PkmnMap(PkmnMapInterface):
 
         return self
 
+    @timeit
     def with_water(self) -> "PkmnMap":
         water_threshold = 2
         for y in range(self.chunk_nb_v):
@@ -182,23 +189,29 @@ class PkmnMap(PkmnMapInterface):
 
         return self
 
-
-    def create(self):
-        # create_dirt_patches(self, self.off_x, self.off_y)
+    @timeit
+    def with_route_path(self) -> "PkmnMap":
         for y in range(self.chunk_nb_v):
             for x in range(self.chunk_nb_h):
                 current_chunk = self.chunks[y][x]
 
                 if not current_chunk.has_town and any(current_chunk.route):
-                    self.create_route_path(current_chunk)
+                    self.create_route_path(current_chunk) # yo this kinda ugly idk man
 
-                self.create_path()
+        self.create_path()
 
+        return self
+
+    @timeit
+    def create(self):
+        # create_dirt_patches(self, self.off_x, self.off_y)
+
+        for y in range(self.chunk_nb_v):
+            for x in range(self.chunk_nb_h):
+                current_chunk = self.chunks[y][x]
                 spawn_pokemons(current_chunk)
                 self.create_trees(current_chunk, 0.75, self.max_height)
                 self.grow_grass(current_chunk, 0.6, self.max_height)
-
-
 
     def try_place_buildings(self, chunk: Chunk) -> "PkmnMap":
         powerplant = True
@@ -216,11 +229,11 @@ class PkmnMap(PkmnMapInterface):
                     for b in range(random.randint(1, self.max_buildings_per_chunk)):
                         if self.themed_towns:
                             self.spawn_building(chunk,
-                                           building_theme.get_random_building_type().value, path_type)
+                                                building_theme.get_random_building_type().value, path_type)
                         else:
                             self.spawn_building(chunk,
-                                           BuildingTypes["H" + str(random.randint(0, 21))].value,
-                                           path_type)
+                                                BuildingTypes["H" + str(random.randint(0, 21))].value,
+                                                path_type)
                     self.draw_path2(chunk, path_type)
                 else:
                     chunk.has_town = False

@@ -15,17 +15,21 @@ def spawn_building(self, chunk: Chunk, building, path_type: int, fence_opt=True,
     def is_available_spot(x1, y1, x2, y2):
         if chunk.out_of_bounds(x1, y1) or chunk.out_of_bounds(x2, y2):
             return False
+
+        ref_height = chunk.get_height(x1, y1)
         for y in range(y1, y2 + 1):
-            for x in range(x1 - 2, x2 + 1 + 2):
-                ch = chunk.get_height(x, y)
-                if ch <= 0.4 or ch > self.max_height:
+            for x in range(x1, x2 + 1):
+                current_height = chunk.get_height(x, y)
+                if current_height <= 1 or current_height > self.max_height or ref_height != current_height:
                     return False
 
                 if x1 <= x < x2 + 1 and y1 <= y < y2 + 1:
-                    if chunk.has_tile_in_layer_at("BUILDINGS", x, y) or (x, y) in chunk.hill_tiles:
+                    if chunk.has_tile_in_layer_at("BUILDINGS", x, y):
                         return False
-                if chunk.has_tile_in_layer_at("GROUND0", x, y) or chunk.has_tile_in_layer_at("FENCE", x, y):
+
+                if chunk.has_tile_in_layer_at("FENCE", x, y):
                     return False
+
         return True
 
     # Chooses a random x and y coordinate to try build a house
@@ -47,12 +51,12 @@ def spawn_building(self, chunk: Chunk, building, path_type: int, fence_opt=True,
         attempts = 1
         size_x, size_y = building.size
         try_x, try_y = get_random_coo()
-        available = is_available_spot(try_x, try_y - 1, try_x + size_x, try_y + size_y + 2)
-        while (not available or not is_inside_cluster(chunk, try_x, try_y, cluster_radius, 2)) and attempts < max_attempts:
+        available = is_available_spot(try_x - 1, try_y - 2, try_x + size_x + 1, try_y + size_y + 3)
+        while not available and attempts < max_attempts:
             attempts += 1
             try_x, try_y = get_random_coo()
-            available = is_available_spot(try_x, try_y - 1, try_x + size_x, try_y + size_y + 2)
-        return (try_x, try_y) if attempts <= max_attempts and available and is_inside_cluster(chunk, try_x, try_y, cluster_radius, 2) else False
+            available = is_available_spot(try_x - 1, try_y - 2, try_x + size_x + 1, try_y + size_y + 3)
+        return (try_x, try_y) if attempts <= max_attempts and available else False
 
     # search for the lower right corner of a house
     # def find_lower_right_of_house(x, y, size_y):
@@ -61,9 +65,7 @@ def spawn_building(self, chunk: Chunk, building, path_type: int, fence_opt=True,
     #         if Chunk.get_tile("BUILDINGS", x, y - 1).get_type() == "BUILDINGS": x += 1
     #     return x, y - size_y
 
-    size_x, size_y = building.size
-    map_size_factor = max(chunk.size * chunk.size // 2500, 1) ** 2
-    max_attempts = size_x * size_y * 100 * map_size_factor + 1000
+    max_attempts = 100
     build_spot = search_available_spot(building, 25, max_attempts)
     if build_spot:
         build_building(self, chunk, building, build_spot, path_type, fence_opt=fence_opt, mail_box_opt=mail_box_opt)
@@ -86,8 +88,8 @@ def build_building(self, chunk: Chunk, building, build_spot, path_type, fence_op
             chunk.path_tiles.add((front_x, front_y))
     if mail_box_opt:
         if random.randint(0, 1) == 1 and \
-                not chunk.has_tile_in_layer_at("BUILDINGS", house_x - 1, house_y + size_y - 2) and \
-                not chunk.has_tile_in_layer_at("HILLS", house_x - 1, house_y + size_y - 2):
+                not chunk.has_tile_in_layer_at("BUILDINGS", house_x - 1, house_y + size_y - 1) and \
+                not chunk.has_tile_in_layer_at("HILLS", house_x - 1, house_y + size_y - 1):
             chunk.set_tile("GROUND2", house_x - 1, house_y + size_y - 2, Tile("DECO", 7, 2))
             chunk.set_tile("GROUND2", house_x - 1, house_y + size_y - 1, Tile("DECO", 7, 3))
 

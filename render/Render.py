@@ -10,6 +10,7 @@ from pkmnMap.Chunk import Chunk
 from pkmnMap import PkmnMap
 from pkmnMap.tiles.Tile import Tile
 from render.SpriteSheetReaders import *
+from timeit import timeit
 
 
 class Render:
@@ -22,6 +23,7 @@ class Render:
         for reader in SpriteSheetReaders:
             self.readers[reader.name] = reader.value
 
+    @timeit
     def render(self, pkmn_map: PkmnMap, town_map_pos: str):
         town_map_scale = 8
         chunk_size = pkmn_map.chunk_size

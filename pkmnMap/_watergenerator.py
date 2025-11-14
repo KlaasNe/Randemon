@@ -122,11 +122,10 @@ def create_beach(self, max_inland_size: int, threshold: int) -> set[tuple[int, i
         for x in range(self.size_h):
             if round(self.get_height_map_pos(x, y)) == 1:
                 chunk, cx, cy = self.parse_to_coordinate_in_chunk(x, y)
-                if chunk["GROUND0"][(cx, cy)] is None and check_for_water_around(x, y, 1):
-                    if chunk.get_height_exact(cx, cy) < threshold:
-                        chunk["GROUND0"][(cx, cy)] = Tile("PATH", 0, 27)
-                        self.path_tiles.add(Coordinate(x, y))
-                        new_beach_tiles.update({(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1), (x - 1, y - 1), (x - 1, y + 1), (x + 1, y - 1), (x + 1, y + 1)})
+                if check_for_water_around(x, y, 1):
+                    chunk["GROUND0"][(cx, cy)] = Tile("PATH", 0, 27)
+                    self.path_tiles.add(Coordinate(x, y))
+                    new_beach_tiles.update({(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1), (x - 1, y - 1), (x - 1, y + 1), (x + 1, y - 1), (x + 1, y + 1)})
 
     for i in range(max_inland_size - 1):
         i_distance_beach_tiles: set[tuple[int, int]] = set()

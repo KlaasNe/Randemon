@@ -13,7 +13,6 @@ class Chunk:
 
     def __init__(self, height_map: HeightMap, size: int, chunk_x: int, chunk_y: int, off_x: int, off_y: int, max_buildings: int) -> None:
         self.height_map: HeightMap = height_map
-        self.height_map_rounded: list[list[int]] = self.round_and_copy(height_map)
         self.size: int = size
         self.off_x: int = off_x
         self.off_y: int = off_y
@@ -86,14 +85,9 @@ class Chunk:
     def get_height(self, x: int, y: int) -> int:
         hmx, hmy = self.height_map_pos(x, y)
         try:
-            return self.height_map_rounded[hmy][hmx]
+            return round(self.height_map[hmy][hmx])
         except IndexError:
             return 0
-
-    def change_height(self, x: int, y: int, val: int) -> None:
-        hmx, hmy = self.height_map_pos(x, y)
-        self.height_map[hmy][hmx] += val
-        self.height_map[hmy][hmx] = max(self.height_map[hmy][hmx], .15)  # TODO hardcoded based on .15 dark water
 
     def get_tile_type(self, layer: str, x: int, y: int) -> Optional[str]:
         return self[layer].get_tile_type(x, y)

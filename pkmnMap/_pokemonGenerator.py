@@ -85,7 +85,7 @@ def spawn_pokemons(chunk, shiny_detector=True):
         for y in range(0, chunk.size):
             for x in range(0, chunk.size):
                 if good_odds(odds) and not chunk.has_tile_in_layer_at("GROUND0", x,
-                                                                      y) and not chunk.has_tile_in_layer_at("BUILDINGS",
+                                                                      y) and chunk.get_height(x, y) > 1 and not chunk.has_tile_in_layer_at("BUILDINGS",
                                                                                                             x, y) and \
                         chunk["HILLS"][(x, y)] == None:
                     if random() < SHINY_PROBABILITY:
