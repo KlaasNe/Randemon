@@ -31,7 +31,9 @@ class PkmnMapFactory:
             max_height
         ).with_buildings().with_beaches(8, 2)
                              .with_routes()
-                             .with_route_path())
+                             # .with_route_path()
+                             )
+        pkmn_map.create_path()
 
         pkmn_map.create()
         pkmn_map.create_path()

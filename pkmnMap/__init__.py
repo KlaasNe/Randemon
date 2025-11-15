@@ -219,7 +219,7 @@ class PkmnMap(PkmnMapInterface):
         # create_rivers(current_chunk, self.lake_tiles)
         if self.max_buildings_per_chunk > 0 and chunk.chunk_x % 2 == 0 and chunk.chunk_y % 2 == 0:
             path_type = random.randint(0, 7)  # HELL YEAH MAGIC NUMBER
-            if random.randint(0, 9) < 9:  # HELL YEAH magic number
+            if random.randint(0, 8) < 9:  # HELL YEAH magic numbers
                 chunk.has_town = True
                 valid_town = self.spawn_functional_buildings(chunk, path_type)
                 if valid_town:
@@ -228,8 +228,7 @@ class PkmnMap(PkmnMapInterface):
                         building_theme: BuildingTheme = BuildingThemes.get_random_theme().value
                     for b in range(random.randint(1, self.max_buildings_per_chunk)):
                         if self.themed_towns:
-                            self.spawn_building(chunk,
-                                                building_theme.get_random_building_type().value, path_type)
+                            self.spawn_building(chunk, building_theme.get_random_building_type().value, path_type)
                         else:
                             self.spawn_building(chunk,
                                                 BuildingTypes["H" + str(random.randint(0, 21))].value,

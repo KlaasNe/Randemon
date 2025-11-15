@@ -13,7 +13,9 @@ class HeightMap:
         self.height_matrix: np.array = np.zeros(self.shape, dtype=float)
         for y in range(self.shape[1]):
             for x in range(self.shape[0]):
-                self.height_matrix[y][x] = HeightMap.find_height(max_height, x, y, random_x_offset, random_y_offset, (self.shape[0], self.shape[1]), island, elevation=elevation)
+                self.height_matrix[y][x] = HeightMap.find_height(max_height, x, y, random_x_offset, random_y_offset,
+                                                                 (self.shape[0], self.shape[1]), island,
+                                                                 elevation=elevation)
 
     def __getitem__(self, row):
         return self.height_matrix[row]
@@ -47,7 +49,7 @@ class HeightMap:
                 right = self[y][x + 1]
 
                 if abs(round(h) - round(up)) >= 1 and abs(round(h) - round(down)) >= 1:
-                    self[y][x] = (up + down ) / 2
+                    self[y][x] = (up + down) / 2
                 elif abs(round(h) - round(left)) >= 1 and abs(round(h) - round(right)) >= 1:
                     self[y][x] = (left + right) / 2
 
@@ -69,9 +71,9 @@ class HeightMap:
             (random_y_offset + y) / freq,
             octaves, persistence=0.5, lacunarity=1.6)
         if island:
-            return (noise * max_height) + HeightMap.plateau((x - (size_h // 2)) / (size_h / 2),
-                                                        (y - (size_v // 2)) / (size_v / 2), .2, 1,
-                                                        0.5) + elevation  # GEEN 0 invullen op height plateau!!!
+            return (noise * max_height) + (1 - (math.dist((x, y), (size_h // 2, size_v // 2)) / size_h)) * 6 - 4 + HeightMap.plateau(
+                (x - (size_h // 2)) / (size_h / 2), (y - (size_v // 2)) / (size_v / 2), .2, 1,
+                0.5) + elevation  # GEEN 0 invullen op height plateau!!!
         else:
             elevation = noise + .45  # TODO ???? magic number??? why????
             return elevation * max_height

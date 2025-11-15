@@ -1,7 +1,6 @@
 from random import randint
 
 
-
 def generate_random_name(min_parts: int, max_parts: int) -> str:
     parts_all = ['ba', 'be', 'bi', 'bo', 'bu', 'ca', 'ce', 'ci', 'co', 'cu', 'da', 'de', 'di', 'do', 'du', 'fa', 'fe',
                  'fi', 'fo', 'fu', 'ga', 'ge', 'gi', 'go', 'gu', 'ha', 'he', 'hi', 'ho', 'hu', 'ja', 'je', 'ji', 'jo',
@@ -22,4 +21,4 @@ name = generate_random_name(2, 4)
 if randint(1, 4) == 4:
     name += "-" + generate_random_name(2, 3)
 
-print(name)
+print(f"{name} islands")
