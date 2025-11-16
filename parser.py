@@ -122,4 +122,18 @@ def make_parser() -> ArgumentParser:
              'argument is set.'
     )
 
+    parser.add_argument(
+        '-e',
+        dest='export_tmx',
+        action='store_true',
+        help='Export opt to export to tmx map files for Tiled.'
+    )
+
+    parser.add_argument(
+        '--no-render',
+        dest='no_render',
+        action='store_true',
+        help='Disable map rendering.'
+    )
+
     return parser

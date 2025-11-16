@@ -45,4 +45,3 @@ class Layer(LayerInterface):
 
     def to_json(self):
         return {"tiles": [{"pos": {"x": pos[0], "y": pos[1]}, "tiles": tile.to_json()} for pos, tile in self.tiles.items()]}
-

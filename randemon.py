@@ -31,8 +31,13 @@ def main(**kwargs):
 
     with open("map.json", "w+") as file:
         file.write(pkmn_map.to_json())
+
     r = Render()
-    r.render(pkmn_map, args.town_map)
+    if not args.no_render:
+        r.render(pkmn_map, args.town_map)
+
+    if args.export_tmx:
+        r.export_to_tmx_with_csv(pkmn_map)
 
     if not args.no_show_opt:
         r.show()

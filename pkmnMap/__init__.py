@@ -209,7 +209,7 @@ class PkmnMap(PkmnMapInterface):
         for y in range(self.chunk_nb_v):
             for x in range(self.chunk_nb_h):
                 current_chunk = self.chunks[y][x]
-                spawn_pokemons(current_chunk)
+                # spawn_pokemons(current_chunk)  # Disabled for tmx
                 self.create_trees(current_chunk, 0.75, self.max_height)
                 self.grow_grass(current_chunk, 0.6, self.max_height)
 

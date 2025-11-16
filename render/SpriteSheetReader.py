@@ -10,9 +10,11 @@ TILE_SHEET_DIRECTORY = os.path.join("render", "tileSheets")
 
 class SpriteSheetReader:
 
-    def __init__(self, name: str, path: str) -> None:
+    def __init__(self, name: str, path: str, width: int, first_gid: int) -> None:
         self.name: str = name
         self.tiles: dict[int, bytes] = dict()
+        self.width = width
+        self.first_gid = first_gid
         with Image.open(os.path.join(TILE_SHEET_DIRECTORY, path)).convert("RGBA") as tile_sheet:
             tile_sheet.load()
             self._init_tiles(tile_sheet)
@@ -27,3 +29,6 @@ class SpriteSheetReader:
     def get_tile(self, tile: Tile) -> Image:
         img = self.tiles[hash(tile)]
         return ImageOps.mirror(img) if tile.mirror else img
+
+    def get_tiled_id(self, tile: Tile) -> int:
+        return tile.y * self.width + tile.x + self.first_gid

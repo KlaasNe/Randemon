@@ -11,6 +11,10 @@ from pkmnMap import PkmnMap
 from pkmnMap.tiles.Tile import Tile
 from render.SpriteSheetReaders import *
 from timeit import timeit
+import xml.etree.ElementTree as ET
+import numpy as np
+import pandas as pd
+import io
 
 
 class Render:
@@ -22,6 +26,41 @@ class Render:
         self.visual: Image = None
         for reader in SpriteSheetReaders:
             self.readers[reader.name] = reader.value
+
+    @timeit
+    def export_to_tmx_with_csv(self, pkmn_map: PkmnMap):
+        for chunk in pkmn_map:
+            self.export_chunk_to_tmx_with_csv(chunk)
+
+    def export_chunk_to_tmx_with_csv(self, chunk: Chunk):
+        with open(os.path.join("render", "randemon_chunk_template.tmx"), "r") as template:
+            chunk_xml_tree: ET.ElementTree = ET.parse(template)
+            chunk_xml_root = chunk_xml_tree.getroot()
+            layer_id: int = 1
+            for layer in chunk.get_layers():
+                matrix = np.zeros((chunk.size, chunk.size), dtype=int)
+                for x, y in layer.get_ex_pos():
+                    tile: Tile = layer[(x, y)]
+                    tiled_id = self.readers[tile.type].get_tiled_id(tile)
+                    matrix[y][x] = tiled_id
+
+                csv_buffer = io.StringIO()
+                pd.DataFrame(matrix).to_csv(csv_buffer, header=False, index=False)
+
+                lines = csv_buffer.getvalue().split("\n")
+                for i in range(len(lines) - 2):
+                    lines[i] = lines[i].strip("\r") + ","
+
+                csv_string_with_trailing_commas = "\n".join(lines)
+
+                layer_xml = ET.SubElement(chunk_xml_root, "layer", attrib={"id": str(layer_id), "name": layer.name, "width": str(chunk.size), "height": str(chunk.size)})
+                data = ET.SubElement(layer_xml, "data", attrib={"encoding": "csv"})
+                data.text = csv_string_with_trailing_commas
+
+                layer_id += 1
+
+        with open(os.path.join("render", "tiled_output", f"randemon_chunk_x{chunk.chunk_x}_y{chunk.chunk_y}.tmx"), "wb+") as f:
+            chunk_xml_tree.write(f.name, xml_declaration=True, encoding="UTF-8")
 
     @timeit
     def render(self, pkmn_map: PkmnMap, town_map_pos: str):
@@ -71,8 +110,6 @@ class Render:
         elif pos == 'BOTTOMRIGHT':
             self.visual.paste(town_map, (self_img_w - nw, self_img_h - nh, self_img_w, self_img_h))
 
-
-
     # def render_npc(self, Layer):
     #     sheet_writer = SpriteSheetWriter(Image.open(os.path.join("resources", "npc.png")), 20, 23)
     #     for tile_x, tile_y in Layer.get_ex_pos():
@@ -83,7 +120,8 @@ class Render:
     #             pass
 
     def show(self) -> None:
-        self.visual.show()
+        if self.visual is not None:
+            self.visual.show()
 
     def save(self, name: str, directory: str) -> None:
         img_name = name + ".png"

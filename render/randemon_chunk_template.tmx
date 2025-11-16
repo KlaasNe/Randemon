@@ -1,0 +1,10 @@
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="64" height="64" tilewidth="16" tileheight="16" infinite="0" nextlayerid="8" nextobjectid="1">
+ <tileset firstgid="1" source="randemon_tilesets/fire_red_decoration.tsx"/>
+ <tileset firstgid="109" source="randemon_tilesets/fire_red_fences.tsx"/>
+ <tileset firstgid="145" source="randemon_tilesets/fire_red_hills.tsx"/>
+ <tileset firstgid="195" source="randemon_tilesets/fire_red_houses.tsx"/>
+ <tileset firstgid="1545" source="randemon_tilesets/fire_red_path.tsx"/>
+ <tileset firstgid="1695" source="randemon_tilesets/fire_red_plants.tsx"/>
+ <tileset firstgid="1743" source="randemon_tilesets/fire_red_road_elements.tsx"/>
+ <tileset firstgid="1755" source="randemon_tilesets/fire_red_water.tsx"/>
+</map>
